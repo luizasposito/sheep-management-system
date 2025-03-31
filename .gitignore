@@ -1,1 +1,18 @@
-Ignore unnecessary files
+# Python-related
+__pycache__/
+*.pyc
+*.pyo
+venv/
+
+# Node.js-related
+node_modules/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.development
+
+# Logs
+logs/
+*.log
