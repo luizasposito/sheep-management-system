@@ -1,1 +1,3 @@
-# backend folder
+# Backend
+
+ All backend services (API, database, authentication)
