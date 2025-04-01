@@ -1,1 +1,11 @@
-Python/Node.js dependencies
+fastapi                # Web framework for the API
+uvicorn                # ASGI server to run FastAPI
+pydantic               # Data validation and settings
+SQLAlchemy             # ORM for PostgreSQL
+psycopg2               # PostgreSQL driver
+python-dotenv          # Load environment variables
+pytest                 # For writing unit tests
+httpx                  # For API testing
+bcrypt                 # Password hashing for authentication
+python-jose            # JWT token management
+passlib[bcrypt]        # Secure password hashing
