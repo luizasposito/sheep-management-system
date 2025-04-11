@@ -1,6 +1,16 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
+
+# Our mock database (in-memory list for now)
+sheep_db = []
+
+# Pydantic model for input validation
+class Sheep(BaseModel):
+    name: str
+    age: int
+    milk: float
 
 @app.get("/")
 def read_root():
@@ -8,8 +18,9 @@ def read_root():
 
 @app.get("/sheep")
 def get_sheep():
-    return ["Dolly", "Shaun", "Bella"]
+    return sheep_db
 
-@app.get("/sheep/{sheep_id}")
-def get_sheep_by_id(sheep_id: int):
-    return {"id": sheep_id, "name": "Test Sheep"}
+@app.post("/sheep")
+def create_sheep(sheep: Sheep):
+    sheep_db.append(sheep)
+    return {"message": f"Sheep {sheep.name} added successfully!"}
