@@ -9,3 +9,7 @@ def read_root():
 @app.get("/sheep")
 def get_sheep():
     return ["Dolly", "Shaun", "Bella"]
+
+@app.get("/sheep/{sheep_id}")
+def get_sheep_by_id(sheep_id: int):
+    return {"id": sheep_id, "name": "Test Sheep"}
