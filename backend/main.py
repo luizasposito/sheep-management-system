@@ -1,26 +1,16 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+# main.py
 
+from fastapi import FastAPI
+from database import Base, engine
+from routers import sheep  # Import your sheep router
+
+# Create the FastAPI app
 app = FastAPI()
 
-# Our mock database (in-memory list for now)
-sheep_db = []
+from models import farm
 
-# Pydantic model for input validation
-class Sheep(BaseModel):
-    name: str
-    age: int
-    milk: float
+# Create all database tables (based on your models)
+Base.metadata.create_all(bind=engine)
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to your sheep farm API!"}
-
-@app.get("/sheep")
-def get_sheep():
-    return sheep_db
-
-@app.post("/sheep")
-def create_sheep(sheep: Sheep):
-    sheep_db.append(sheep)
-    return {"message": f"Sheep {sheep.name} added successfully!"}
+# Register the sheep routes under the path /sheep
+app.include_router(sheep.router, prefix="/sheep", tags=["Sheep"])
