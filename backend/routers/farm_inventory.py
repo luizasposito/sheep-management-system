@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.farm_inventory import FarmInventory
 from schemas.farm_inventory import InventoryCreate, InventoryResponse
+from typing import List
+from schemas.farm_inventory import InventoryResponse
+from models.farm_inventory import FarmInventory
 
 
 router = APIRouter()
@@ -22,3 +25,11 @@ def create_inventory_item(item: InventoryCreate, db: Session = Depends(get_db)):
     db.refresh(new_item)
 
     return new_item
+
+
+
+# GET /inventory - Get all inventory items
+@router.get("/", response_model=List[InventoryResponse])
+def get_all_inventory(db: Session = Depends(get_db)):
+    items = db.query(FarmInventory).all()
+    return items

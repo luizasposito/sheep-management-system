@@ -40,3 +40,19 @@ async def test_create_inventory_item():
         assert response.status_code == 200
         assert response.json()["item_name"] == "Feno"
         assert response.json()["quantity"] == 100
+
+
+
+# get items from inventory
+@pytest.mark.asyncio
+async def test_get_inventory_items():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Act
+        response = await ac.get("/inventory/")
+
+        # Assert
+        assert response.status_code == 200
+        assert isinstance(response.json(), list)
+        assert len(response.json()) >= 1
+        assert "item_name" in response.json()[0]
