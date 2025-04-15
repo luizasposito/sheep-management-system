@@ -67,3 +67,22 @@ def update_sheep(sheep_id: int, updated_sheep: SheepCreate, db: Session = Depend
     db.refresh(sheep)
 
     return sheep
+
+
+
+# DELETE /sheep/{id} - remove a sheep from the database
+@router.delete("/{sheep_id}", status_code=204)
+def delete_sheep(sheep_id: int, db: Session = Depends(get_db)):
+    # find the sheep
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+
+    # if not found, raise 404
+    if not sheep:
+        raise HTTPException(status_code=404, detail="Sheep not found")
+
+    # delete and commit
+    db.delete(sheep)
+    db.commit()
+
+    # don't return anything
+    return

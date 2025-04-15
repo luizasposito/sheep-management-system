@@ -178,3 +178,53 @@ async def test_update_sheep():
         assert response.json()["status"] == "ovelha"
 
 
+
+
+
+# delete sheep
+@pytest.mark.asyncio
+async def test_delete_sheep():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        from database import SessionLocal
+        from models.farm import Farm
+        from models.sheep import Sheep
+
+        # create farm and sheep
+        with SessionLocal() as db:
+            db.query(Sheep).delete()
+            db.commit()
+
+            farm = db.query(Farm).first()
+            if not farm:
+                farm = Farm(name="Test Farm", location="Test Land")
+                db.add(farm)
+                db.commit()
+                db.refresh(farm)
+
+            farm_id = farm.id
+
+            sheep = Sheep(
+                birth_date="2023-04-01",
+                farm_id=farm_id,
+                milk_production=3.8,
+                feeding_hay=1.0,
+                feeding_feed=0.4,
+                gender="femea",
+                status="ovelha"
+            )
+            db.add(sheep)
+            db.commit()
+            db.refresh(sheep)
+
+            sheep_id = sheep.id
+
+        # delete the sheep
+        response = await ac.delete(f"/sheep/{sheep_id}")
+        assert response.status_code == 204  # no content
+
+        # confirm deletion by checking the GET again
+        response_check = await ac.get(f"/sheep/{sheep_id}")
+        assert response_check.status_code == 404
+
+
