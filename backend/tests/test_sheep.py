@@ -113,3 +113,68 @@ async def test_get_sheep_by_id():
 
     assert response.json()["id"] == sheep.id
 
+
+
+
+# update sheep
+@pytest.mark.asyncio
+async def test_update_sheep():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        from database import SessionLocal
+        from models.farm import Farm
+        from models.sheep import Sheep
+
+        # clear and insert farm + sheep
+        with SessionLocal() as db:
+            db.query(Sheep).delete()
+            db.commit()
+
+            # create/reuse farm
+            farm = db.query(Farm).first()
+            if not farm:
+                farm = Farm(name="Test Farm", location="Test Land")
+                db.add(farm)
+                db.commit()
+                db.refresh(farm)
+
+            # store farm_id
+            farm_id = farm.id
+            
+            # creates sheep
+            sheep = Sheep(
+                birth_date="2023-04-01",
+                farm_id=farm.id,
+                milk_production=4.2,
+                feeding_hay=1.5,
+                feeding_feed=0.5,
+                gender="femea",
+                status="borrego"
+            )
+            db.add(sheep)
+            db.commit()
+            db.refresh(sheep)
+
+
+            # store sheep_id
+            sheep_id = sheep.id
+
+
+        # update the sheep via PUT
+        updated_data = {
+            "birth_date": "2023-04-01",
+            "farm_id": farm_id,
+            "milk_production": 6.1,
+            "feeding_hay": 2.0,
+            "feeding_feed": 1.0,
+            "gender": "femea",
+            "status": "ovelha"
+        }
+
+        response = await ac.put(f"/sheep/{sheep_id}", json=updated_data)
+
+        assert response.status_code == 200
+        assert response.json()["milk_production"] == 6.1
+        assert response.json()["status"] == "ovelha"
+
+
