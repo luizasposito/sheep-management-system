@@ -37,11 +37,33 @@ def get_all_sheep(db: Session = Depends(get_db)):
 # GET /sheep/id - return specific sheep
 @router.get("/{sheep_id}", response_model=SheepResponse)
 def get_sheep_by_id(sheep_id: int, db: Session = Depends(get_db)):
-    # Look for a sheep by its ID
+    # look for a sheep by ID
     sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
 
-    # If not found, raise an error
+    # if not found, raise an error
     if sheep is None:
         raise HTTPException(status_code=404, detail="Sheep not found")
+
+    return sheep
+
+
+
+
+# PUT /sheep/{id} - update existing sheep
+@router.put("/{sheep_id}", response_model=SheepResponse)
+def update_sheep(sheep_id: int, updated_sheep: SheepCreate, db: Session = Depends(get_db)):
+    # find the sheep in the database
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+
+    # if not found, raise 404
+    if not sheep:
+        raise HTTPException(status_code=404, detail="Sheep not found")
+
+    # update each field manually
+    for field, value in updated_sheep.model_dump().items():
+        setattr(sheep, field, value)
+
+    db.commit()
+    db.refresh(sheep)
 
     return sheep
