@@ -103,3 +103,56 @@ async def test_get_inventory_item_by_id():
         assert response.json()["id"] == item_id
         assert response.json()["item_name"] == "Feno"
         assert response.json()["quantity"] == 100
+
+
+
+
+
+# update inventory item by id
+@pytest.mark.asyncio
+async def test_update_inventory_item():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # create an inventory item
+        from database import SessionLocal
+        from models.farm import Farm
+        from models.farm_inventory import FarmInventory
+
+        with SessionLocal() as db:
+            farm = db.query(Farm).first()
+            if not farm:
+                farm = Farm(name="Inventory Farm", location="Somewhere")
+                db.add(farm)
+                db.commit()
+                db.refresh(farm)
+            
+            farm_id = farm.id
+
+            # create new inventory item
+            new_item = FarmInventory(
+                farm_id=farm_id,
+                item_name="Feno",
+                quantity=100,
+                unit="kg",
+                consumption_rate=5.5
+            )
+            db.add(new_item)
+            db.commit()
+            db.refresh(new_item)
+
+            # save the ID for later 
+            item_id = new_item.id
+
+        # send PUT request to update the inventory item
+        response = await ac.put(f"/inventory/{item_id}", json={
+            "farm_id": farm_id,
+            "item_name": "Feno",
+            "quantity": 150,
+            "unit": "kg",
+            "consumption_rate": 5.5
+        })
+
+        # check that the updated quantity is reflected
+        assert response.status_code == 200
+        assert response.json()["id"] == item_id
+        assert response.json()["quantity"] == 150
