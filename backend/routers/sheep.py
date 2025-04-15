@@ -6,8 +6,10 @@ from models.sheep import Sheep
 from schemas.sheep import SheepCreate, SheepResponse
 from typing import List
 
+
 # router for all /sheep endpoints
 router = APIRouter()
+
 
 # POST /sheep - create a new sheep record
 @router.post("/", response_model=SheepResponse)
