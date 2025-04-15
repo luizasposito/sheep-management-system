@@ -5,7 +5,7 @@ from typing import Optional
 
 # POST request
 class SheepCreate(BaseModel):
-    id: int
+    # id isnt sent to the db
     birth_date: date
     farm_id: int
     milk_production: float
@@ -16,6 +16,9 @@ class SheepCreate(BaseModel):
 
 # GET/POST responses
 class SheepResponse(SheepCreate):
+    # id is returned by the db
+    id: int
+    
     model_config = {
     # tells FastAPI to convert SQLAlchemy objects to JSON
     "from_attributes": True
