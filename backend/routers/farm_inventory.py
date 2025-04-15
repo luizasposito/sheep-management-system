@@ -13,7 +13,7 @@ from models.farm_inventory import FarmInventory
 router = APIRouter()
 
 
-# POST /inventory - Create a new inventory item
+# POST /inventory - create a new inventory item
 @router.post("/", response_model=InventoryResponse)
 def create_inventory_item(item: InventoryCreate, db: Session = Depends(get_db)):
     # convert from Pydantic to SQLAlchemy
@@ -28,7 +28,7 @@ def create_inventory_item(item: InventoryCreate, db: Session = Depends(get_db)):
 
 
 
-# GET /inventory - Get all inventory items
+# GET /inventory - get all inventory items
 @router.get("/", response_model=List[InventoryResponse])
 def get_all_inventory(db: Session = Depends(get_db)):
     items = db.query(FarmInventory).all()
@@ -36,7 +36,7 @@ def get_all_inventory(db: Session = Depends(get_db)):
 
 
 
-# GET /inventory/{id} - Get a single inventory item by ID
+# GET /inventory/{id} - get an inventory item by ID
 @router.get("/{id}", response_model=InventoryResponse)
 def get_inventory_item(id: int, db: Session = Depends(get_db)):
     item = db.query(FarmInventory).filter(FarmInventory.id == id).first()
@@ -65,3 +65,17 @@ def update_inventory_item(id: int, item: InventoryCreate, db: Session = Depends(
     db.refresh(existing_item)
 
     return existing_item
+
+
+
+# DELETE /inventory/{id} - delete an item in the inventory
+@router.delete("/{id}", status_code=204)
+def delete_inventory_item(id: int, db: Session = Depends(get_db)):
+    item = db.query(FarmInventory).filter(FarmInventory.id == id).first()
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+
+    db.delete(item)
+    db.commit()
+    return
