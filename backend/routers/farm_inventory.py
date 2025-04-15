@@ -45,3 +45,23 @@ def get_inventory_item(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Inventory item not found")
     
     return item
+
+
+
+
+# PUT /inventory/{id} - update an item in the inventory
+@router.put("/{id}", response_model=InventoryResponse)
+def update_inventory_item(id: int, item: InventoryCreate, db: Session = Depends(get_db)):
+    existing_item = db.query(FarmInventory).filter(FarmInventory.id == id).first()
+
+    if not existing_item:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    # Update the item
+    for key, value in item.dict().items():
+        setattr(existing_item, key, value)
+
+    db.commit()
+    db.refresh(existing_item)
+
+    return existing_item
