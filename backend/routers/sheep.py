@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from models.sheep import Sheep
@@ -31,3 +31,17 @@ def get_all_sheep(db: Session = Depends(get_db)):
     # Get all sheep from the database
     sheep_list = db.query(Sheep).all()
     return sheep_list
+
+
+
+# GET /sheep/id - return specific sheep
+@router.get("/{sheep_id}", response_model=SheepResponse)
+def get_sheep_by_id(sheep_id: int, db: Session = Depends(get_db)):
+    # Look for a sheep by its ID
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+
+    # If not found, raise an error
+    if sheep is None:
+        raise HTTPException(status_code=404, detail="Sheep not found")
+
+    return sheep
