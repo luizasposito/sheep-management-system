@@ -33,3 +33,15 @@ def create_inventory_item(item: InventoryCreate, db: Session = Depends(get_db)):
 def get_all_inventory(db: Session = Depends(get_db)):
     items = db.query(FarmInventory).all()
     return items
+
+
+
+# GET /inventory/{id} - Get a single inventory item by ID
+@router.get("/{id}", response_model=InventoryResponse)
+def get_inventory_item(id: int, db: Session = Depends(get_db)):
+    item = db.query(FarmInventory).filter(FarmInventory.id == id).first()
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    return item
