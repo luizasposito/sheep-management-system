@@ -34,3 +34,23 @@ def get_farmer_by_id(id: int, db: Session = Depends(get_db)):
     if not farmer:
         raise HTTPException(status_code=404, detail="Farmer not found")
     return farmer
+
+
+
+
+
+# PUT /farmer/{id} - update farmer on db
+@router.put("/{id}", response_model=FarmerResponse)
+def update_farmer(id: int, updated_data: FarmerCreate, db: Session = Depends(get_db)):
+    farmer = db.query(Farmer).filter(Farmer.id == id).first()
+
+    if not farmer:
+        raise HTTPException(status_code=404, detail="Farmer not found")
+
+    for key, value in updated_data.model_dump().items():
+        setattr(farmer, key, value)
+
+    db.commit()
+    db.refresh(farmer)
+
+    return farmer
