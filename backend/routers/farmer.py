@@ -23,3 +23,14 @@ def create_farmer(farmer: FarmerCreate, db: Session = Depends(get_db)):
     db.refresh(new_farmer)
 
     return new_farmer
+
+
+
+
+# GET /farmer/{id} - get farmer by id
+@router.get("/{id}", response_model=FarmerResponse)
+def get_farmer_by_id(id: int, db: Session = Depends(get_db)):
+    farmer = db.query(Farmer).filter(Farmer.id == id).first()
+    if not farmer:
+        raise HTTPException(status_code=404, detail="Farmer not found")
+    return farmer
