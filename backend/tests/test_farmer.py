@@ -40,6 +40,50 @@ async def test_create_farmer():
             "farm_id": farm.id
         })
 
-    # Check response
+    # check response
     assert response.status_code == 200
     assert response.json()["email"] == "farmer@example.com"
+
+
+
+
+# get farmer by id
+@pytest.mark.asyncio
+async def test_get_farmer_by_id():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        from database import SessionLocal
+        from models.farm import Farm
+        from models.farmer import Farmer
+
+        with SessionLocal() as db:
+            db.query(Farmer).delete()
+            db.commit()
+
+            # create farm
+            farm = db.query(Farm).first()
+            if not farm:
+                farm = Farm(name="Farm for Get", location="Someplace")
+                db.add(farm)
+                db.commit()
+                db.refresh(farm)
+
+            # create a farmer
+            farmer = Farmer(
+                name="Test Farmer",
+                email="farmer@example.com",
+                password="securepassword",
+                farm_id=farm.id
+            )
+            db.add(farmer)
+            db.commit()
+            db.refresh(farmer)
+
+            farmer_id = farmer.id
+
+        # GET the farmer by ID
+        response = await ac.get(f"/farmer/{farmer_id}")
+
+        assert response.status_code == 200
+        assert response.json()["id"] == farmer_id
+        assert response.json()["email"] == "farmer@example.com"
