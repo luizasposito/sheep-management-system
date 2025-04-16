@@ -23,6 +23,7 @@ async def test_create_farmer():
         # insert a farm
         with SessionLocal() as db:
             db.query(Farmer).delete()
+            db.query(Farm).delete()
             db.commit()
 
             farm = db.query(Farm).filter_by(name="FarmerTest Farm").first()
@@ -58,6 +59,7 @@ async def test_get_farmer_by_id():
 
         with SessionLocal() as db:
             db.query(Farmer).delete()
+            db.query(Farm).delete()
             db.commit()
 
             # create farm
@@ -101,6 +103,7 @@ async def test_update_farmer():
 
         with SessionLocal() as db:
             db.query(Farmer).delete()
+            db.query(Farm).delete()
             db.commit()
 
             # ensure a farm exists

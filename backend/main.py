@@ -5,6 +5,7 @@ from database import Base, engine
 from routers import sheep
 from routers import farm_inventory
 from routers import farmer
+from routers import veterinarian
 
 # Create the FastAPI app
 app = FastAPI()
@@ -22,3 +23,6 @@ app.include_router(farm_inventory.router, prefix="/inventory", tags=["Inventory"
 
 # register farmer routes under /farmer path
 app.include_router(farmer.router, prefix="/farmer", tags=["Farmer"])
+
+# register veterinarian routes under /veterinarian path
+app.include_router(veterinarian.router, prefix="/vet", tags=["Veterinarian"])
