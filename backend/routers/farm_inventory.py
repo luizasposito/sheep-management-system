@@ -58,7 +58,7 @@ def update_inventory_item(id: int, item: InventoryCreate, db: Session = Depends(
         raise HTTPException(status_code=404, detail="Inventory item not found")
     
     # Update the item
-    for key, value in item.dict().items():
+    for key, value in item.model_dump().items():
         setattr(existing_item, key, value)
 
     db.commit()

@@ -9,3 +9,4 @@ httpx                  # For API testing
 bcrypt                 # Password hashing for authentication
 python-jose            # JWT token management
 passlib[bcrypt]        # Secure password hashing
+pydantic[email]        # Email validation
