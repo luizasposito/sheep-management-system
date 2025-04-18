@@ -226,5 +226,3 @@ async def test_delete_sheep():
         # confirm deletion by checking the GET again
         response_check = await ac.get(f"/sheep/{sheep_id}")
         assert response_check.status_code == 404
-
-
