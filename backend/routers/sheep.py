@@ -101,7 +101,11 @@ def update_sheep(
 
 # DELETE /sheep/{id} - remove a sheep from the database
 @router.delete("/{sheep_id}", status_code=204)
-def delete_sheep(sheep_id: int, db: Session = Depends(get_db)):
+def delete_sheep(
+    sheep_id: int,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
     # find the sheep
     sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
 
