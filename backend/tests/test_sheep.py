@@ -453,7 +453,7 @@ async def test_get_sheep_by_id_with_token():
             db.commit()
 
             # create farm
-            farm = Farm(name="Fazenda Teste", location="Serra")
+            farm = Farm(name="Test Farm", location="North")
             db.add(farm)
             db.commit()
             db.refresh(farm)
@@ -461,9 +461,9 @@ async def test_get_sheep_by_id_with_token():
 
             # create farmer
             farmer = Farmer(
-                name="Teste",
-                email="teste@agricultor.com",
-                password=hash_password("senha123"),
+                name="Test",
+                email="test@farmer.com",
+                password=hash_password("pass123"),
                 farm_id=farm_id
             )
             db.add(farmer)
@@ -486,8 +486,8 @@ async def test_get_sheep_by_id_with_token():
 
         # login
         login_response = await ac.post("/auth/login", json={
-            "email": "teste@agricultor.com",
-            "password": "senha123"
+            "email": "test@farmer.com",
+            "password": "pass123"
         })
         assert login_response.status_code == 200
         token = login_response.json()["access_token"]
@@ -504,3 +504,65 @@ async def test_get_sheep_by_id_with_token():
 
 
 
+# delete sheep by id
+@pytest.mark.asyncio
+async def test_delete_sheep_with_token():
+    transport = ASGITransport(app=app)
+
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # setup
+        with SessionLocal() as db:
+            db.query(Sheep).delete()
+            db.query(Farmer).delete()
+            db.query(Farm).delete()
+            db.commit()
+
+            # create farm
+            farm = Farm(name="Test Farm", location="Test Land")
+            db.add(farm)
+            db.commit()
+            db.refresh(farm)
+            farm_id = farm.id
+
+            # create farmer
+            farmer = Farmer(
+                name="Test",
+                email="test@farmer.com",
+                password=hash_password("pass123"),
+                farm_id=farm_id
+            )
+            db.add(farmer)
+            db.commit()
+            db.refresh(farmer)
+
+            # create sheep
+            sheep = Sheep(
+                birth_date="2023-03-01",
+                farm_id=farm_id,
+                milk_production=5.0,
+                feeding_hay=2.0,
+                feeding_feed=1.0,
+                gender="femea",
+                status="borrego"
+            )
+            db.add(sheep)
+            db.commit()
+            db.refresh(sheep)
+            sheep_id = sheep.id
+
+        # login
+        login_response = await ac.post("/auth/login", json={
+            "email": "test@farmer.com",
+            "password": "pass123"
+        })
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        # send delete with token
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await ac.delete(f"/sheep/{sheep_id}", headers=headers)
+        assert response.status_code == 204  # no content
+
+        # make sure it was deleted
+        response_check = await ac.get(f"/sheep/{sheep_id}", headers=headers)
+        assert response_check.status_code == 404
