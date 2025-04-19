@@ -72,7 +72,7 @@ async def test_get_current_user():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
 
-        # Setup test data
+        # setup test data
         with SessionLocal() as db:
             db.query(Veterinarian).delete()
             db.query(Farmer).delete()
@@ -93,10 +93,10 @@ async def test_get_current_user():
             db.add(farmer)
             db.commit()
 
-        # Generate token
+        # generate token
         token = create_access_token({"sub": "me@example.com", "role": "farmer"})
 
-        # Call /auth/me with token
+        # call /auth/me with token
         response = await ac.get("/auth/me", headers={
             "Authorization": f"Bearer {token}"
         })
