@@ -48,7 +48,11 @@ def get_all_sheep(
 
 # GET /sheep/id - return specific sheep
 @router.get("/{sheep_id}", response_model=SheepResponse)
-def get_sheep_by_id(sheep_id: int, db: Session = Depends(get_db)):
+def get_sheep_by_id(
+    sheep_id: int,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
     # look for a sheep by ID
     sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
 
