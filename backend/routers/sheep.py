@@ -36,8 +36,11 @@ def create_sheep(
 
 # GET /sheep - return a list of all sheep
 @router.get("/", response_model=List[SheepResponse])
-def get_all_sheep(db: Session = Depends(get_db)):
-    # Get all sheep from the database
+def get_all_sheep(
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)  # exige autenticação
+):
+    # get all sheep from the database
     sheep_list = db.query(Sheep).all()
     return sheep_list
 
