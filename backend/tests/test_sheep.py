@@ -367,3 +367,74 @@ async def test_update_sheep_with_token():
         assert response.status_code == 200
         assert response.json()["milk_production"] == 6.1
         assert response.json()["status"] == "ovelha"
+
+
+
+
+# get list of sheep
+@pytest.mark.asyncio
+async def test_list_sheep_with_token():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # setup
+        with SessionLocal() as db:
+            db.query(Sheep).delete()
+            db.query(Farmer).delete()
+            db.query(Farm).delete()
+            db.commit()
+
+            # create farm
+            farm = Farm(name="Test Farm", location="Test Location")
+            db.add(farm)
+            db.commit()
+            db.refresh(farm)
+            farm_id = farm.id
+
+            # create farmer linked to farm
+            farmer = Farmer(
+                name="Test Farmer",
+                email="farmer@test.com",
+                password=hash_password("123456"),
+                farm_id=farm_id
+            )
+            db.add(farmer)
+            db.commit()
+            db.refresh(farmer)
+
+            # Create two sheep
+            sheep1 = Sheep(
+                birth_date="2023-01-01",
+                farm_id=farm_id,
+                milk_production=4.5,
+                feeding_hay=1.2,
+                feeding_feed=0.3,
+                gender="femea",
+                status="ovelha"
+            )
+            sheep2 = Sheep(
+                birth_date="2022-05-15",
+                farm_id=farm_id,
+                milk_production=3.8,
+                feeding_hay=1.0,
+                feeding_feed=0.4,
+                gender="macho",
+                status="reprodutor"
+            )
+            db.add_all([sheep1, sheep2])
+            db.commit()
+
+        # login to get token
+        login_response = await ac.post("/auth/login", json={"email": "farmer@test.com", "password": "123456"})
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        # request list of sheep
+        response = await ac.get("/sheep/", headers={"Authorization": f"Bearer {token}"})
+
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 2
+        assert data[0]["status"] in ["ovelha", "reprodutor"]
+
+
