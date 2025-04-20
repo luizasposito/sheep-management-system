@@ -12,9 +12,17 @@ class ConsultationCreate(ConsultationBase):
     treatment: Optional[str] = None
     follow_up_date: Optional[date] = None
 
-class ConsultationResponse(ConsultationCreate):
+class ConsultationStartRequest(BaseModel):
+    sheep_id: int
+
+class ConsultationResponse(BaseModel):
     id: int
+    sheep_id: int
+    vet_id: int
     date: datetime
+    diagnosis: Optional[str] = None
+    treatment: Optional[str] = None
+    follow_up_date: Optional[date] = None
 
     class Config:
         from_attributes = True

@@ -1,12 +1,15 @@
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
 from models.consultation import Consultation
-from schemas.consultation import ConsultationResponse
+from models.sheep import Sheep
+from schemas.consultation import ConsultationCreate, ConsultationResponse, ConsultationStartRequest
 from typing import List
 from routers.auth import get_current_user
 from schemas.auth import TokenUser
+from datetime import date
+
 
 router = APIRouter()
 
@@ -34,4 +37,35 @@ def get_consultation_by_id(
     consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
     if not consultation:
         raise HTTPException(status_code=404, detail="Consultation not found")
+    return consultation
+
+
+
+
+# POST /consultation/start - start consultation for sheep
+@router.post("/start", response_model=ConsultationResponse, status_code=status.HTTP_201_CREATED)
+def start_consultation(
+    request: ConsultationStartRequest,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    # only veterinarians are allowed
+    if current_user.role != "veterinarian":
+        raise HTTPException(status_code=403, detail="Only veterinarians can start consultations")
+
+    # check if sheep exists
+    sheep = db.query(Sheep).filter(Sheep.id == request.sheep_id).first()
+    if not sheep:
+        raise HTTPException(status_code=404, detail="Sheep not found")
+
+    # create empty consultation with follow_up_date = today
+    consultation = Consultation(
+        sheep_id=request.sheep_id,
+        vet_id=current_user.id,
+        follow_up_date=date.today()
+    )
+    db.add(consultation)
+    db.commit()
+    db.refresh(consultation)
+
     return consultation
