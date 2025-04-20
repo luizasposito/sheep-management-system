@@ -566,3 +566,71 @@ async def test_delete_sheep_with_token():
         # make sure it was deleted
         response_check = await ac.get(f"/sheep/{sheep_id}", headers=headers)
         assert response_check.status_code == 404
+
+
+
+
+# update milk yield
+@pytest.mark.asyncio
+async def test_update_sheep_milk_yield():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        from models.farm_inventory import FarmInventory
+        from models.veterinarian import Veterinarian
+
+        with SessionLocal() as db:
+            db.query(Sheep).delete()
+            db.query(FarmInventory).delete()
+            db.query(Veterinarian).delete()
+            db.query(Farmer).delete()
+            db.query(Farm).delete()
+            db.commit()
+
+            # create farm and farmer
+            farm = Farm(name="Milk Farm", location="Land")
+            db.add(farm)
+            db.commit()
+            db.refresh(farm)
+
+            farmer = Farmer(
+                name="Milk Farmer",
+                email="milk@test.com",
+                password=hash_password("milk123"),
+                farm_id=farm.id
+            )
+            db.add(farmer)
+            db.commit()
+            db.refresh(farmer)
+            farm_id = farm.id
+
+            # create sheep
+            sheep = Sheep(
+                birth_date="2023-01-01",
+                farm_id=farm_id,
+                milk_production=2.5,
+                feeding_hay=1.0,
+                feeding_feed=0.5,
+                gender="femea",
+                status="ovelha"
+            )
+            db.add(sheep)
+            db.commit()
+            db.refresh(sheep)
+
+        # login
+        login_response = await ac.post("/auth/login", json={
+            "email": "milk@test.com",
+            "password": "milk123"
+        })
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        # PATCH only milk yield
+        response = await ac.patch(
+            f"/sheep/{sheep.id}/milk-yield",
+            json={"milk_production": 6.4},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        assert response.json()["milk_production"] == 6.4
