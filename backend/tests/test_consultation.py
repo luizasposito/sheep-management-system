@@ -272,3 +272,100 @@ async def test_start_consultation():
         assert data["sheep_id"] == sheep_id
         assert "id" in data
         assert data["diagnosis"] is None
+
+
+
+
+# post consultation id to fill out
+@pytest.mark.asyncio
+async def test_fill_consultation_details():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        from models.farm_inventory import FarmInventory
+
+        with SessionLocal() as db:
+            db.query(Consultation).delete()
+            db.query(Sheep).delete()
+            db.query(Veterinarian).delete()
+            db.query(Farmer).delete()
+            db.query(FarmInventory).delete()
+            db.query(Farm).delete()
+            db.commit()
+
+            # create farm, farmer, vet
+            farm = Farm(name="Detail Farm", location="East")
+            db.add(farm)
+            db.commit()
+            db.refresh(farm)
+            farm_id = farm.id
+
+            farmer = Farmer(
+                name="Farmer A",
+                email="fa@test.com",
+                password=hash_password("farmpass"),
+                farm_id=farm_id
+            )
+            db.add(farmer)
+            db.commit()
+            db.refresh(farmer)
+            farmer_id = farmer.id
+
+            vet = Veterinarian(
+                name="Vet A",
+                email="veta@test.com",
+                password=hash_password("vetpass"),
+                farm_id=farm_id,
+                farmer_id=farmer_id
+            )
+            db.add(vet)
+            db.commit()
+            db.refresh(vet)
+            vet_id = vet.id
+
+            # create sheep
+            sheep = Sheep(
+                birth_date="2023-01-01",
+                farm_id=farm_id,
+                milk_production=3.0,
+                feeding_hay=1.0,
+                feeding_feed=0.4,
+                gender="femea",
+                status="ovelha"
+            )
+            db.add(sheep)
+            db.commit()
+            db.refresh(sheep)
+            sheep_id = sheep.id
+
+            # start consultation
+            consultation = Consultation(sheep_id=sheep_id, vet_id=vet_id)
+            db.add(consultation)
+            db.commit()
+            db.refresh(consultation)
+
+        # login as vet
+        login_response = await ac.post("/auth/login", json={
+            "email": "veta@test.com",
+            "password": "vetpass"
+        })
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        # fill consultation details
+        payload = {
+            "diagnosis": "Pneumonia",
+            "treatment": "Antibiotics and rest",
+            "follow_up_date": "2024-12-10"
+        }
+
+        response = await ac.post(
+            f"/consultation/{consultation.id}",
+            json=payload,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["diagnosis"] == "Pneumonia"
+        assert data["treatment"] == "Antibiotics and rest"
+        assert data["follow_up_date"] == "2024-12-10"

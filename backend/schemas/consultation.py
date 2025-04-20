@@ -26,3 +26,8 @@ class ConsultationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ConsultationUpdate(BaseModel):
+    diagnosis: Optional[str] = None
+    treatment: Optional[str] = None
+    follow_up_date: Optional[date] = None
