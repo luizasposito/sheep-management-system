@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.consultation import Consultation
 from models.sheep import Sheep
-from schemas.consultation import ConsultationCreate, ConsultationResponse, ConsultationStartRequest
+from schemas.consultation import ConsultationCreate, ConsultationResponse, ConsultationStartRequest, ConsultationUpdate
 from typing import List
 from routers.auth import get_current_user
 from schemas.auth import TokenUser
@@ -68,4 +68,30 @@ def start_consultation(
     db.commit()
     db.refresh(consultation)
 
+    return consultation
+
+
+
+# POST /consultation/{id} - fill out consultation details
+@router.post("/{consultation_id}", response_model=ConsultationResponse)
+def fill_consultation_details(
+    consultation_id: int,
+    updated: ConsultationUpdate,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    if current_user.role != "veterinarian":
+        raise HTTPException(status_code=403, detail="Only veterinarians can update consultations.")
+
+    consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
+
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+
+    consultation.diagnosis = updated.diagnosis
+    consultation.treatment = updated.treatment
+    consultation.follow_up_date = updated.follow_up_date
+
+    db.commit()
+    db.refresh(consultation)
     return consultation
