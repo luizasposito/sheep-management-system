@@ -7,6 +7,7 @@ from routers import farm_inventory
 from routers import farmer
 from routers import veterinarian
 from routers import auth
+from routers import consultation
 
 # Create the FastAPI app
 app = FastAPI()
@@ -30,3 +31,6 @@ app.include_router(veterinarian.router, prefix="/vet", tags=["Veterinarian"])
 
 # register authentication routes under /auth path
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+
+# register consultation routes under /consultation path
+app.include_router(consultation.router, prefix="/consultation", tags=["Consultation"])

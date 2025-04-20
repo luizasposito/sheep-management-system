@@ -634,3 +634,4 @@ async def test_update_sheep_milk_yield():
 
         assert response.status_code == 200
         assert response.json()["milk_production"] == 6.4
+        
