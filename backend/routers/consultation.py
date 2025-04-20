@@ -20,3 +20,18 @@ def get_all_consultations(
     # permitted for both farmer and veterinarian
     consultations = db.query(Consultation).all()
     return consultations
+
+
+
+
+# GET /consultation/{id} - get consultation by id
+@router.get("/{consultation_id}", response_model=ConsultationResponse)
+def get_consultation_by_id(
+    consultation_id: int,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+    return consultation
