@@ -8,6 +8,8 @@ from schemas.farm_inventory import InventoryCreate, InventoryResponse
 from typing import List
 from schemas.farm_inventory import InventoryResponse
 from models.farm_inventory import FarmInventory
+from routers.auth import get_current_user
+from schemas.auth import TokenUser
 
 
 router = APIRouter()
@@ -15,7 +17,13 @@ router = APIRouter()
 
 # POST /inventory - create a new inventory item
 @router.post("/", response_model=InventoryResponse)
-def create_inventory_item(item: InventoryCreate, db: Session = Depends(get_db)):
+def create_inventory_item(
+    item: InventoryCreate,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    if current_user.role != "farmer":
+        raise HTTPException(status_code=403, detail="Access forbidden")
     # convert from Pydantic to SQLAlchemy
     new_item = FarmInventory(**item.model_dump())
 

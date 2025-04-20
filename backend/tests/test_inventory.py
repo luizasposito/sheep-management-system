@@ -5,15 +5,20 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from main import app
 
+from database import SessionLocal
+from models.farm import Farm
+from models.farm_inventory import FarmInventory
+from models.farmer import Farmer
+from models.veterinarian import Veterinarian
+from utils import create_access_token
+from utils import hash_password
+
 
 # post item in inventory
 @pytest.mark.asyncio
 async def test_create_inventory_item():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        from database import SessionLocal
-        from models.farm import Farm
-        from models.farm_inventory import FarmInventory
 
         with SessionLocal() as db:
             db.query(FarmInventory).delete()
@@ -66,9 +71,6 @@ async def test_get_inventory_item_by_id():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         # create an inventory item
-        from database import SessionLocal
-        from models.farm import Farm
-        from models.farm_inventory import FarmInventory
 
         with SessionLocal() as db:
             farm = db.query(Farm).first()
@@ -114,10 +116,6 @@ async def test_update_inventory_item():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         # create an inventory item
-        from database import SessionLocal
-        from models.farm import Farm
-        from models.farm_inventory import FarmInventory
-
         with SessionLocal() as db:
             farm = db.query(Farm).first()
             if not farm:
@@ -165,9 +163,6 @@ async def test_update_inventory_item():
 async def test_delete_inventory_item():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        from database import SessionLocal
-        from models.farm import Farm
-        from models.farm_inventory import FarmInventory
 
         with SessionLocal() as db:
             farm = db.query(Farm).first()
@@ -201,3 +196,61 @@ async def test_delete_inventory_item():
         # confirm it's deleted
         get_response = await ac.get(f"/inventory/{item_id}")
         assert get_response.status_code == 404
+
+
+
+
+# tests with tokens
+
+# create item with token
+@pytest.mark.asyncio
+async def test_create_inventory_item_with_token():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+
+        with SessionLocal() as db:
+            db.query(FarmInventory).delete()
+            db.query(Farmer).delete()
+            db.query(Farm).delete()
+            db.commit()
+
+            # create farm + farmer
+            farm = Farm(name="Farm Inventory Test", location="Someplace")
+            db.add(farm)
+            db.commit()
+            db.refresh(farm)
+            farm_id = farm.id
+
+            farmer = Farmer(
+                name="Inventory Farmer",
+                email="inventory@farm.com",
+                password=hash_password("123456"),
+                farm_id=farm_id
+            )
+            db.add(farmer)
+            db.commit()
+            db.refresh(farmer)
+
+        # login para obter o token
+        login_response = await ac.post("/auth/login", json={
+            "email": "inventory@farm.com",
+            "password": "123456"
+        })
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        # criar item com token
+        response = await ac.post("/inventory/", json={
+            "farm_id": farm_id,
+            "item_name": "Feno",
+            "quantity": 100,
+            "unit": "kg",
+            "consumption_rate": 4.5
+        }, headers={"Authorization": f"Bearer {token}"})
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["item_name"] == "Feno"
+        assert data["quantity"] == 100
+        assert data["unit"] == "kg"
+        assert data["farm_id"] == farm_id
