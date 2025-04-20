@@ -254,3 +254,73 @@ async def test_create_inventory_item_with_token():
         assert data["quantity"] == 100
         assert data["unit"] == "kg"
         assert data["farm_id"] == farm_id
+
+
+
+# get items with token
+@pytest.mark.asyncio
+async def test_get_inventory_items_with_token():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        from database import SessionLocal
+        from models.farm import Farm
+        from models.farmer import Farmer
+        from models.farm_inventory import FarmInventory
+        from utils import hash_password
+
+        with SessionLocal() as db:
+            db.query(FarmInventory).delete()
+            db.query(Farmer).delete()
+            db.query(Farm).delete()
+            db.commit()
+
+            # create farm
+            farm = Farm(name="Farm JWT", location="Secure Land")
+            db.add(farm)
+            db.commit()
+            db.refresh(farm)
+            farm_id = farm.id
+
+            # create farmer
+            farmer = Farmer(
+                name="Inventory Farmer",
+                email="invfarmer@example.com",
+                password=hash_password("secure123"),
+                farm_id=farm_id
+            )
+            db.add(farmer)
+            db.commit()
+
+            # create item in inventory
+            item = FarmInventory(
+                farm_id=farm_id,
+                item_name="Sal Mineral",
+                quantity=50,
+                unit="kg",
+                consumption_rate=2.0
+            )
+            db.add(item)
+            db.commit()
+
+        # login to get token
+        login_response = await ac.post("/auth/login", json={
+            "email": "invfarmer@example.com",
+            "password": "secure123"
+        })
+
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        # get with token
+        response = await ac.get("/inventory/", headers={
+            "Authorization": f"Bearer {token}"
+        })
+
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) >= 1
+        assert data[0]["item_name"] == "Sal Mineral"
+
+
+

@@ -38,7 +38,13 @@ def create_inventory_item(
 
 # GET /inventory - get all inventory items
 @router.get("/", response_model=List[InventoryResponse])
-def get_all_inventory(db: Session = Depends(get_db)):
+def get_all_inventory(
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    if current_user.role != "farmer":
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
     items = db.query(FarmInventory).all()
     return items
 
