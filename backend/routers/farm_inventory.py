@@ -52,7 +52,14 @@ def get_all_inventory(
 
 # GET /inventory/{id} - get an inventory item by ID
 @router.get("/{id}", response_model=InventoryResponse)
-def get_inventory_item(id: int, db: Session = Depends(get_db)):
+def get_inventory_item(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    if current_user.role != "farmer":
+        raise HTTPException(status_code=403, detail="Access forbidden")
+    
     item = db.query(FarmInventory).filter(FarmInventory.id == id).first()
     
     if not item:
@@ -65,7 +72,15 @@ def get_inventory_item(id: int, db: Session = Depends(get_db)):
 
 # PUT /inventory/{id} - update an item in the inventory
 @router.put("/{id}", response_model=InventoryResponse)
-def update_inventory_item(id: int, item: InventoryCreate, db: Session = Depends(get_db)):
+def update_inventory_item(
+    id: int,
+    item: InventoryCreate,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    if current_user.role != "farmer":
+        raise HTTPException(status_code=403, detail="Access forbidden")
+        
     existing_item = db.query(FarmInventory).filter(FarmInventory.id == id).first()
 
     if not existing_item:
@@ -84,7 +99,15 @@ def update_inventory_item(id: int, item: InventoryCreate, db: Session = Depends(
 
 # DELETE /inventory/{id} - delete an item in the inventory
 @router.delete("/{id}", status_code=204)
-def delete_inventory_item(id: int, db: Session = Depends(get_db)):
+def delete_inventory_item(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    if current_user.role != "farmer":
+        raise HTTPException(status_code=403, detail="Access forbidden")
+    
+    
     item = db.query(FarmInventory).filter(FarmInventory.id == id).first()
 
     if not item:

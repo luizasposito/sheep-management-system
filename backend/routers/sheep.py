@@ -10,6 +10,10 @@ from schemas.sheep import SheepCreate, SheepResponse
 from typing import List
 from routers.auth import get_current_user
 from schemas.auth import TokenUser
+from pydantic import BaseModel
+
+class MilkYieldUpdate(BaseModel):
+    milk_production: float
 
 
 # router for all /sheep endpoints
@@ -119,3 +123,29 @@ def delete_sheep(
 
     # don't return anything
     return
+
+
+
+# PATCH /milk yield
+@router.patch("/{sheep_id}/milk-yield", response_model=SheepResponse)
+def update_milk_yield(
+    sheep_id: int,
+    data: MilkYieldUpdate,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    if current_user.role != "farmer":
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+    if not sheep:
+        raise HTTPException(status_code=404, detail="Sheep not found")
+
+    farmer = db.query(Farmer).filter(Farmer.id == current_user.id).first()
+    if not farmer or farmer.farm_id != sheep.farm_id:
+        raise HTTPException(status_code=403, detail="You don't have permission to update this sheep")
+
+    sheep.milk_production = data.milk_production
+    db.commit()
+    db.refresh(sheep)
+    return sheep
