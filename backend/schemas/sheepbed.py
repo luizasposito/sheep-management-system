@@ -22,3 +22,9 @@ class SheepBedResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class SheepBedCleanUpdate(BaseModel):
+    last_cleaned: datetime
+
+class SheepBedIntervalUpdate(BaseModel):
+    cleaning_interval_days: int

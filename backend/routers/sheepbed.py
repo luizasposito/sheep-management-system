@@ -6,16 +6,12 @@ from schemas.auth import TokenUser
 from routers.auth import get_current_user
 from models.sheepbed import SheepBed
 from models.sheep import Sheep
-from schemas.sheepbed import SheepBedResponse
+from schemas.sheepbed import SheepBedResponse, SheepBedCleanUpdate, SheepBedIntervalUpdate
 from models.farm import Farm
 from models.farmer import Farmer
 from datetime import datetime
 from typing import List
 from pydantic import BaseModel
-
-
-class SheepBedCleanUpdate(BaseModel):
-    last_cleaned: datetime
 
 router = APIRouter()
 
@@ -61,3 +57,27 @@ def clean_sheep_bed(
     db.commit()
     db.refresh(sheep_bed)
     return sheep_bed
+
+
+
+
+# PATCH /sheepbed/id/interval - update sheepbed cleaning interval
+@router.patch("/{bed_id}/interval", response_model=SheepBedResponse)
+def update_sheep_bed_interval(
+    bed_id: int,
+    interval_data: SheepBedIntervalUpdate,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    if current_user.role != "farmer":
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
+    bed = db.query(SheepBed).filter(SheepBed.id == bed_id).first()
+    if not bed:
+        raise HTTPException(status_code=404, detail="Sheep bed not found")
+
+    bed.cleaning_interval_days = interval_data.cleaning_interval_days
+    db.commit()
+    db.refresh(bed)
+
+    return bed
