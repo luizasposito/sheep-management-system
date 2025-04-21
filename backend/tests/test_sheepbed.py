@@ -179,3 +179,85 @@ async def test_patch_sheep_bed_clean():
         cleaned_bed = response.json()
         assert cleaned_bed["id"] == bed_id
         assert cleaned_bed["last_cleaned"] == new_cleaned_date.isoformat()
+
+
+
+
+# patch sheep bed interval
+@pytest.mark.asyncio
+async def test_patch_sheep_bed_interval():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        with SessionLocal() as db:
+            # setup
+            db.query(SheepBed).delete()
+            db.query(Sheep).delete()
+            db.query(Farmer).delete()
+            db.query(Farm).delete()
+            db.commit()
+
+            # create farm
+            farm = Farm(name="Fazenda Teste", location="Sul")
+            db.add(farm)
+            db.commit()
+            db.refresh(farm)
+            farm_id = farm.id
+
+            # create farmer
+            farmer = Farmer(
+                name="Maria",
+                email="maria@teste.com",
+                password=hash_password("123456"),
+                farm_id=farm_id
+            )
+            db.add(farmer)
+            db.commit()
+            db.refresh(farmer)
+
+            # create sheep
+            sheep = Sheep(
+                birth_date=date(2023, 1, 10),
+                farm_id=farm_id,
+                milk_production=4.5,
+                feeding_hay=2.0,
+                feeding_feed=1.0,
+                gender="femea",
+                status="saudável"
+            )
+            db.add(sheep)
+            db.commit()
+            db.refresh(sheep)
+            sheep_id = sheep.id
+
+            # create sheep bed
+            bed = SheepBed(
+                sheep_id=sheep_id,
+                location="Estábulo 1",
+                last_cleaned=datetime(2024, 4, 10, 8, 0),
+                cleaning_interval_days=5
+            )
+            db.add(bed)
+            db.commit()
+            db.refresh(bed)
+            bed_id = bed.id
+
+        # login
+        login_response = await ac.post("/auth/login", json={
+            "email": "maria@teste.com",
+            "password": "123456"
+        })
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        # patch sheep bed interval
+        new_interval = 10
+        response = await ac.patch(
+            f"/sheepbed/{bed_id}/interval",
+            json={"cleaning_interval_days": new_interval},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        interval_bed = response.json()
+        assert interval_bed["id"] == bed_id
+        assert interval_bed["cleaning_interval_days"] == new_interval
