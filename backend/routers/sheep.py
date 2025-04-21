@@ -6,14 +6,11 @@ from models.sheep import Sheep
 from models.farm import Farm
 from models.farm_inventory import FarmInventory
 from models.farmer import Farmer
-from schemas.sheep import SheepCreate, SheepResponse
+from schemas.sheep import SheepCreate, SheepResponse, MilkYieldUpdate
 from typing import List
 from routers.auth import get_current_user
 from schemas.auth import TokenUser
 from pydantic import BaseModel
-
-class MilkYieldUpdate(BaseModel):
-    milk_production: float
 
 
 # router for all /sheep endpoints

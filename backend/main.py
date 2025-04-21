@@ -9,6 +9,7 @@ from routers import veterinarian
 from routers import auth
 from routers import consultation
 from routers import sheepbed
+from routers import airquality
 
 # Create the FastAPI app
 app = FastAPI()
@@ -38,3 +39,6 @@ app.include_router(consultation.router, prefix="/consultation", tags=["Consultat
 
 # register sheepbed routes under /sheepbed path
 app.include_router(sheepbed.router, prefix="/sheepbed", tags=["SheepBed"])
+
+# register airquality routes under /airquality path
+app.include_router(airquality.router, prefix="/airquality", tags=["AirQuality"])

@@ -23,3 +23,6 @@ class SheepResponse(SheepCreate):
     # tells FastAPI to convert SQLAlchemy objects to JSON
     "from_attributes": True
 }
+    
+class MilkYieldUpdate(BaseModel):
+    milk_production: float
