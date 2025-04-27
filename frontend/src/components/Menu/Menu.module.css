@@ -1,0 +1,49 @@
+
+.menuContainer {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+  }
+  
+  .menuToggle {
+    background-color: #2f5d3f;
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .menuBox {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background-color: #2f5d3f;
+    padding: 1rem;
+    border-radius: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    z-index: 10;
+  }
+  
+  .menuItem {
+    background-color: white;
+    color: #2f5d3f;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  
+  .menuItem:hover {
+    background-color: #d2e5be;
+  }
+  
