@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/24</span>
+                <span class='fraction'>24/24</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/24</span>
+                <span class='fraction'>24/24</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -117,37 +117,37 @@
 <a name='L52'></a><a href='#L52'>52</a>
 <a name='L53'></a><a href='#L53'>53</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">27x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -169,37 +169,37 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">&nbsp;
 import React from "react";
-<span class="cstat-no" title="statement not covered" >import styles from "./Table.module.css";</span>
+import styles from "./Table.module.css";
 &nbsp;
 type TableProps = {
   headers: string[];
   data: (string | number)[][];
 };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export const Table: React.FC&lt;TableProps&gt; = ({ headers, data }) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  return (</span>
-<span class="cstat-no" title="statement not covered" >    &lt;div className={styles.tableWrapper}&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;table className={styles.table}&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;thead&gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;tr&gt;</span>
-<span class="cstat-no" title="statement not covered" >            {headers.map((header, idx) =&gt; (</span>
-<span class="cstat-no" title="statement not covered" >              &lt;th key={idx}&gt;{header}&lt;/th&gt;</span>
-<span class="cstat-no" title="statement not covered" >            ))}</span>
-<span class="cstat-no" title="statement not covered" >          &lt;/tr&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/thead&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;tbody&gt;</span>
-<span class="cstat-no" title="statement not covered" >          {data.map((row, idx) =&gt; (</span>
-<span class="cstat-no" title="statement not covered" >            &lt;tr key={idx} className={idx % 2 === 0 ? styles.evenRow : ""}&gt;</span>
-<span class="cstat-no" title="statement not covered" >              {row.map((cell, cellIdx) =&gt; (</span>
-<span class="cstat-no" title="statement not covered" >                &lt;td key={cellIdx}&gt;{cell}&lt;/td&gt;</span>
-<span class="cstat-no" title="statement not covered" >              ))}</span>
-<span class="cstat-no" title="statement not covered" >            &lt;/tr&gt;</span>
-<span class="cstat-no" title="statement not covered" >          ))}</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/tbody&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;/table&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
+export const Table: React.FC&lt;TableProps&gt; = ({ headers, data }) =&gt; {
+  return (
+    &lt;div className={styles.tableWrapper}&gt;
+      &lt;table className={styles.table}&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;
+            {headers.map((header, idx) =&gt; (
+              &lt;th key={idx}&gt;{header}&lt;/th&gt;
+            ))}
+          &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          {data.map((row, idx) =&gt; (
+            &lt;tr key={idx} className={idx % 2 === 0 ? styles.evenRow : ""}&gt;
+              {row.map((cell, cellIdx) =&gt; (
+                &lt;td key={cellIdx}&gt;{cell}&lt;/td&gt;
+              ))}
+            &lt;/tr&gt;
+          ))}
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
   );
-<span class="cstat-no" title="statement not covered" >};</span>
+};
 &nbsp;
 &nbsp;
 &nbsp;
@@ -226,7 +226,7 @@ type TableProps = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-04-27T22:18:25.826Z
+                at 2025-04-28T00:59:18.484Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>
