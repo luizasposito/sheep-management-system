@@ -1,49 +1,60 @@
+.navbar {
+  background-color: #f9fff5;
+  border: 2px solid #36603c;
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
 
-.menuContainer {
-    position: relative;
-    display: flex;
-    justify-content: flex-end;
-    padding: 1rem;
-  }
-  
-  .menuToggle {
-    background-color: #2f5d3f;
-    color: white;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    font-size: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-  }
-  
-  .menuBox {
-    position: absolute;
-    top: 60px;
-    right: 0;
-    background-color: #2f5d3f;
-    padding: 1rem;
-    border-radius: 16px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    z-index: 10;
-  }
-  
-  .menuItem {
-    background-color: white;
-    color: #2f5d3f;
-    padding: 0.5rem 1rem;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: bold;
-    text-align: center;
-    transition: background 0.2s;
-  }
-  
-  .menuItem:hover {
-    background-color: #d2e5be;
-  }
-  
+.menu {
+  list-style: none;
+  display: flex;
+  padding: 0;
+  margin: 0;
+}
+
+.menuItem {
+  position: relative;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-weight: bold;
+  color: #36603c;
+  border: 1px solid #36603c;
+  text-align: center;
+}
+
+.menuItem:hover {
+  background-color: #b0d297;
+}
+
+.submenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #d2e5be;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #36603c;
+  min-width: 160px;
+  z-index: 10;
+  display: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.submenu li {
+  padding: 0.75rem;
+  border-bottom: 1px solid #36603c;
+  text-align: left;
+}
+
+.submenu li:hover {
+  background-color: #b0d297;
+}
+
+.menuItem:hover .submenu {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
