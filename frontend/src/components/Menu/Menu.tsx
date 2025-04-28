@@ -1,28 +1,89 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
 import styles from "./Menu.module.css";
-import { Link } from "react-router-dom";
 
-export const Menu = () => {
-  const [isOpen, setIsOpen] = useState(false);
+export const Menu: React.FC = () => {
+  const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
 
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const handleMouseEnter = (menuName: string) => {
+    setHoveredMenu(menuName);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredMenu(null);
+  };
 
   return (
-    <div className={styles.menuContainer}>
-      <div className={styles.menuToggle} onClick={toggleMenu}>
-        <span className={styles.icon}>≡</span>
-      </div>
-      {isOpen && (
-        <div className={styles.menuBox}>
-          <Link to="/inventory" className={styles.menuItem}>Inventário</Link>
-          <Link to="/sheep" className={styles.menuItem}>Ovelhas</Link>
-          <Link to="/calendar" className={styles.menuItem}>Calendário</Link>
-          <Link to="/map" className={styles.menuItem}>Mapa</Link>
-          <Link to="/consultation" className={styles.menuItem}>Consultas</Link>
-          <Link to="/airquality" className={styles.menuItem}>Controlo do Ambiente</Link>
-        </div>
-      )}
-    </div>
+    <nav className={styles.navbar}>
+      <ul className={styles.menu}>
+        <li className={styles.menuItem}>
+          <a href="#">Início</a>
+        </li>
+
+        <li 
+          className={styles.menuItem}
+          onMouseEnter={() => handleMouseEnter("Inventário")}
+          onMouseLeave={handleMouseLeave}
+        >
+          <a href="#" aria-haspopup="true" aria-expanded={hoveredMenu === "Inventário"}>
+            Inventário
+          </a>
+          {hoveredMenu === "Inventário" && (
+            <ul className={styles.submenu} aria-label="Submenu Inventário">
+              <li><a href="#">Ver Itens</a></li>
+              <li><a href="#">Adicionar Item</a></li>
+            </ul>
+          )}
+        </li>
+
+        <li 
+          className={styles.menuItem}
+          onMouseEnter={() => handleMouseEnter("Animais")}
+          onMouseLeave={handleMouseLeave}
+        >
+          <a href="#" aria-haspopup="true" aria-expanded={hoveredMenu === "Animais"}>
+            Animais
+          </a>
+          {hoveredMenu === "Animais" && (
+            <ul className={styles.submenu} aria-label="Submenu Animais">
+              <li><a href="#">Ver Animais</a></li>
+              <li><a href="#">Adicionar Animal</a></li>
+            </ul>
+          )}
+        </li>
+
+        <li 
+          className={styles.menuItem}
+          onMouseEnter={() => handleMouseEnter("Avisos")}
+          onMouseLeave={handleMouseLeave}
+        >
+          <a href="#" aria-haspopup="true" aria-expanded={hoveredMenu === "Avisos"}>
+            Avisos
+          </a>
+          {hoveredMenu === "Avisos" && (
+            <ul className={styles.submenu} aria-label="Submenu Avisos">
+              <li><a href="#">Ver Avisos</a></li>
+              <li><a href="#">Criar Aviso</a></li>
+            </ul>
+          )}
+        </li>
+
+        <li 
+          className={styles.menuItem}
+          onMouseEnter={() => handleMouseEnter("Configurações")}
+          onMouseLeave={handleMouseLeave}
+        >
+          <a href="#" aria-haspopup="true" aria-expanded={hoveredMenu === "Configurações"}>
+            Configurações
+          </a>
+          {hoveredMenu === "Configurações" && (
+            <ul className={styles.submenu} aria-label="Submenu Configurações">
+              <li><a href="#">Perfil</a></li>
+              <li><a href="#">Preferências</a></li>
+            </ul>
+          )}
+        </li>
+
+      </ul>
+    </nav>
   );
 };

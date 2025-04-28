@@ -1,81 +1,55 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Menu } from "./Menu";
-import { BrowserRouter as Router } from "react-router-dom";
 
-describe("Menu component", () => {
-  it("renderiza corretamente o botão de menu", () => {
-    render(
-      <Router>
-        <Menu />
-      </Router>
-    );
-    // Verifique se o ícone de menu está sendo renderizado
-    expect(screen.getByText("≡")).toBeInTheDocument();
+describe("Menu Component", () => {
+  it("submenu items are hidden initially", () => {
+    render(<Menu />);
+    
+    const submenuItem = screen.queryByText("Ver Itens");
+    expect(submenuItem).not.toBeInTheDocument();
   });
 
-  it("abre o menu ao clicar no botão de menu", () => {
-    render(
-      <Router>
-        <Menu />
-      </Router>
-    );
-    const toggleButton = screen.getByText("≡");
+  it("shows Inventário submenu on hover", () => {
+    render(<Menu />);
+    
+    const inventoryMenuItem = screen.getByText("Inventário");
 
-    // Clique no botão
-    fireEvent.click(toggleButton);
+    fireEvent.mouseOver(inventoryMenuItem);
 
-    // Verifique se o menu (menuBox) aparece após o clique
-    expect(screen.getByText("Inventário")).toBeInTheDocument();
-    expect(screen.getByText("Ovelhas")).toBeInTheDocument();
-    expect(screen.getByText("Calendário")).toBeInTheDocument();
-    expect(screen.getByText("Mapa")).toBeInTheDocument();
-    expect(screen.getByText("Consultas")).toBeInTheDocument();
-    expect(screen.getByText("Controlo do Ambiente")).toBeInTheDocument();
+    const submenuItem = screen.getByText("Ver Itens");
+    expect(submenuItem).toBeVisible();
   });
 
-  it("fecha o menu ao clicar novamente no botão de menu", () => {
-    render(
-      <Router>
-        <Menu />
-      </Router>
-    );
-    const toggleButton = screen.getByText("≡");
+  it("shows Animais submenu on hover", () => {
+    render(<Menu />);
+    
+    const animaisMenuItem = screen.getByText("Animais");
 
-    // Clique para abrir o menu
-    fireEvent.click(toggleButton);
-    // Verifique se o menu foi aberto
-    expect(screen.getByText("Inventário")).toBeInTheDocument();
+    fireEvent.mouseOver(animaisMenuItem);
 
-    // Clique novamente para fechar o menu
-    fireEvent.click(toggleButton);
-
-    // Verifique se o menu foi fechado
-    expect(screen.queryByText("Inventário")).not.toBeInTheDocument();
+    const submenuItem = screen.getByText("Ver Animais");
+    expect(submenuItem).toBeVisible();
   });
 
-  it("verifica se o link para 'Inventário' está correto", () => {
-    render(
-      <Router>
-        <Menu />
-      </Router>
-    );
-    const toggleButton = screen.getByText("≡");
+  it("shows Avisos submenu on hover", () => {
+    render(<Menu />);
+    
+    const avisosMenuItem = screen.getByText("Avisos");
 
-    // Clique para abrir o menu
-    fireEvent.click(toggleButton);
+    fireEvent.mouseOver(avisosMenuItem);
 
-    // Verifique se o link para 'Inventário' está presente e correto
-    const inventoryLink = screen.getByText("Inventário");
-    expect(inventoryLink).toHaveAttribute("href", "/inventory");
+    const submenuItem = screen.getByText("Ver Avisos");
+    expect(submenuItem).toBeVisible();
   });
 
-  it("verifica se o menu não é exibido inicialmente", () => {
-    render(
-      <Router>
-        <Menu />
-      </Router>
-    );
-    // Verifique se o menu não é exibido inicialmente
-    expect(screen.queryByText("Inventário")).not.toBeInTheDocument();
+  it("shows Configurações submenu on hover", () => {
+    render(<Menu />);
+    
+    const configMenuItem = screen.getByText("Configurações");
+
+    fireEvent.mouseOver(configMenuItem);
+
+    const submenuItem = screen.getByText("Perfil");
+    expect(submenuItem).toBeVisible();
   });
 });
