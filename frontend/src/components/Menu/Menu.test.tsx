@@ -1,51 +1,47 @@
+import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Menu } from "./Menu";
 
-describe("Menu Component", () => {
-  it("submenu items are hidden initially", () => {
+describe("Menu component", () => {
+  beforeEach(() => {
     render(<Menu />);
-    
-    const submenuItem = screen.queryByText("Ver Itens");
-    expect(submenuItem).not.toBeInTheDocument();
   });
 
-  it("shows Inventário submenu on click", () => {
-    render(<Menu />);
-    
-    const inventoryMenuItem = screen.getByRole('button', { name: /Inventário/i });
-    fireEvent.click(inventoryMenuItem);
-
-    const submenuItem = screen.getByText("Ver Itens");
-    expect(submenuItem).toBeVisible();
+  it("renders the main menu item 'Início'", () => {
+    const homeLink = screen.getByRole("link", { name: /início/i });
+    expect(homeLink).toBeInTheDocument();
   });
 
-  it("shows Animais submenu on click", () => {
-    render(<Menu />);
-    
-    const animaisMenuItem = screen.getByRole('button', { name: /Animais/i });
-    fireEvent.click(animaisMenuItem);
+  it("opens and displays submenu when clicking a menu item", () => {
+    const configButton = screen.getByRole("link", { name: /configurações/i });
+    fireEvent.click(configButton);
 
-    const submenuItem = screen.getByText("Ver Animais");
-    expect(submenuItem).toBeVisible();
+    expect(
+      screen.getByRole("list", { name: /submenu configurações/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText("Perfil")).toBeInTheDocument();
+    expect(screen.getByText("Preferências")).toBeInTheDocument();
   });
 
-  it("shows Avisos submenu on click", () => {
-    render(<Menu />);
-    
-    const avisosMenuItem = screen.getByRole('button', { name: /Avisos/i });
-    fireEvent.click(avisosMenuItem);
+  it("closes submenu when clicking the same menu again", () => {
+    const configButton = screen.getByRole("link", { name: /configurações/i });
+    fireEvent.click(configButton); // abre
+    fireEvent.click(configButton); // fecha
 
-    const submenuItem = screen.getByText("Ver Avisos");
-    expect(submenuItem).toBeVisible();
+    expect(
+      screen.queryByRole("list", { name: /submenu configurações/i })
+    ).not.toBeInTheDocument();
   });
 
-  it("shows Configurações submenu on click", () => {
-    render(<Menu />);
-    
-    const configMenuItem = screen.getByRole('button', { name: /Configurações/i });
-    fireEvent.click(configMenuItem);
+  it("closes submenu when clicking outside", () => {
+    const configButton = screen.getByRole("link", { name: /configurações/i });
+    fireEvent.click(configButton);
 
-    const submenuItem = screen.getByText("Perfil");
-    expect(submenuItem).toBeVisible();
+    // Dispara evento de clique fora do menu
+    fireEvent.mouseDown(document.body);
+
+    expect(
+      screen.queryByRole("list", { name: /submenu configurações/i })
+    ).not.toBeInTheDocument();
   });
 });

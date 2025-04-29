@@ -1,8 +1,9 @@
-.dashboardContainer {
+  .dashboardContainer {
+    width: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    background-color: #f7fdf6;
+    box-sizing: border-box;
   }
   
   .header {
@@ -13,11 +14,17 @@
   
   .mainContent {
     display: flex;
+    flex-wrap: nowrap;
     padding: 1rem;
     gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
   }
   
-  .leftPanel, .centerPanel, .rightPanel {
+  /* Distribuição das três colunas */
+  .leftPanel,
+  .centerPanel,
+  .rightPanel {
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -29,10 +36,28 @@
   
   .centerPanel {
     flex: 2;
+    padding: 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-sizing: border-box;
   }
+  
   
   .rightPanel {
     flex: 1;
+  }
+  
+  /* Media query para dispositivos móveis */
+  @media (max-width: 768px) {
+    .mainContent {
+      flex-direction: column;
+    }
+  
+    .centerPanel {
+      grid-template-columns: 1fr;
+      padding: 0;
+    }
   }
   
   .cardContent {
@@ -106,4 +131,3 @@
     text-align: center;
     color: #36603c;
   }
-  

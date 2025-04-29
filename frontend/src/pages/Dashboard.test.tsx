@@ -1,28 +1,37 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
 import { Dashboard } from "./Dashboard";
 
 describe("Dashboard", () => {
-  test("deve renderizar o nome da fazenda", () => {
+  it("renderiza o título principal", () => {
     render(<Dashboard />);
-    expect(screen.getByText(/Nome da Fazenda/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Nome da Fazenda");
   });
 
-  test("deve renderizar os indicadores de produção", () => {
+  it("renderiza os cards de produção", () => {
+    const labels = [
+      "Produção últimas 24h",
+      "Produção últimos 7 dias",
+      "Produção últimos 30 dias"
+    ];
+
     render(<Dashboard />);
-    expect(screen.getByText(/Produção últimas 24h/i)).toBeInTheDocument();
-    expect(screen.getByText(/Produção últimos 7 dias/i)).toBeInTheDocument();
-    expect(screen.getByText(/Produção últimos 30 dias/i)).toBeInTheDocument();
+    labels.forEach(label => {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
   });
 
-  test("deve renderizar placeholders de gráfico", () => {
+  it("renderiza os gráficos com seus títulos", () => {
     render(<Dashboard />);
-    expect(screen.getAllByText(/\[Gráfico Placeholder\]/i)).toHaveLength(2);
+    expect(screen.getByText("Produção de leite dos últimos 7 dias")).toBeInTheDocument();
+    expect(screen.getByText("Por grupo")).toBeInTheDocument();
+    expect(screen.getByText("Geral")).toBeInTheDocument();
   });
 
-  test("deve renderizar a tabela de atividades", () => {
+  it("renderiza a lista de atividades com títulos", () => {
     render(<Dashboard />);
-    expect(screen.getByText(/Esta semana/i)).toBeInTheDocument();
-    expect(screen.getByText(/Ecografia/i)).toBeInTheDocument();
+    expect(screen.getByText("Esta semana")).toBeInTheDocument();
+    expect(screen.getByText("Ecografia - 10/05/2025")).toBeInTheDocument();
+    expect(screen.getByText("Consulta - 30/07/2025")).toBeInTheDocument();
   });
 });
