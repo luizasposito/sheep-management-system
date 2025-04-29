@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>66/66</span>
+                <span class='fraction'>65/65</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>66/66</span>
+                <span class='fraction'>65/65</span>
             </div>
         
             
@@ -146,7 +146,6 @@
 <a name='L81'></a><a href='#L81'>81</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -164,7 +163,6 @@
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
@@ -194,6 +192,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
@@ -204,12 +204,12 @@
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
@@ -226,7 +226,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from "react";
 import { Menu } from "../components/Menu/Menu";
 import { Card } from "../components/Card/Card";
-import { Table } from "../components/Table/Table";
 import styles from "./Dashboard.module.css";
 &nbsp;
 export const Dashboard: React.FC = () =&gt; {
@@ -238,13 +237,12 @@ export const Dashboard: React.FC = () =&gt; {
   ];
 &nbsp;
   const activitiesData = [
-    ["Ecografia", 13],
-    ["Parto", 6],
-    ["Vacinação", 412],
-    ["Consulta", 4],
+    ["Ecografia", "10/05/2025"],
+    ["Parto", "13/05/2025"],
+    ["Vacinação", "22/06/2025"],
+    ["Consulta", "30/07/2025"],
   ];
 &nbsp;
-  const tableHeaders = ["Atividade", "Quantidade"];
 &nbsp;
   return (
     &lt;div className={styles.dashboardContainer}&gt;
@@ -273,25 +271,27 @@ export const Dashboard: React.FC = () =&gt; {
         &lt;/section&gt;
 &nbsp;
         &lt;section className={styles.centerPanel}&gt;
-          &lt;Card&gt;
-            &lt;h3&gt;Produção de leite dos últimos 7 dias (por grupo)&lt;/h3&gt;
-            &lt;div className={styles.chartPlaceholder}&gt;[Gráfico Placeholder]&lt;/div&gt;
-          &lt;/Card&gt;
+            &lt;h2 className={styles.sectionTitle}&gt;Produção de leite dos últimos 7 dias&lt;/h2&gt;
 &nbsp;
-          &lt;Card&gt;
-            &lt;h3&gt;Produção geral&lt;/h3&gt;
-            &lt;div className={styles.chartPlaceholder}&gt;[Gráfico Placeholder]&lt;/div&gt;
-          &lt;/Card&gt;
+            &lt;Card&gt;
+                &lt;h3&gt;Por grupo&lt;/h3&gt;
+                &lt;div className={styles.chartPlaceholder}&gt;[Gráfico Placeholder]&lt;/div&gt;
+            &lt;/Card&gt;
+&nbsp;
+            &lt;Card&gt;
+                &lt;h3&gt;Geral&lt;/h3&gt;
+                &lt;div className={styles.chartPlaceholder}&gt;[Gráfico Placeholder]&lt;/div&gt;
+            &lt;/Card&gt;
         &lt;/section&gt;
+&nbsp;
 &nbsp;
         &lt;section className={styles.rightPanel}&gt;
             &lt;Card&gt;
                 &lt;h3&gt;Esta semana&lt;/h3&gt;
                 &lt;ul className={styles.activitiesList}&gt;
-                {activitiesData.map(([activity, quantity], index) =&gt; (
+                {activitiesData.map(([activity, date], index) =&gt; (
                     &lt;details key={index} className={styles.activityItem}&gt;
-                    &lt;summary&gt;{activity}&lt;/summary&gt;
-                    &lt;p&gt;Quantidade: {quantity}&lt;/p&gt;
+                    &lt;summary&gt;{activity} - {date}&lt;/summary&gt;
                     &lt;p&gt;Descrição: Lorem ipsum dolor sit amet, consectetur adipiscing elit.&lt;/p&gt;
                     &lt;/details&gt;
                 ))}
@@ -310,7 +310,7 @@ export const Dashboard: React.FC = () =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-04-28T23:35:21.041Z
+                at 2025-04-29T23:47:38.708Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

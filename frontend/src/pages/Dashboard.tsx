@@ -1,7 +1,6 @@
 import React from "react";
 import { Menu } from "../components/Menu/Menu";
 import { Card } from "../components/Card/Card";
-import { Table } from "../components/Table/Table";
 import styles from "./Dashboard.module.css";
 
 export const Dashboard: React.FC = () => {
@@ -13,13 +12,12 @@ export const Dashboard: React.FC = () => {
   ];
 
   const activitiesData = [
-    ["Ecografia", 13],
-    ["Parto", 6],
-    ["Vacinação", 412],
-    ["Consulta", 4],
+    ["Ecografia", "10/05/2025"],
+    ["Parto", "13/05/2025"],
+    ["Vacinação", "22/06/2025"],
+    ["Consulta", "30/07/2025"],
   ];
 
-  const tableHeaders = ["Atividade", "Quantidade"];
 
   return (
     <div className={styles.dashboardContainer}>
@@ -66,10 +64,9 @@ export const Dashboard: React.FC = () => {
             <Card>
                 <h3>Esta semana</h3>
                 <ul className={styles.activitiesList}>
-                {activitiesData.map(([activity, quantity], index) => (
+                {activitiesData.map(([activity, date], index) => (
                     <details key={index} className={styles.activityItem}>
-                    <summary>{activity}</summary>
-                    <p>Quantidade: {quantity}</p>
+                    <summary>{activity} - {date}</summary>
                     <p>Descrição: Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
                     </details>
                 ))}

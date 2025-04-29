@@ -1,11 +1,10 @@
 .navbar {
-  background-color: #f9fff5;
-  border: 2px solid #36603c;
-  border-radius: 12px; /* bordas arredondadas */
+  background-color: transparent; /* remove o fundo */
+  border: none; /* remove a borda */
   display: flex;
   justify-content: center;
   padding: 0.5rem 1rem;
-  margin: 1rem; /* para não grudar nas bordas da página */
+  margin: 1rem 0;
 }
 
 .menu {
@@ -13,7 +12,7 @@
   display: flex;
   padding: 0;
   margin: 0;
-  gap: 0.5rem; /* pequeno espaçamento entre itens */
+  gap: 0.75rem;
 }
 
 .menuItem {
@@ -21,52 +20,56 @@
   padding: 0.75rem 1.5rem;
   cursor: pointer;
   text-align: center;
-  border: 1px solid #36603c;
-  border-radius: 8px; /* itens arredondados */
-  background-color: #f9fff5;
-  transition: background-color 0.3s;
+  background-color: #d2e5be; /* cor sólida para o botão */
+  border: none; /* sem borda visível */
+  border-radius: 12px;
+  transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 .menuLink {
   text-decoration: none;
   font-weight: bold;
-  color: inherit; /* herda a cor padrão */
+  color: #2e4c2f; /* tom escuro para contraste */
   font-size: 1rem;
   display: block;
 }
 
 .menuItem:hover {
   background-color: #b0d297;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 .submenu {
   position: absolute;
-  top: 110%;
-  left: 0;
-  background-color: #d2e5be;
+  top: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f0f9e8;
   list-style: none;
   padding: 0.5rem 0;
   margin: 0;
-  border: 1px solid #36603c;
-  border-radius: 8px; /* submenu arredondado */
-  min-width: 160px;
+  border: none;
+  border-radius: 12px;
+  min-width: 180px;
   z-index: 10;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* sombra para destacar */
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .submenu li {
   padding: 0.75rem 1rem;
-  text-align: left;
+  text-align: center;
+  transition: background-color 0.3s;
 }
 
 .submenuLink {
   text-decoration: none;
-  color: inherit;
+  color: #2e4c2f;
   font-size: 0.95rem;
+  font-weight: 500;
   display: block;
 }
 
 .submenu li:hover {
-  background-color: #b0d297;
-  border-radius: 8px; /* hover também arredondado */
+  background-color: #d2e5be;
+  border-radius: 8px;
 }
