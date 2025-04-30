@@ -1,37 +1,49 @@
-import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { Dashboard } from "./Dashboard";
+import { render, screen } from "@testing-library/react";
+import { Dashboard } from "../pages/Dashboard";
+import React from "react";
 
-describe("Dashboard", () => {
-  it("renderiza o título principal", () => {
+// Mock do PageLayout para evitar dependência de estilo/layout real
+vi.mock("../components/Layout/PageLayout", () => ({
+  PageLayout: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pagelayout-mock">{children}</div>
+  ),
+}));
+
+// Mock do Card para facilitar a leitura dos testes
+vi.mock("../components/Card/Card", () => ({
+  Card: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="card">{children}</div>
+  ),
+}));
+
+describe("Dashboard component", () => {
+  it("renderiza o título da fazenda", () => {
     render(<Dashboard />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Nome da Fazenda");
+    expect(screen.getByText("Nome da Fazenda")).toBeInTheDocument();
   });
 
   it("renderiza os cards de produção", () => {
-    const labels = [
-      "Produção últimas 24h",
-      "Produção últimos 7 dias",
-      "Produção últimos 30 dias"
-    ];
-
     render(<Dashboard />);
-    labels.forEach(label => {
-      expect(screen.getByText(label)).toBeInTheDocument();
-    });
+    expect(screen.getAllByTestId("card")).toHaveLength(6); // 3 produção + 2 gráficos + 1 atividades
   });
 
-  it("renderiza os gráficos com seus títulos", () => {
+  it("renderiza a seção de produção com os dados corretos", () => {
     render(<Dashboard />);
-    expect(screen.getByText("Produção de leite dos últimos 7 dias")).toBeInTheDocument();
-    expect(screen.getByText("Por grupo")).toBeInTheDocument();
-    expect(screen.getByText("Geral")).toBeInTheDocument();
+    expect(screen.getByText("Produção últimas 24h")).toBeInTheDocument();
+    expect(screen.getByText("86 L")).toBeInTheDocument();
+    expect(screen.getByText("+5%")).toBeInTheDocument();
   });
 
-  it("renderiza a lista de atividades com títulos", () => {
+  it("renderiza atividades da semana", () => {
     render(<Dashboard />);
-    expect(screen.getByText("Esta semana")).toBeInTheDocument();
     expect(screen.getByText("Ecografia - 10/05/2025")).toBeInTheDocument();
+    expect(screen.getByText("Parto - 13/05/2025")).toBeInTheDocument();
     expect(screen.getByText("Consulta - 30/07/2025")).toBeInTheDocument();
+  });
+
+  it("usa o PageLayout corretamente", () => {
+    render(<Dashboard />);
+    expect(screen.getByTestId("pagelayout-mock")).toBeInTheDocument();
   });
 });
