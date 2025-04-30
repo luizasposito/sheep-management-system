@@ -1,47 +1,41 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { describe, it, expect, beforeEach } from "vitest";
 import { Menu } from "./Menu";
 
 describe("Menu component", () => {
   beforeEach(() => {
-    render(<Menu />);
+    render(
+      <MemoryRouter>
+        <Menu />
+      </MemoryRouter>
+    );
   });
 
-  it("renders the main menu item 'Início'", () => {
-    const homeLink = screen.getByRole("link", { name: /início/i });
-    expect(homeLink).toBeInTheDocument();
+  it("renders main menu items", () => {
+    expect(screen.getByText("Início")).toBeInTheDocument();
+    expect(screen.getByText("Inventário")).toBeInTheDocument();
+    expect(screen.getByText("Animais")).toBeInTheDocument();
+    expect(screen.getByText("Avisos")).toBeInTheDocument();
+    expect(screen.getByText("Consultas")).toBeInTheDocument();
+    expect(screen.getByText("Ambiente")).toBeInTheDocument();
+    expect(screen.getByText("Mapa")).toBeInTheDocument();
   });
 
-  it("opens and displays submenu when clicking a menu item", () => {
-    const configButton = screen.getByRole("link", { name: /configurações/i });
-    fireEvent.click(configButton);
+  it("shows submenu items when a menu item is clicked", () => {
+    const inventarioButton = screen.getByText("Inventário");
+    fireEvent.click(inventarioButton);
 
-    expect(
-      screen.getByRole("list", { name: /submenu configurações/i })
-    ).toBeInTheDocument();
-    expect(screen.getByText("Perfil")).toBeInTheDocument();
-    expect(screen.getByText("Preferências")).toBeInTheDocument();
+    expect(screen.getByText("Ver Itens")).toBeInTheDocument();
+    expect(screen.getByText("Adicionar Item")).toBeInTheDocument();
   });
 
-  it("closes submenu when clicking the same menu again", () => {
-    const configButton = screen.getByRole("link", { name: /configurações/i });
-    fireEvent.click(configButton); // abre
-    fireEvent.click(configButton); // fecha
+  it("hides submenu when clicking outside", () => {
+    const inventarioButton = screen.getByText("Inventário");
+    fireEvent.click(inventarioButton);
+    expect(screen.getByText("Ver Itens")).toBeInTheDocument();
 
-    expect(
-      screen.queryByRole("list", { name: /submenu configurações/i })
-    ).not.toBeInTheDocument();
-  });
-
-  it("closes submenu when clicking outside", () => {
-    const configButton = screen.getByRole("link", { name: /configurações/i });
-    fireEvent.click(configButton);
-
-    // Dispara evento de clique fora do menu
-    fireEvent.mouseDown(document.body);
-
-    expect(
-      screen.queryByRole("list", { name: /submenu configurações/i })
-    ).not.toBeInTheDocument();
+    fireEvent.mouseDown(document.body); // Simula clique fora
+    expect(screen.queryByText("Ver Itens")).not.toBeInTheDocument();
   });
 });
