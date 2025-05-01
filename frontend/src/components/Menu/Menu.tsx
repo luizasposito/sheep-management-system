@@ -28,44 +28,44 @@ export const Menu: React.FC = () => {
     {
       name: "Inventário",
       subItems: [
-        { label: "Ver Itens", to: "/inventory" },
-        { label: "Adicionar Item", to: "/inventory/add" }
+        { label: "Ver itens", to: "/inventory" },
+        { label: "Adicionar item", to: "/inventory/add" }
       ]
     },
     {
       name: "Animais",
       subItems: [
-        { label: "Ver Animais", to: "/animal" },
-        { label: "Adicionar Animal", to: "/animal/add" }
+        { label: "Ver animais", to: "/animal" },
+        { label: "Adicionar animal", to: "/animal/add" }
       ]
     },
     {
       name: "Avisos",
       subItems: [
-        { label: "Ver Avisos", to: "/warning" },
-        { label: "Criar Aviso", to: "/warning/add" }
+        { label: "Ver avisos", to: "/warning" },
+        { label: "Criar aviso", to: "/warning/add" }
       ]
     },
     {
       name: "Consultas",
       subItems: [
-        { label: "Ver Consultas", to: "/consult" },
-        { label: "Ver Histórico de Consultas", to: "/consult/history" }
+        { label: "Ver consultas", to: "/consult" },
+        { label: "Ver histórico de consultas", to: "/consult/history" }
       ]
     },
     {
       name: "Ambiente",
       subItems: [
-        { label: "Ver Ambiente Interno", to: "/environment" },
-        { label: "Criar Sensor", to: "/environment/add-sensor" },
-        { label: "Limpar Leito", to: "/environment/clean-bed" }
+        { label: "Ver ambiente interno", to: "/environment" },
+        { label: "Criar sensor", to: "/environment/add-sensor" },
+        { label: "Limpar leito", to: "/environment/clean-bed" }
       ]
     },
     {
       name: "Mapa",
       subItems: [
-        { label: "Ver Mapa", to: "/map" },
-        { label: "Criar Barreira", to: "/map/add-barrier" }
+        { label: "Ver mapa", to: "/map" },
+        { label: "Criar barreira", to: "/map/add-barrier" }
       ]
     }
   ];

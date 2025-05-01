@@ -13,6 +13,7 @@ export const Inventory: React.FC = () => {
   }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<string[]>([]);
 
   const headers = [
     "Tipo",
@@ -20,39 +21,74 @@ export const Inventory: React.FC = () => {
     "Data última compra",
     "Taxa de consumo",
     "Quantidade em estoque",
-    "Data próxima compra",
+    "Data prevista de compra",
   ];
 
   const data = [
-    ["01", "Ração cria", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
-    ["02", "Ração produção alta", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
-    ["03", "Ração pré-parto", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
-    ["04", "Ração pós-parto", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
-    ["05", "Limpeza", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
+    ["Alimentação", "Ração cria", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
+    ["Alimentação", "Ração produção alta", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
+    ["Alimentação", "Ração pré-parto", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
+    ["Alimentação", "Ração pós-parto", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
+    ["Limpeza", "Detergente", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
   ];
 
-  const filteredData = data.filter((row) =>
-    row[1].toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  
+  const filteredData = data.filter((row) => {
+    const matchesSearch = row[1].toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterType.length === 0 || filterType.includes(row[0]);
+    return matchesSearch && matchesFilter;
+  });
+
+  const toggleFilter = (type: string) => {
+    setFilterType((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
 
   return (
     <PageLayout>
       <h1 className={styles.title}>Inventário</h1>
-      <div className={styles.buttonGroup}>
-        <Button variant="light">Criar</Button>
-        <Button variant="light">Editar</Button>
-        <Button variant="light">Deletar</Button>
-      </div>
 
-      <div className={styles.searchBar}>
-        <SearchInput
-          placeholder="Pesquisar por nome"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+      <div className={styles.container}>
+        {/* Sidebar */}
+        <aside className={styles.sidebar}>
+          <SearchInput
+            placeholder="Pesquisar por nome"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
 
-      <Table headers={headers} data={filteredData} />
+          <div className={styles.filterGroup}>
+            <p>Filtrar por</p>
+            <strong>Tipo</strong>
+            <label>
+              <input
+                type="checkbox"
+                checked={filterType.includes("Alimentação")}
+                onChange={() => toggleFilter("Alimentação")}
+              />
+              <span>Alimentação</span>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={filterType.includes("Limpeza")}
+                onChange={() => toggleFilter("Limpeza")}
+              />
+              <span>Limpeza</span>
+            </label>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main className={styles.mainContent}>
+          <div className={styles.buttonGroup}>
+            <Button variant="light">Criar</Button>
+          </div>
+
+          <Table headers={headers} data={filteredData} />
+        </main>
+      </div>
     </PageLayout>
   );
 };

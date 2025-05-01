@@ -1,0 +1,85 @@
+
+.title {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #3e6440;
+    margin-bottom: 1.5rem;
+  }
+  
+  .section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .subtitle {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #3e6440;
+  }
+  
+  .cardsContainer {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+  
+  .sensorTitle {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .valorAtualLabel {
+    margin-bottom: 0.2rem;
+  }
+  
+  .valorAtual {
+    font-size: 2rem;
+    font-weight: bold;
+    padding: 0.5rem;
+    margin: 0.3rem 0 1rem;
+    background-color: #ffffff;
+    border-radius: 4px;
+  }
+  
+  .alertaValor {
+    background-color: #e8a6a6;
+  }
+  
+  .alerta {
+    background-color: #b9c7aa;
+  }
+  
+  .limites {
+    display: flex;
+    justify-content: space-around;
+    gap: 0.5rem;
+  }
+  
+  .limites p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  .limites input {
+    width: 60px;
+    text-align: center;
+    padding: 0.3rem;
+  }
+  
+  @media (max-width: 768px) {
+    .mainContent {
+      flex-direction: column;
+    }
+  
+    .centerPanel {
+      grid-template-columns: 1fr;
+      padding: 0;
+    }
+  }
