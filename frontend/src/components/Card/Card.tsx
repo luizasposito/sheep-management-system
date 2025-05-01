@@ -5,22 +5,13 @@ import styles from "./Card.module.css";
 type CardProps = {
   children: React.ReactNode;
   className?: string;
+  onClick?: React.MouseEventHandler<HTMLDivElement>; // <- Adiciona aqui
 };
 
-export const Card: React.FC<CardProps> = ({ children, className = "" }) => {
-  return <div className={`${styles.card} ${className}`}>{children}</div>;
+export const Card: React.FC<CardProps> = ({ children, className = "", onClick }) => {
+  return (
+    <div className={`${styles.card} ${className}`} onClick={onClick}>
+      {children}
+    </div>
+  );
 };
-
-
-
-
-// import { Card } from "./components/Card/Card";
-
-// export default function App() {
-//     return (
-//       <Card>
-//         <h2>Título do Card</h2>
-//         <p>Conteúdo do card aqui.</p>
-//       </Card>
-//     );
-//   }

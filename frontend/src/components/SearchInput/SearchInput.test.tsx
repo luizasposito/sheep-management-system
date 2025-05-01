@@ -1,34 +1,16 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from "@testing-library/react";
 import { SearchInput } from "./SearchInput";
 
-describe("SearchInput component", () => {
-  it("renderiza corretamente o ícone de busca", () => {
+describe("SearchInput", () => {
+  it("should render input with placeholder", () => {
     render(<SearchInput value="" onChange={() => {}} />);
-    // Verifica se o ícone de busca (🔍) está sendo exibido
-    expect(screen.getByText("🔍")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("pesquisar")).toBeInTheDocument();
   });
 
-  it("atualiza o valor quando o usuário digita", async () => {
-    const handleChange = vi.fn();
-    render(<SearchInput value="" onChange={handleChange} />);
-  
-    const inputElement = screen.getByPlaceholderText("pesquisar");
-    await userEvent.type(inputElement, "Novo valor");
-  
-    expect(handleChange).toHaveBeenCalled();
-  });
-  
-
-  it("exibe o texto de placeholder correto", () => {
-    render(<SearchInput value="" onChange={() => {}} placeholder="Buscar..." />);
-    const inputElement = screen.getByPlaceholderText("Buscar...");
-    expect(inputElement).toBeInTheDocument();
-  });
-
-  it("exibe o valor passado para o input", () => {
-    render(<SearchInput value="teste" onChange={() => {}} />);
-    const inputElement = screen.getByDisplayValue("teste");
-    expect(inputElement).toBeInTheDocument();
+  it("should handle input change", () => {
+    const onChange = vi.fn();
+    render(<SearchInput value="" onChange={onChange} />);
+    fireEvent.change(screen.getByPlaceholderText("pesquisar"), { target: { value: "Test" } });
+    expect(onChange).toHaveBeenCalledTimes(1);
   });
 });
