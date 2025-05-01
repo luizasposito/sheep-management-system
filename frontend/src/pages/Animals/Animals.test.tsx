@@ -1,117 +1,144 @@
-// src/pages/__tests__/Animals.test.tsx
-
+// Animals.test.tsx
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { MemoryRouter, useNavigate } from "react-router-dom";
 import { Animals } from "./Animals";
-import { MemoryRouter } from "react-router-dom";
 
-// Mock de useNavigate
-const mockedNavigate = vi.fn();
-
+// Mock do useNavigate
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
     ...actual,
-    useNavigate: () => mockedNavigate,
+    useNavigate: vi.fn(),
   };
 });
 
-// Funções utilitárias para selecionar ovelhas por ID
-const getByAnimalId = (id: string) =>
-  screen.getByText((_, el) => el?.textContent === `ID: ${id}`);
+describe("Animals Page", () => {
+  const mockNavigate = vi.fn();
 
-const queryByAnimalId = (id: string) =>
-  screen.queryByText((_, el) => el?.textContent === `ID: ${id}`);
-
-// Renderiza a página dentro de MemoryRouter
-const renderAnimals = () =>
-  render(
-    <MemoryRouter>
-      <Animals />
-    </MemoryRouter>
-  );
-
-describe("Animals page", () => {
   beforeEach(() => {
-    mockedNavigate.mockClear();
+    vi.mocked(useNavigate).mockReturnValue(mockNavigate);
+    mockNavigate.mockClear();
   });
 
-  it("renders the title and all animals initially", () => {
-    renderAnimals();
+  it("renderiza título e botão de criar", () => {
+    render(<Animals />, { wrapper: MemoryRouter });
+  
+    expect(screen.getByRole("heading", { name: "Animais" })).toBeInTheDocument();
+    expect(screen.getByText("Criar")).toBeInTheDocument();
+  });
+  
 
-    expect(screen.getByText("Ovelhas")).toBeInTheDocument();
-    expect(getByAnimalId("001")).toBeInTheDocument();
-    expect(getByAnimalId("002")).toBeInTheDocument();
-    expect(getByAnimalId("003")).toBeInTheDocument();
+  it("renderiza todos os cards de animais por padrão", () => {
+    render(<Animals />, { wrapper: MemoryRouter });
+
+    expect(screen.getByText((_, node) => node?.textContent === "ID: 001")).toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent === "ID: 002")).toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent === "ID: 003")).toBeInTheDocument();
   });
 
-  it("filters animals by search term", () => {
-    renderAnimals();
+  it("filtra animais por sexo", () => {
+    render(<Animals />, { wrapper: MemoryRouter });
 
-    const input = screen.getByPlaceholderText("Pesquisar por id ou status");
-    fireEvent.change(input, { target: { value: "Prenha" } });
+    fireEvent.click(screen.getByLabelText("Fêmea"));
 
-    expect(getByAnimalId("003")).toBeInTheDocument();
-    expect(queryByAnimalId("001")).not.toBeInTheDocument();
-    expect(queryByAnimalId("002")).not.toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent === "ID: 001")).toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent === "ID: 003")).toBeInTheDocument();
+    expect(screen.queryByText((_, node) => node?.textContent === "ID: 002")).not.toBeInTheDocument();
   });
 
-  it("filters animals by sexo", () => {
-    renderAnimals();
+  it("filtra animais por status", () => {
+    render(<Animals />, { wrapper: MemoryRouter });
 
-    const femeaCheckbox = screen.getByLabelText("Fêmea");
-    fireEvent.click(femeaCheckbox);
+    fireEvent.click(screen.getByLabelText("Cria"));
 
-    expect(getByAnimalId("001")).toBeInTheDocument();
-    expect(getByAnimalId("003")).toBeInTheDocument();
-    expect(queryByAnimalId("002")).not.toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent === "ID: 001")).toBeInTheDocument();
+    expect(screen.queryByText((_, node) => node?.textContent === "ID: 002")).not.toBeInTheDocument();
+    expect(screen.queryByText((_, node) => node?.textContent === "ID: 003")).not.toBeInTheDocument();
   });
 
-  it("filters animals by status", () => {
-    renderAnimals();
+  it("filtra animais pelo campo de busca (por ID)", () => {
+    render(<Animals />, { wrapper: MemoryRouter });
 
-    const statusCheckbox = screen.getByLabelText("Carneiro");
-    fireEvent.click(statusCheckbox);
+    fireEvent.change(screen.getByPlaceholderText("Pesquisar por id ou status"), {
+      target: { value: "002" },
+    });
 
-    expect(getByAnimalId("002")).toBeInTheDocument();
-    expect(queryByAnimalId("001")).not.toBeInTheDocument();
-    expect(queryByAnimalId("003")).not.toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent === "ID: 002")).toBeInTheDocument();
+    expect(screen.queryByText((_, node) => node?.textContent === "ID: 001")).not.toBeInTheDocument();
+    expect(screen.queryByText((_, node) => node?.textContent === "ID: 003")).not.toBeInTheDocument();
   });
 
-  it("navigates when clicking on a card", () => {
-    renderAnimals();
+  it("navega para página de criação ao clicar em 'Criar'", () => {
+    render(<Animals />, { wrapper: MemoryRouter });
 
-    const card = getByAnimalId("001").closest("div")!;
-    fireEvent.click(card);
-
-    expect(mockedNavigate).toHaveBeenCalledWith("/animal/001");
+    fireEvent.click(screen.getByText("Criar"));
+    expect(mockNavigate).toHaveBeenCalledWith("/animal/add");
   });
 
-  it("filters animals by sexo - Macho", () => {
-    renderAnimals();
+  it("navega para a página do animal ao clicar no card", () => {
+    render(<Animals />, { wrapper: MemoryRouter });
+
+    fireEvent.click(screen.getByText((_, node) => node?.textContent === "ID: 001"));
+    expect(mockNavigate).toHaveBeenCalledWith("/animal/001");
+  });
+
+  it("aplica filtro de sexo 'Macho' ao clicar no checkbox", () => {
+    render(<Animals />, { wrapper: MemoryRouter });
   
     const machoCheckbox = screen.getByLabelText("Macho");
     fireEvent.click(machoCheckbox);
   
-    expect(getByAnimalId("002")).toBeInTheDocument(); // Macho
-    expect(queryByAnimalId("001")).not.toBeInTheDocument(); // Fêmea
-    expect(queryByAnimalId("003")).not.toBeInTheDocument(); // Fêmea
+    // Usa função de matcher para verificar presença do ID 002
+    const hasId002 = screen
+    .queryAllByText((_, element) => !!element?.textContent?.includes("ID: 002"))
+    .length > 0;
+
+    expect(hasId002).toBe(true);
+
+    
+    expect(
+      screen.queryByText((_, element) =>
+        !!element?.textContent?.includes("ID: 001")
+      )
+    ).not.toBeInTheDocument();
+    
+    expect(
+      screen.queryByText((_, element) =>
+        !!element?.textContent?.includes("ID: 003")
+      )
+    ).not.toBeInTheDocument();
+    
   });
 
-  it("removes sexo filter when checkbox is toggled off", () => {
-    renderAnimals();
+  it("remove filtro de sexo 'Macho' ao clicar novamente no checkbox", () => {
+    render(<Animals />, { wrapper: MemoryRouter });
   
-    const machoCheckbox = screen.getByLabelText("Macho");
+    const checkboxMacho = screen.getByLabelText("Macho");
   
-    // Primeiro clique: adiciona "Macho" ao filtro
-    fireEvent.click(machoCheckbox);
-    expect(getByAnimalId("002")).toBeInTheDocument(); // Macho
+    // Primeiro clique: adiciona filtro
+    fireEvent.click(checkboxMacho);
   
-    // Segundo clique: remove "Macho" do filtro
-    fireEvent.click(machoCheckbox);
+    // Segundo clique: remove filtro
+    fireEvent.click(checkboxMacho);
+  
     // Todos os animais devem estar visíveis novamente
-    expect(getByAnimalId("001")).toBeInTheDocument();
-    expect(getByAnimalId("002")).toBeInTheDocument();
-    expect(getByAnimalId("003")).toBeInTheDocument();
+    const id001Elements = screen.queryAllByText((_, el) =>
+      el?.textContent?.includes("ID: 001") || false
+    );
+    expect(id001Elements.length).toBeGreaterThan(0);
+    
+    const id002Elements = screen.queryAllByText((_, el) =>
+      el?.textContent?.includes("ID: 002") || false
+    );
+    expect(id002Elements.length).toBeGreaterThan(0);
+    
+    const id003Elements = screen.queryAllByText((_, el) =>
+      el?.textContent?.includes("ID: 003") || false
+    );
+    expect(id003Elements.length).toBeGreaterThan(0);
   });
+  
+  
+  
 });

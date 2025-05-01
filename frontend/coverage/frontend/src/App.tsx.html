@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>0/26</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>0/26</span>
             </div>
         
             
@@ -82,12 +82,32 @@
 <a name='L17'></a><a href='#L17'>17</a>
 <a name='L18'></a><a href='#L18'>18</a>
 <a name='L19'></a><a href='#L19'>19</a>
-<a name='L20'></a><a href='#L20'>20</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -105,7 +125,12 @@
 <span class="cstat-no" title="statement not covered" >import { BrowserRouter, Routes, Route } from "react-router-dom";</span>
 <span class="cstat-no" title="statement not covered" >import { Dashboard } from "./pages/Dashboard/Dashboard";</span>
 <span class="cstat-no" title="statement not covered" >import { Inventory } from "./pages/Inventory/Inventory";</span>
+<span class="cstat-no" title="statement not covered" >import { InventoryCreate } from "./pages/InventoryCreate/InventoryCreate";</span>
 <span class="cstat-no" title="statement not covered" >import { Animals } from "./pages/Animals/Animals";</span>
+<span class="cstat-no" title="statement not covered" >import { AnimalDetails } from "./pages/AnimalDetails/AnimalDetail";</span>
+<span class="cstat-no" title="statement not covered" >import { AnimalEdit } from "./pages/AnimalEdit/AnimalEdit";</span>
+<span class="cstat-no" title="statement not covered" >import { AnimalCreate } from "./pages/AnimalCreate/AnimalCreate";</span>
+<span class="cstat-no" title="statement not covered" >import { MonitorInsideEnvironment } from "./pages/MonitorInsideEnvironment/MonitorInsideEnvironment"</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >function App() {</span>
 <span class="cstat-no" title="statement not covered" >  return (</span>
@@ -113,7 +138,12 @@
 <span class="cstat-no" title="statement not covered" >      &lt;Routes&gt;</span>
 <span class="cstat-no" title="statement not covered" >        &lt;Route path="/" element={&lt;Dashboard /&gt;} /&gt;</span>
 <span class="cstat-no" title="statement not covered" >        &lt;Route path="/inventory" element={&lt;Inventory /&gt;} /&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;Route path="/inventory/add" element={&lt;InventoryCreate /&gt;} /&gt;</span>
 <span class="cstat-no" title="statement not covered" >        &lt;Route path="/animal" element={&lt;Animals /&gt;} /&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;Route path="/animal/:id" element={&lt;AnimalDetails /&gt;} /&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;Route path="/animal/:id/edit" element={&lt;AnimalEdit /&gt;} /&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;Route path="/animal/add" element={&lt;AnimalCreate /&gt;} /&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;Route path="/environment" element={&lt;MonitorInsideEnvironment /&gt;} /&gt;</span>
 <span class="cstat-no" title="statement not covered" >      &lt;/Routes&gt;</span>
 <span class="cstat-no" title="statement not covered" >    &lt;/BrowserRouter&gt;</span>
   );
@@ -127,7 +157,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-01T00:13:07.275Z
+                at 2025-05-01T22:15:01.822Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

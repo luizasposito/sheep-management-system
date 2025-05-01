@@ -1,11 +1,16 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { PageLayout } from "../../components/Layout/PageLayout";
 import { Button } from "../../components/Button/Button";
 import { Card } from "../../components/Card/Card";
 import styles from "./MonitorInsideEnvironment.module.css";
 
 export const MonitorInsideEnvironment: React.FC = () => {
+
+  useEffect(() => {
+      document.title = "Monitoramento Ambiente Interno";
+    }, []);
+
   const sensores = [
     {
       label: "Oxigênio",
@@ -36,12 +41,12 @@ export const MonitorInsideEnvironment: React.FC = () => {
 
       <div className={styles.section}>
         <h2 className={styles.subtitle}>Limpeza de leitos</h2>
-        <Button variant="light">Adicionar limpeza</Button>
+        <Button variant="light">Marcar limpeza</Button>
       </div>
 
       <div className={styles.section}>
         <h2 className={styles.subtitle}>Monitoramento de ar</h2>
-        <Button variant="light">Criar</Button>
+        <Button variant="light">Adicionar sensor</Button>
       </div>
 
       <div className={styles.cardsContainer}>
