@@ -1,0 +1,63 @@
+/* src/pages/Animals.module.css */
+
+.title {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #3e6440;
+    margin-bottom: 1rem;
+  }
+  
+  .buttonGroup {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .searchBar {
+    margin: 12px 0;
+  }
+  
+  .content {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .filters {
+    width: 200px;
+  }
+  
+  .filterGroup {
+    margin-bottom: 12px;
+  }
+  
+  .filterGroup label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-grow: 1;
+  }
+  
+  .cardContent {
+    text-align: left;
+    font-size: 1.2rem;
+  }
+
+  .clickableCard {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .clickableCard:hover {
+    background-color: #3e6440; /* Verde escuro da paleta */
+    color: white;
+  }
+  

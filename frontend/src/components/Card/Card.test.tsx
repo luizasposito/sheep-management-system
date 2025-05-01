@@ -1,32 +1,41 @@
-import { render, screen } from "@testing-library/react";
+// src/components/__tests__/Card.test.tsx
+
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { Card } from "./Card";
 
 describe("Card component", () => {
-  it("renderiza corretamente o conteúdo dentro do card", () => {
-    render(<Card>Conteúdo do Card</Card>);
-    expect(screen.getByText("Conteúdo do Card")).toBeInTheDocument();
+  it("renders children correctly", () => {
+    render(
+      <Card>
+        <p>Test Content</p>
+      </Card>
+    );
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
   });
 
-  it("aplica a classe 'card' do CSS corretamente", () => {
-    render(<Card>Teste de Estilo</Card>);
-    const card = screen.getByText("Teste de Estilo");
-    // Verifique se a classe gerada dinamicamente contém 'card'
-    expect(card).toHaveClass(/card/);  // Expressão regular para corresponder à classe 'card'
+  it("applies additional className", () => {
+    render(
+      <Card className="extra-class">
+        <p>With class</p>
+      </Card>
+    );
+
+    const cardElement = screen.getByText("With class").parentElement;
+    expect(cardElement?.className).toContain("extra-class");
   });
 
-  it("aplica classes adicionais através da prop className", () => {
-    render(<Card className="extra-class">Card com classe extra</Card>);
-    const card = screen.getByText("Card com classe extra");
-    // Verifique se a classe gerada dinamicamente contém 'card' e a classe extra
-    expect(card).toHaveClass(/card/);  // Expressão regular para corresponder à classe 'card'
-    expect(card).toHaveClass("extra-class");
-  });
+  it("calls onClick handler when clicked", () => {
+    const handleClick = vi.fn();
 
-  it("não aplica classes extras se a prop className não for fornecida", () => {
-    render(<Card>Card sem classe extra</Card>);
-    const card = screen.getByText("Card sem classe extra");
-    // Verifique se a classe gerada dinamicamente contém 'card'
-    expect(card).toHaveClass(/card/);  // Expressão regular para corresponder à classe 'card'
-    expect(card).not.toHaveClass("extra-class");
+    render(
+      <Card onClick={handleClick}>
+        <p>Clickable</p>
+      </Card>
+    );
+
+    const cardElement = screen.getByText("Clickable").parentElement!;
+    fireEvent.click(cardElement);
+    expect(handleClick).toHaveBeenCalledTimes(1);
   });
 });
