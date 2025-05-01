@@ -26,7 +26,7 @@ export const Dashboard: React.FC = () => {
   return (
     <PageLayout>
       <header className={styles.header}>
-        <h1>Nome da Fazenda</h1>
+        <h1>Nome da Fazenda</h1> 
       </header>
 
       <main className={styles.mainContent}>
@@ -64,7 +64,7 @@ export const Dashboard: React.FC = () => {
 
         <section className={styles.rightPanel}>
           <Card>
-            <h3>Esta semana</h3>
+            <h3>Avisos</h3>
             <ul className={styles.activitiesList}>
               {activitiesData.map(([activity, date], index) => (
                 <details key={index} className={styles.activityItem}>

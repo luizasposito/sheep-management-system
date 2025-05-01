@@ -11,13 +11,9 @@ type Animal = {
   producaoLeiteira: string;
   sexo: "Fêmea" | "Macho";
   status:
-    | "Cordeiro"
-    | "Borrego"
-    | "Ovelha"
-    | "Capão"
-    | "Carneiro"
+    | "Cria"
     | "Prenha"
-    | "A amamentar";
+    | "Pós-parto";
 };
 
 const animalData: Animal[] = [
@@ -25,13 +21,13 @@ const animalData: Animal[] = [
     id: "001",
     producaoLeiteira: "2L",
     sexo: "Fêmea",
-    status: "Ovelha",
+    status: "Cria",
   },
   {
     id: "002",
     producaoLeiteira: "10L",
     sexo: "Macho",
-    status: "Carneiro",
+    status: "Pós-parto",
   },
   {
     id: "003",
@@ -79,12 +75,10 @@ export const Animals: React.FC = () => {
 
   return (
     <PageLayout>
-      <h1 className={styles.title}>Ovelhas</h1>
+      <h1 className={styles.title}>Animais</h1>
 
       <div className={styles.buttonGroup}>
         <Button variant="light">Criar</Button>
-        <Button variant="light">Editar</Button>
-        <Button variant="light">Deletar</Button>
       </div>
 
       <div className={styles.searchBar}>
@@ -108,7 +102,7 @@ export const Animals: React.FC = () => {
                   toggleFilter("Fêmea", filterSexo, setFilterSexo)
                 }
               />
-              Fêmea
+              <span>Fêmea</span>
             </label>
             <label>
               <input
@@ -118,20 +112,16 @@ export const Animals: React.FC = () => {
                   toggleFilter("Macho", filterSexo, setFilterSexo)
                 }
               />
-              Macho
+              <span>Macho</span>
             </label>
           </div>
 
           <div className={styles.filterGroup}>
             <strong>Status</strong>
             {[
-              "Cordeiro",
-              "Borrego",
-              "Ovelha",
-              "Capão",
-              "Carneiro",
+              "Cria",
               "Prenha",
-              "A amamentar",
+              "Pós-parto"
             ].map((status) => (
               <label key={status}>
                 <input
@@ -141,10 +131,11 @@ export const Animals: React.FC = () => {
                     toggleFilter(status, filterStatus, setFilterStatus)
                   }
                 />
-                {status}
+                <span>{status}</span>
               </label>
             ))}
           </div>
+
         </aside>
 
         <section className={styles.cards}>

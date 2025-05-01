@@ -26,24 +26,3 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     </div>
   );
 };
-
-
-
-
-
-
-// import { useState } from "react";
-// import { SearchInput } from "./components/SearchInput/SearchInput";
-
-// export default function App() {
-//   const [searchTerm, setSearchTerm] = useState("");
-
-//   return (
-//     <div>
-//       <SearchInput
-//         value={searchTerm}
-//         onChange={(e) => setSearchTerm(e.target.value)}
-//       />
-//     </div>
-//   );
-// }
