@@ -78,7 +78,7 @@ export const Animals: React.FC = () => {
       <h1 className={styles.title}>Animais</h1>
 
       <div className={styles.buttonGroup}>
-        <Button variant="light">Criar</Button>
+        <Button variant="light" onClick={() => navigate("/animal/add")}>Criar</Button>
       </div>
 
       <div className={styles.searchBar}>

@@ -70,4 +70,34 @@ describe("Inventory", () => {
     const table = screen.getByRole("table");
     expect(table).toBeInTheDocument();
   });
+
+  it("should toggle filter type when checkbox is clicked", () => {
+    render(
+      <BrowserRouter>
+        <Inventory />
+      </BrowserRouter>
+    );
+  
+    const checkboxAlimentacao = screen.getByLabelText("Alimentação");
+    const checkboxLimpeza = screen.getByLabelText("Limpeza");
+  
+    // Clique no filtro "Alimentação"
+    fireEvent.click(checkboxAlimentacao);
+    expect(screen.queryByText("Ração cria")).toBeInTheDocument();
+    expect(screen.queryByText("Detergente")).not.toBeInTheDocument();
+  
+    // Clique no filtro "Limpeza"
+    fireEvent.click(checkboxLimpeza);
+    expect(screen.queryByText("Detergente")).toBeInTheDocument();
+  
+    // Remover filtro "Alimentação"
+    fireEvent.click(checkboxAlimentacao);
+    expect(screen.queryByText("Ração cria")).not.toBeInTheDocument();
+  
+    // Remover filtro "Limpeza"
+    fireEvent.click(checkboxLimpeza);
+    expect(screen.queryByText("Ração cria")).toBeInTheDocument();
+    expect(screen.queryByText("Detergente")).toBeInTheDocument();
+  });
+  
 });

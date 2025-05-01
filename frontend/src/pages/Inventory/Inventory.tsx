@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Table } from "../../components/Table/Table";
 import { PageLayout } from "../../components/Layout/PageLayout";
 import { Button } from "../../components/Button/Button";
@@ -7,6 +8,8 @@ import { SearchInput } from "../../components/SearchInput/SearchInput";
 import styles from "./Inventory.module.css";
 
 export const Inventory: React.FC = () => {
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "Inventário";
@@ -19,17 +22,17 @@ export const Inventory: React.FC = () => {
     "Tipo",
     "Nome",
     "Data última compra",
-    "Taxa de consumo",
     "Quantidade em estoque",
+    "Unidade",
     "Data prevista de compra",
   ];
 
   const data = [
-    ["Alimentação", "Ração cria", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
-    ["Alimentação", "Ração produção alta", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
-    ["Alimentação", "Ração pré-parto", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
-    ["Alimentação", "Ração pós-parto", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
-    ["Limpeza", "Detergente", "dd/mm/yyyy", "x g/dia", "dd/mm/yyyy", "dd/mm/yyyy"],
+    ["Alimentação", "Ração cria", "dd/mm/yyyy", "x", "kg", "dd/mm/yyyy"],
+    ["Alimentação", "Ração produção alta", "dd/mm/yyyy", "x", "kg","dd/mm/yyyy"],
+    ["Alimentação", "Ração pré-parto", "dd/mm/yyyy", "x", "kg", "dd/mm/yyyy"],
+    ["Alimentação", "Ração pós-parto", "dd/mm/yyyy", "x", "kg", "dd/mm/yyyy"],
+    ["Limpeza", "Detergente", "dd/mm/yyyy", "x", "L", "dd/mm/yyyy"],
   ];
 
   
@@ -48,6 +51,10 @@ export const Inventory: React.FC = () => {
   return (
     <PageLayout>
       <h1 className={styles.title}>Inventário</h1>
+
+      <div className={styles.buttonGroup}>
+        <Button variant="light" onClick={() => navigate("/inventory/add")}>Criar</Button>
+      </div>
 
       <div className={styles.container}>
         {/* Sidebar */}
@@ -82,10 +89,6 @@ export const Inventory: React.FC = () => {
 
         {/* Main content */}
         <main className={styles.mainContent}>
-          <div className={styles.buttonGroup}>
-            <Button variant="light">Criar</Button>
-          </div>
-
           <Table headers={headers} data={filteredData} />
         </main>
       </div>

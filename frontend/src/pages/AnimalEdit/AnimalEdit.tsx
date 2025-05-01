@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PageLayout } from "../../components/Layout/PageLayout";
 import { Card } from "../../components/Card/Card";
@@ -9,6 +9,10 @@ import styles from "./AnimalEdit.module.css";
 export const AnimalEdit: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  useEffect(() => {
+        document.title = "Editar Animal";
+      }, []);
 
   return (
     <PageLayout>
