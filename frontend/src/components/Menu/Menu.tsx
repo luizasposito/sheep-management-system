@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./Menu.module.css";
 import { Link } from "react-router-dom";
-import { Button } from "../Button/Button"; // importa seu componente Button
+import { Button } from "../Button/Button";
+import { useUser } from "../../UserContext";
 
 export const Menu: React.FC = () => {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLUListElement>(null);
+  const { user } = useUser();
 
   const handleMenuClick = (menuName: string) => {
     setOpenMenu(prev => (prev === menuName ? null : menuName));
@@ -25,49 +27,39 @@ export const Menu: React.FC = () => {
   }, []);
 
   const menuItems = [
-    {
+    /*{
       name: "Inventário",
+      roles: ["farmer"], // apenas farmer pode ver
       subItems: [
         { label: "Ver itens", to: "/inventory" },
         { label: "Adicionar item", to: "/inventory/add" }
       ]
-    },
+    },*/
     {
       name: "Animais",
+      roles: ["farmer", "vet"],
       subItems: [
         { label: "Ver animais", to: "/animal" },
-        { label: "Adicionar animal", to: "/animal/add" }
-      ]
-    },
-    {
-      name: "Avisos",
-      subItems: [
-        { label: "Ver avisos", to: "/warning" },
-        { label: "Criar aviso", to: "/warning/add" }
+        ...(user?.role === "farmer" ? [{ label: "Adicionar animal", to: "/animal/add" }] : [])
       ]
     },
     {
       name: "Consultas",
+      roles: ["farmer", "vet"],
       subItems: [
-        { label: "Ver consultas", to: "/consult" },
-        { label: "Ver histórico de consultas", to: "/consult/history" }
+        { label: "Ver consultas", to: "/appointment" },
+        { label: "Ver histórico de consultas", to: "/appointment/history" },
+        ...(user?.role === "farmer" ? [{ label: "Agendar consulta", to: "/appointment/add" }] : [])
       ]
     },
-    {
-      name: "Ambiente",
-      subItems: [
-        { label: "Ver ambiente interno", to: "/environment" },
-        { label: "Criar sensor", to: "/environment/add-sensor" },
-        { label: "Limpar leito", to: "/environment/clean-bed" }
-      ]
-    },
-    {
+    /*{
       name: "Mapa",
+      roles: ["farmer"], // supondo que só farmer usa
       subItems: [
         { label: "Ver mapa", to: "/map" },
         { label: "Criar barreira", to: "/map/add-barrier" }
       ]
-    }
+    }*/
   ];
 
   return (
@@ -79,33 +71,35 @@ export const Menu: React.FC = () => {
           </Link>
         </li>
 
-        {menuItems.map(({ name, subItems }) => (
-          <li key={name} className={styles.menuItem}>
-            <Button
-              variant="light"
-              onClick={() => handleMenuClick(name)}
-              aria-haspopup="true"
-              aria-expanded={openMenu === name}
-            >
-              {name}
-            </Button>
+        {menuItems
+          //.filter(item => user?.role && item.roles.includes(user.role))
+          .map(({ name, subItems }) => (
+            <li key={name} className={styles.menuItem}>
+              <Button
+                variant="light"
+                onClick={() => handleMenuClick(name)}
+                aria-haspopup="true"
+                aria-expanded={openMenu === name}
+              >
+                {name}
+              </Button>
 
-            {openMenu === name && (
-              <ul className={styles.submenu} aria-label={`Submenu ${name}`}>
-                {subItems.map(({ label, to }) => (
-                  <li key={label}>
-                    <Link
-                      to={to}
-                      className={styles.submenuLink}
-                      onClick={() => setOpenMenu(null)}
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
+              {openMenu === name && (
+                <ul className={styles.submenu} aria-label={`Submenu ${name}`}>
+                  {subItems.map(({ label, to }) => (
+                    <li key={label}>
+                      <Link
+                        to={to}
+                        className={styles.submenuLink}
+                        onClick={() => setOpenMenu(null)}
+                      >
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
         ))}
       </ul>
     </nav>

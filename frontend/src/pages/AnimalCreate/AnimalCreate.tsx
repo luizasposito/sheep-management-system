@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "../../components/Layout/PageLayout";
@@ -10,8 +9,8 @@ export const AnimalCreate: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-          document.title = "Adicionar Animal";
-        }, []);
+    document.title = "Adicionar Animal";
+  }, []);
 
   // Estados locais para os campos do formulário
   const [sexo, setSexo] = useState("");
@@ -19,6 +18,7 @@ export const AnimalCreate: React.FC = () => {
   const [producaoLeiteira, setProducaoLeiteira] = useState("");
   const [pai, setPai] = useState("");
   const [mae, setMae] = useState("");
+  const [comentarios, setComentarios] = useState("");
 
   // Geração fictícia de ID e data atual
   const generatedId = "00X"; // Substituir por lógica real
@@ -35,6 +35,7 @@ export const AnimalCreate: React.FC = () => {
       producaoLeiteira,
       pai,
       mae,
+      comentarios,
     };
 
     console.log("Novo animal:", novoAnimal);
@@ -54,12 +55,12 @@ export const AnimalCreate: React.FC = () => {
             <div className={styles.leftColumn}>
               <label>
                 ID:
-                <input type="text" value={generatedId}/>
+                <input type="text" value={generatedId} readOnly />
               </label>
 
               <label>
                 Data de nascimento:
-                <input type="date" value={nascimento}/>
+                <input type="date" value={nascimento} readOnly />
               </label>
 
               <label>
@@ -115,10 +116,21 @@ export const AnimalCreate: React.FC = () => {
               </label>
             </div>
           </div>
+
+          {/* Campo de comentários */}
+          <label className={styles.fullWidth}>
+            Comentários:
+            <textarea
+              value={comentarios}
+              onChange={(e) => setComentarios(e.target.value)}
+              rows={4}
+              placeholder="Informações adicionais sobre o animal"
+            />
+          </label>
         </Card>
 
         <div className={styles.buttonGroup}>
-          <Button variant="dark" type="submit" onClick={() => navigate("/animal")}>Salvar</Button>
+          <Button variant="dark" type="submit">Salvar</Button>
           <Button variant="light" type="button" onClick={() => navigate("/animal")}>Cancelar</Button>
         </div>
       </form>

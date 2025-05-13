@@ -2,7 +2,40 @@
 import React, { useEffect } from "react";
 import { Card } from "../../components/Card/Card";
 import { PageLayout } from "../../components/Layout/PageLayout";
+import LineGraph from '../../components/LineGraph/LineGraph';
+import PieChartGraph from "../../components/PieChart/PieChart";
 import styles from "./Dashboard.module.css";
+
+
+const vendasData = [
+  { name: '01/01', produção: 327 },
+  { name: '02/01', produção: 465 },
+  { name: '03/01', produção: 217 },
+  { name: '04/01', produção: 236 },
+  { name: '05/01', produção: 333 },
+  { name: '06/01', produção: 369 },
+  { name: '07/01', produção: 472 },
+];
+
+const lucroData = [
+  { name: '01/01', lucro: 200 },
+  { name: '02/01', lucro: 150 },
+  { name: '03/01', lucro: 100 },
+  { name: '04/01', lucro: 300 },
+  { name: '05/01', lucro: 300 },
+  { name: '06/01', lucro: 300 },
+  { name: '07/01', lucro: 300 },
+];
+
+
+const pieChartData = [
+  { name: 'Grupo A', value: 8 },
+  { name: 'Grupo B', value: 127 },
+  { name: 'Grupo C', value: 53 },
+  { name: 'Grupo D', value: 223 },
+];
+
+
 
 export const Dashboard: React.FC = () => {
 
@@ -23,11 +56,12 @@ export const Dashboard: React.FC = () => {
     ["Consulta", "30/07/2025"],
   ];
 
+  
   return (
     <PageLayout>
-      <header className={styles.header}>
+      {/* <header className={styles.header}>
         <h1>Nome da Fazenda</h1> 
-      </header>
+      </header> */}
 
       <main className={styles.mainContent}>
         <section className={styles.leftPanel}>
@@ -50,32 +84,90 @@ export const Dashboard: React.FC = () => {
 
         <section className={styles.centerPanel}>
           <h2 className={styles.sectionTitle}>Produção de leite dos últimos 7 dias</h2>
+          
+          {/*<Card className={`${styles.whiteCard}`}>
+              <LineGraph data={vendasData} dataKey="vendas" title="Por grupo" strokeColor="#4CAF50" />
+          </Card>*/}
 
-          <Card>
-            <h3>Por grupo</h3>
-            <div className={styles.chartPlaceholder}>[Gráfico Placeholder]</div>
-          </Card>
-
-          <Card>
-            <h3>Geral</h3>
-            <div className={styles.chartPlaceholder}>[Gráfico Placeholder]</div>
+          <Card className={`${styles.whiteCard}`}>
+              <LineGraph data={vendasData} dataKey="produção" title="Geral" strokeColor="#FF9800" />
           </Card>
         </section>
 
         <section className={styles.rightPanel}>
+          <Card>
+            <PieChartGraph data={pieChartData} title="Distribuição por Grupo" />
+          </Card>
+
           <Card>
             <h3>Avisos</h3>
             <ul className={styles.activitiesList}>
               {activitiesData.map(([activity, date], index) => (
                 <details key={index} className={styles.activityItem}>
                   <summary>{activity} - {date}</summary>
-                  <p>Descrição: Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                  <p>Descrição: blabla bla bla.</p>
                 </details>
               ))}
             </ul>
           </Card>
         </section>
       </main>
+
+      <section className={styles.monitoramentoSection}>
+        <h2 className={styles.sectionTitle}>Ambiente interno</h2>
+        <div className={styles.cardsContainer}>
+          {[
+            {
+              label: "Oxigênio",
+              atual: 50,
+              minimo: 10,
+              maximo: 60,
+              alerta: false,
+            },
+            {
+              label: "Amoníaco",
+              atual: 45,
+              minimo: 35,
+              maximo: 65,
+              alerta: false,
+            },
+            {
+              label: "Temperatura",
+              atual: 33,
+              minimo: 21,
+              maximo: 30,
+              alerta: true,
+            },
+          ].map((sensor) => (
+            <Card
+              key={sensor.label}
+              className={`${styles.sensorCard} ${sensor.alerta ? styles.alerta : ""}`}
+            >
+              <h3 className={styles.sensorTitle}>{sensor.label}</h3>
+              <p className={styles.valorAtualLabel}>Valor atual</p>
+              <div
+                className={`${styles.valorAtual} ${
+                  sensor.alerta ? styles.alertaValor : ""
+                }`}
+              >
+                {sensor.atual}
+              </div>
+              <div className={styles.limites}>
+                <div>
+                  <p>Valor mínimo</p>
+                  <input type="text" value={sensor.minimo} readOnly />
+                </div>
+                <div>
+                  <p>Valor máximo</p>
+                  <input type="text" value={sensor.maximo} readOnly />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+
     </PageLayout>
   );
 };

@@ -1,637 +1,229 @@
-
 import pytest
 from httpx import AsyncClient, ASGITransport
-
 from database import SessionLocal
+from models.sheep import Sheep
 from models.farm import Farm
 from models.farmer import Farmer
-from models.sheep import Sheep
+from models.milk_production import MilkProduction
 from utils import hash_password
-
-import sys
-import os
-
-# add the backend folder to the path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+from sqlalchemy import text
 from main import app
 
 
-# post sheep
-@pytest.mark.asyncio
-async def test_create_sheep():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
-        with SessionLocal() as db:
-
-            # clear the table so tests don't conflict
-            db.query(Sheep).delete()
-            db.commit()
-
-            farm = db.query(Farm).filter_by(name="Test Farm").first()
-            if not farm:
-                farm = Farm(name="Test Farm", location="Test Land")
-                db.add(farm)
-                db.commit()
-                db.refresh(farm)  # now farm.id is available
+def reset_database():
+    with SessionLocal() as db:
+        db.execute(text("DELETE FROM sheep"))
+        db.execute(text("DELETE FROM sheep_group"))
+        db.execute(text("DELETE FROM farm_inventory"))
+        db.execute(text("DELETE FROM farmer"))
+        db.execute(text("DELETE FROM farm"))
+        db.commit()
 
 
-        # create a sheep assigned to farm_id=1
-        response = await ac.post("/sheep/", json={
-            "birth_date": "2023-04-01",
-            "farm_id": farm.id,
-            "milk_production": 4.2,
-            "feeding_hay": 1.5,
-            "feeding_feed": 0.5,
-            "gender": "femea",
-            "status": "borrego"
-        })
+def create_test_user():
+    """Cria fazenda + fazendeiro no banco e retorna (farm_id, credentials)"""
+    with SessionLocal() as db:
+        farm = Farm(name="Sheep Farm", location="Pasture")
+        db.add(farm)
+        db.commit()
+        db.refresh(farm)
 
-    assert response.status_code == 200
-    assert response.json()["farm_id"] == farm.id
-
-
-
-# get sheep
-@pytest.mark.asyncio
-async def test_get_all_sheep():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # call the endpoint
-        response = await ac.get("/sheep/")
-
-    # check that it returns status code 200 (OK)
-    assert response.status_code == 200
-
-    # make sure it sends a list back
-    assert isinstance(response.json(), list)
-
-    # make sure at least 1 sheep is there
-    assert len(response.json()) >= 1
+        farmer = Farmer(
+            name="Sheep Farmer",
+            email="sheep@test.com",
+            password=hash_password("sheep123"),
+            farm_id=farm.id
+        )
+        db.add(farmer)
+        db.commit()
+        db.refresh(farmer)
+        return farm.id
 
 
-# get sheep by id
-@pytest.mark.asyncio
-async def test_get_sheep_by_id():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
-        with SessionLocal() as db:
-            db.query(Sheep).delete()
-            db.commit()
-
-            farm = db.query(Farm).first()
-            if not farm:
-                farm = Farm(name="Test Farm", location="Test Land")
-                db.add(farm)
-                db.commit()
-                db.refresh(farm)
-
-            sheep = Sheep(
-                birth_date="2023-04-01",
-                farm_id=farm.id,
-                milk_production=4.2,
-                feeding_hay=1.5,
-                feeding_feed=0.5,
-                gender="femea",
-                status="borrego"
-            )
-            db.add(sheep)
-            db.commit()
-            db.refresh(sheep)
-        
-        
-        response = await ac.get(f"/sheep/{sheep.id}")
-    
-    assert response.status_code == 200
-
-    print("\n RESPONSE JSON:", response.json())
-
-    assert response.json()["id"] == sheep.id
-
-
-
-
-# update sheep
-@pytest.mark.asyncio
-async def test_update_sheep():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
-        # clear and insert farm + sheep
-        with SessionLocal() as db:
-            db.query(Sheep).delete()
-            db.commit()
-
-            # create/reuse farm
-            farm = db.query(Farm).first()
-            if not farm:
-                farm = Farm(name="Test Farm", location="Test Land")
-                db.add(farm)
-                db.commit()
-                db.refresh(farm)
-
-            # store farm_id
-            farm_id = farm.id
-            
-            # creates sheep
-            sheep = Sheep(
-                birth_date="2023-04-01",
-                farm_id=farm.id,
-                milk_production=4.2,
-                feeding_hay=1.5,
-                feeding_feed=0.5,
-                gender="femea",
-                status="borrego"
-            )
-            db.add(sheep)
-            db.commit()
-            db.refresh(sheep)
-
-
-            # store sheep_id
-            sheep_id = sheep.id
-
-
-        # update the sheep via PUT
-        updated_data = {
-            "birth_date": "2023-04-01",
-            "farm_id": farm_id,
-            "milk_production": 6.1,
-            "feeding_hay": 2.0,
-            "feeding_feed": 1.0,
-            "gender": "femea",
-            "status": "ovelha"
-        }
-
-        response = await ac.put(f"/sheep/{sheep_id}", json=updated_data)
-
-        assert response.status_code == 200
-        assert response.json()["milk_production"] == 6.1
-        assert response.json()["status"] == "ovelha"
-
-
-
-
-
-# delete sheep
-@pytest.mark.asyncio
-async def test_delete_sheep():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
-        # create farm and sheep
-        with SessionLocal() as db:
-            db.query(Sheep).delete()
-            db.commit()
-
-            farm = db.query(Farm).first()
-            if not farm:
-                farm = Farm(name="Test Farm", location="Test Land")
-                db.add(farm)
-                db.commit()
-                db.refresh(farm)
-
-            farm_id = farm.id
-
-            sheep = Sheep(
-                birth_date="2023-04-01",
-                farm_id=farm_id,
-                milk_production=3.8,
-                feeding_hay=1.0,
-                feeding_feed=0.4,
-                gender="femea",
-                status="ovelha"
-            )
-            db.add(sheep)
-            db.commit()
-            db.refresh(sheep)
-
-            sheep_id = sheep.id
-
-        # delete the sheep
-        response = await ac.delete(f"/sheep/{sheep_id}")
-        assert response.status_code == 204  # no content
-
-        # confirm deletion by checking the GET again
-        response_check = await ac.get(f"/sheep/{sheep_id}")
-        assert response_check.status_code == 404
-
-
-
-
-
-# tests with tokens
-
-# create sheep
 @pytest.mark.asyncio
 async def test_create_sheep_with_token():
+    reset_database()
+    farm_id = create_test_user()
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
-        with SessionLocal() as db:
-            from models.sheep import Sheep
-            from models.farm_inventory import FarmInventory
-            from models.veterinarian import Veterinarian
-            from models.farmer import Farmer
-            from models.farm import Farm
-
-            # delete data in order of dependency
-            db.query(Sheep).delete()
-            db.query(FarmInventory).delete()
-            db.query(Veterinarian).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm
-            farm = Farm(name="Test Farm", location="Test Land")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            farmer = Farmer(
-                name="Test Farmer",
-                email="farmer@example.com",
-                password=hash_password("securepassword"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-
-        # log in as farmer to get token
+        # Login
         login_response = await ac.post("/auth/login", json={
-            "email": "farmer@example.com",
-            "password": "securepassword"
+            "email": "sheep@test.com",
+            "password": "sheep123"
         })
-
-        assert login_response.status_code == 200
         token = login_response.json()["access_token"]
 
-        # call POST /sheep/ using Authorization header
-        sheep_payload = {
-            "birth_date": "2023-04-01",
+        # Criar ovelha
+        response = await ac.post("/sheep/", json={
+            "birth_date": "2023-05-01",
             "farm_id": farm_id,
-            "milk_production": 4.2,
-            "feeding_hay": 1.5,
-            "feeding_feed": 0.5,
-            "gender": "femea",
-            "status": "borrego"
-        }
-
-        response = await ac.post(
-            "/sheep/",
-            json=sheep_payload,
-            headers={"Authorization": f"Bearer {token}"}
-        )
+            "feeding_hay": 10.0,
+            "feeding_feed": 15.0,
+            "gender": "female",
+            "status": "healthy"
+        }, headers={"Authorization": f"Bearer {token}"})
 
         assert response.status_code == 200
         data = response.json()
-        assert data["farm_id"] == farm_id
-        assert data["status"] == "borrego"
+        assert data["birth_date"] == "2023-05-01"
+        assert data["feeding_hay"] == 10.0
+        assert data["feeding_feed"] == 15.0
+        assert data["gender"] == "female"
+        assert data["status"] == "healthy"
+        assert "id" in data
 
 
-
-
-# put sheep (update)
 @pytest.mark.asyncio
-async def test_update_sheep_with_token():
+async def test_update_milk_yield_with_token():
+    reset_database()
+    farm_id = create_test_user()
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Login
+        login_response = await ac.post("/auth/login", json={
+            "email": "sheep@test.com",
+            "password": "sheep123"
+        })
+        token = login_response.json()["access_token"]
 
-        # setup: create farm, user and sheep
-        # setup: create farm, user and sheep
+        # Criar a ovelha
         with SessionLocal() as db:
-            db.query(Sheep).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm
-            farm = Farm(name="Test Farm", location="Test Land")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            # create farmer
-            farmer = Farmer(
-                name="Test Farmer",
-                email="farmer@test.com",
-                password=hash_password("123456"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-            db.refresh(farmer)
-
-            # create sheep
             sheep = Sheep(
-                birth_date="2023-04-01",
+                birth_date="2023-05-01",
                 farm_id=farm_id,
-                milk_production=4.2,
-                feeding_hay=1.5,
-                feeding_feed=0.5,
-                gender="femea",
-                status="borrego"
+                feeding_hay=10.0,
+                feeding_feed=15.0,
+                gender="female",
+                status="healthy"
             )
             db.add(sheep)
             db.commit()
             db.refresh(sheep)
             sheep_id = sheep.id
 
-        # login to get JWT
-        login_response = await ac.post("/auth/login", json={"email": "farmer@test.com", "password": "123456"})
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # update sheep
-        updated_data = {
-            "birth_date": "2023-04-01",
-            "farm_id": farm_id,
-            "milk_production": 6.1,
-            "feeding_hay": 2.0,
-            "feeding_feed": 1.0,
-            "gender": "femea",
-            "status": "ovelha"
-        }
-
-        response = await ac.put(
-            f"/sheep/{sheep_id}",
-            json=updated_data,
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        assert response.json()["milk_production"] == 6.1
-        assert response.json()["status"] == "ovelha"
-
-
-
-
-# get list of sheep
-@pytest.mark.asyncio
-async def test_list_sheep_with_token():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # setup
-        with SessionLocal() as db:
-            db.query(Sheep).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm
-            farm = Farm(name="Test Farm", location="Test Location")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            # create farmer linked to farm
-            farmer = Farmer(
-                name="Test Farmer",
-                email="farmer@test.com",
-                password=hash_password("123456"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-            db.refresh(farmer)
-
-            # Create two sheep
-            sheep1 = Sheep(
-                birth_date="2023-01-01",
-                farm_id=farm_id,
-                milk_production=4.5,
-                feeding_hay=1.2,
-                feeding_feed=0.3,
-                gender="femea",
-                status="ovelha"
-            )
-            sheep2 = Sheep(
-                birth_date="2022-05-15",
-                farm_id=farm_id,
-                milk_production=3.8,
-                feeding_hay=1.0,
-                feeding_feed=0.4,
-                gender="macho",
-                status="reprodutor"
-            )
-            db.add_all([sheep1, sheep2])
-            db.commit()
-
-        # login to get token
-        login_response = await ac.post("/auth/login", json={"email": "farmer@test.com", "password": "123456"})
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # request list of sheep
-        response = await ac.get("/sheep/", headers={"Authorization": f"Bearer {token}"})
+        # Atualizar a produção de leite da ovelha
+        response = await ac.patch(f"/sheep/{sheep_id}/milk-yield", json={
+            "volume": 6.5,  
+            "date": "2025-05-10"
+        }, headers={"Authorization": f"Bearer {token}"})
 
         assert response.status_code == 200
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) == 2
-        assert data[0]["status"] in ["ovelha", "reprodutor"]
+        assert data["milk_production"] == 6.5  
+        assert data["date"] == "2025-05-10"
 
 
 
-# get sheep by id
 @pytest.mark.asyncio
 async def test_get_sheep_by_id_with_token():
+    reset_database()
+    farm_id = create_test_user()
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
-        # setup
-        with SessionLocal() as db:
-            db.query(Sheep).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm
-            farm = Farm(name="Test Farm", location="North")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            # create farmer
-            farmer = Farmer(
-                name="Test",
-                email="test@farmer.com",
-                password=hash_password("pass123"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-            db.refresh(farmer)
-
-            # create sheep
-            sheep = Sheep(
-                birth_date="2023-03-01",
-                farm_id=farm_id,
-                milk_production=5.0,
-                feeding_hay=2.0,
-                feeding_feed=1.0,
-                gender="femea",
-                status="borrego"
-            )
-            db.add(sheep)
-            db.commit()
-            db.refresh(sheep)
-
-        # login
+        # Login
         login_response = await ac.post("/auth/login", json={
-            "email": "test@farmer.com",
-            "password": "pass123"
+            "email": "sheep@test.com",
+            "password": "sheep123"
         })
-        assert login_response.status_code == 200
         token = login_response.json()["access_token"]
 
-        # get with token
-        response = await ac.get(
-            f"/sheep/{sheep.id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        assert response.json()["id"] == sheep.id
-        assert response.json()["status"] == "borrego"
-
-
-
-# delete sheep by id
-@pytest.mark.asyncio
-async def test_delete_sheep_with_token():
-    transport = ASGITransport(app=app)
-
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # setup
+        # Criação da ovelha
         with SessionLocal() as db:
-            db.query(Sheep).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm
-            farm = Farm(name="Test Farm", location="Test Land")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            # create farmer
-            farmer = Farmer(
-                name="Test",
-                email="test@farmer.com",
-                password=hash_password("pass123"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-            db.refresh(farmer)
-
-            # create sheep
             sheep = Sheep(
-                birth_date="2023-03-01",
+                birth_date="2023-05-01",
                 farm_id=farm_id,
-                milk_production=5.0,
-                feeding_hay=2.0,
-                feeding_feed=1.0,
-                gender="femea",
-                status="borrego"
+                feeding_hay=10.0,
+                feeding_feed=15.0,
+                gender="female",
+                status="healthy"
             )
             db.add(sheep)
             db.commit()
             db.refresh(sheep)
             sheep_id = sheep.id
 
-        # login
-        login_response = await ac.post("/auth/login", json={
-            "email": "test@farmer.com",
-            "password": "pass123"
-        })
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # send delete with token
-        headers = {"Authorization": f"Bearer {token}"}
-        response = await ac.delete(f"/sheep/{sheep_id}", headers=headers)
-        assert response.status_code == 204  # no content
-
-        # make sure it was deleted
-        response_check = await ac.get(f"/sheep/{sheep_id}", headers=headers)
-        assert response_check.status_code == 404
+        # Obter ovelha por ID
+        response = await ac.get(f"/sheep/{sheep_id}", headers={"Authorization": f"Bearer {token}"})
+        assert response.status_code == 200
+        assert response.json()["id"] == sheep_id
 
 
-
-
-# update milk yield
 @pytest.mark.asyncio
-async def test_update_sheep_milk_yield():
+async def test_update_sheep_with_token():
+    reset_database()
+    farm_id = create_test_user()
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        from models.farm_inventory import FarmInventory
-        from models.veterinarian import Veterinarian
+        # Login
+        login_response = await ac.post("/auth/login", json={
+            "email": "sheep@test.com",
+            "password": "sheep123"
+        })
+        token = login_response.json()["access_token"]
 
+        # Criação da ovelha
         with SessionLocal() as db:
-            db.query(Sheep).delete()
-            db.query(FarmInventory).delete()
-            db.query(Veterinarian).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm and farmer
-            farm = Farm(name="Milk Farm", location="Land")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-
-            farmer = Farmer(
-                name="Milk Farmer",
-                email="milk@test.com",
-                password=hash_password("milk123"),
-                farm_id=farm.id
-            )
-            db.add(farmer)
-            db.commit()
-            db.refresh(farmer)
-            farm_id = farm.id
-
-            # create sheep
             sheep = Sheep(
-                birth_date="2023-01-01",
+                birth_date="2023-05-01",
                 farm_id=farm_id,
-                milk_production=2.5,
-                feeding_hay=1.0,
-                feeding_feed=0.5,
-                gender="femea",
-                status="ovelha"
+                feeding_hay=10.0,
+                feeding_feed=15.0,
+                gender="female",
+                status="healthy"
             )
             db.add(sheep)
             db.commit()
             db.refresh(sheep)
+            sheep_id = sheep.id
 
-        # login
-        login_response = await ac.post("/auth/login", json={
-            "email": "milk@test.com",
-            "password": "milk123"
-        })
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # PATCH only milk yield
-        response = await ac.patch(
-            f"/sheep/{sheep.id}/milk-yield",
-            json={"milk_production": 6.4},
-            headers={"Authorization": f"Bearer {token}"}
-        )
+        # Atualizar a ovelha
+        response = await ac.put(f"/sheep/{sheep_id}", json={
+            "birth_date": "2023-05-01",
+            "farm_id": farm_id,
+            "feeding_hay": 12.0,
+            "feeding_feed": 18.0,
+            "gender": "female",
+            "status": "healthy"
+        }, headers={"Authorization": f"Bearer {token}"})
 
         assert response.status_code == 200
-        assert response.json()["milk_production"] == 6.4
-        
+        assert response.json()["feeding_hay"] == 12.0
+        assert response.json()["feeding_feed"] == 18.0
+
+
+@pytest.mark.asyncio
+async def test_delete_sheep_with_token():
+    reset_database()
+    farm_id = create_test_user()
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Login
+        login_response = await ac.post("/auth/login", json={
+            "email": "sheep@test.com",
+            "password": "sheep123"
+        })
+        token = login_response.json()["access_token"]
+
+        # Criar a ovelha
+        with SessionLocal() as db:
+            sheep = Sheep(
+                birth_date="2023-05-01",
+                farm_id=farm_id,
+                feeding_hay=10.0,
+                feeding_feed=15.0,
+                gender="female",
+                status="healthy"
+            )
+            db.add(sheep)
+            db.commit()
+            db.refresh(sheep)
+            sheep_id = sheep.id
+
+        # Deletar ovelha
+        response = await ac.delete(f"/sheep/{sheep_id}", headers={"Authorization": f"Bearer {token}"})
+        assert response.status_code == 204

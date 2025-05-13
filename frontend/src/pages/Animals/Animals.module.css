@@ -20,11 +20,28 @@
   
   .content {
     display: flex;
-    flex-direction: row;
-    gap: 16px;
     align-items: flex-start;
-    flex-wrap: wrap;
+    gap: 2rem;
   }
+  
+  .cards {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    min-width: 0; /* Garante que flexbox funcione corretamente em alguns browsers */
+  }
+  
+  .groupCard {
+    width: 300px;
+    flex-shrink: 0;
+    padding: 1rem;
+    border-radius: 12px;
+    background-color: #f4f4f4;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+  }
+  
   
   .filters {
     min-width: 240px;
@@ -83,3 +100,89 @@
       padding: 0;
     }
   }
+
+
+  .groupCard {
+    flex: 0 0 300px;
+    padding: 1rem;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px #ffffff;
+    height: fit-content;
+  }
+  
+  .groupCard h2 {
+    margin-top: 0;
+  }
+  
+  .groupCard label,
+  .groupCard select,
+  .groupCard input {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .groupCard select {
+    height: 100px;
+  }
+  
+  .groupCard button {
+    margin-right: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+
+  .multiselect {
+    width: 100%;
+    height: auto;
+    min-height: 120px;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 1rem;
+  }
+
+  
+  .animalCheckboxList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fafafa;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .animalCheckboxItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  
+
+  .markedDay {
+  background-color: #d1f0d1;
+  color: #2d5137;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  text-align: center;
+  padding: 2px;
+  margin-top: 2px;
+}
+
+.commentBox {
+  width: 100%;
+  padding: 0.5rem;
+  resize: vertical;
+  font-size: 1rem;
+}
+
+.commentsSection {
+  margin-top: 1.5rem;
+}

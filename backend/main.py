@@ -1,4 +1,3 @@
-# main.py
 
 from fastapi import FastAPI
 from database import Base, engine
@@ -7,8 +6,9 @@ from routers import farm_inventory
 from routers import farmer
 from routers import veterinarian
 from routers import auth
-from routers import consultation
-from routers import sheepbed
+from routers import appointment
+from routers import sheep_group   
+from routers import milk_production                                                                                                                                                                 
 
 # Create the FastAPI app
 app = FastAPI()
@@ -33,8 +33,11 @@ app.include_router(veterinarian.router, prefix="/vet", tags=["Veterinarian"])
 # register authentication routes under /auth path
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 
-# register consultation routes under /consultation path
-app.include_router(consultation.router, prefix="/consultation", tags=["Consultation"])
+# register appointment routes under /appointment path
+app.include_router(appointment.router, prefix="/appointment", tags=["Appointment"])
 
-# register sheepbed routes under /sheepbed path
-app.include_router(sheepbed.router, prefix="/sheepbed", tags=["SheepBed"])
+# register sheep_group routes under /sheep-group path
+app.include_router(sheep_group.router, prefix="/sheep-group", tags=["Group"])
+
+# register milkproduction routes under /milk-production path
+app.include_router(milk_production.router, prefix="/milk-production", tags=["MilkProduction"])

@@ -85,3 +85,37 @@
     padding: 0;
   }
 }
+
+
+
+.adjustButton {
+  background: none;
+  border: none;
+  color: #3e6440;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.detailCard {
+  margin-left: 2rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #f7f7f7;
+  width: 300px;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}

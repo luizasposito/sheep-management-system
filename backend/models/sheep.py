@@ -1,16 +1,17 @@
+from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
+from database import Base
+from sqlalchemy.orm import relationship
 
-from sqlalchemy import Column, Integer, String, Date, DECIMAL
-from database import Base  # Base class used by SQLAlchemy to define tables
-
-# maps the 'sheep' table in db
 class Sheep(Base):
-    __tablename__ = "sheep"  # Table name in the database
+    __tablename__ = "sheep"
 
-    id = Column(Integer, primary_key=True, index=True)  # Auto-incrementing ID
+    id = Column(Integer, primary_key=True, index=True)
     birth_date = Column(Date)
-    farm_id = Column(Integer, nullable=False)
-    milk_production = Column(DECIMAL(5, 2))
-    feeding_hay = Column(DECIMAL(5, 2), nullable=False, default=0)
-    feeding_feed = Column(DECIMAL(5, 2), nullable=False, default=0)
+    farm_id = Column(Integer, ForeignKey("farm.id"), nullable=False)  # Relacionado com a fazenda
+    feeding_hay = Column(Float(5, 2), nullable=False, default=0)
+    feeding_feed = Column(Float(5, 2), nullable=False, default=0)
     gender = Column(String(10))
     status = Column(String(50))
+    group_id = Column(Integer, ForeignKey("sheep_group.id"))  # Relacionado ao grupo de ovelhas
+
+    milk_productions = relationship("MilkProduction", back_populates="sheep")
