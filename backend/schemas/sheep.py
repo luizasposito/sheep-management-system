@@ -8,7 +8,6 @@ class SheepCreate(BaseModel):
     # id isnt sent to the db
     birth_date: date
     farm_id: int
-    milk_production: float
     feeding_hay: float
     feeding_feed: float
     gender: str
@@ -23,6 +22,3 @@ class SheepResponse(SheepCreate):
     # tells FastAPI to convert SQLAlchemy objects to JSON
     "from_attributes": True
 }
-    
-class MilkYieldUpdate(BaseModel):
-    milk_production: float

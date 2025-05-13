@@ -1,0 +1,148 @@
+
+
+
+.title {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #3e6440;
+    margin-bottom: 1rem;
+  }
+  
+  .buttonGroup {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .searchBar {
+    margin: 12px 0;
+  }
+  
+  .content {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .filters {
+    min-width: 240px;
+    max-width: 100%;
+    flex-shrink: 0;
+  }
+  
+  
+  .filterGroup {
+    margin-bottom: 12px;
+  }
+  
+  .filterGroup label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  .filterGroup label span {
+    display: inline-block;
+  }  
+  
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-grow: 1;
+  }
+  
+  .cardContent {
+    text-align: left;
+    font-size: 1.2rem;
+  }
+
+  .clickableCard {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .clickableCard:hover {
+    background-color: #3e6440; /* Verde escuro da paleta */
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    .mainContent {
+      flex-direction: column;
+    }
+  
+    .centerPanel {
+      grid-template-columns: 1fr;
+      padding: 0;
+    }
+  }
+
+
+  /* Estilos para a área de visualização do calendário */
+.calendar {
+  background-color: #f4f4f4;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.calendarGrid {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.dayDetails {
+  margin-top: 16px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background-color: #3e6440; /* Cor de destaque para o ponto */
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+/* Estilo para o calendário */
+.react-calendar__tile {
+  position: relative;
+}
+
+/* Ajuste para a posição do ponto */
+.react-calendar__tile .dot {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: #3e6440; /* Cor do ponto */
+  border-radius: 50%;
+}
+
+
+/* Adicionando hover para os dias do calendário */
+.react-calendar__tile:hover {
+  background-color: #e7f4e7; /* Fundo suave quando o mouse passa por cima */
+  cursor: pointer;
+}
+
+.react-calendar__tile:active {
+  background-color: #d0f0d0; /* Fundo mais claro ao clicar */
+}

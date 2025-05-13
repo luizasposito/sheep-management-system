@@ -9,538 +9,182 @@ from database import SessionLocal
 from models.farm import Farm
 from models.farm_inventory import FarmInventory
 from models.farmer import Farmer
-from models.veterinarian import Veterinarian
-from utils import create_access_token
 from utils import hash_password
 
+@pytest.fixture(scope="module")
+def event_loop():
+    import asyncio
+    loop = asyncio.get_event_loop()
+    yield loop
 
-# post item in inventory
-@pytest.mark.asyncio
-async def test_create_inventory_item():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+@pytest.fixture
+def setup_farm_farmer_and_token():
+    email = "farmer@test.com"
+    password = "123456"
 
-        with SessionLocal() as db:
-            db.query(FarmInventory).delete()
+    with SessionLocal() as db:
+        # Deletar farmer se já existir (para evitar conflito de email único)
+        existing_farmer = db.query(Farmer).filter(Farmer.email == email).first()
+        if existing_farmer:
+            db.delete(existing_farmer)
             db.commit()
 
-            farm = db.query(Farm).first()
-            if not farm:
-                farm = Farm(name="Inventory Farm", location="Somewhere")
-                db.add(farm)
-                db.commit()
-                db.refresh(farm)
+        # Cria fazenda (se já existir uma igual, não tem problema duplicar fazenda)
+        farm = Farm(name="Test Farm", location="Someplace")
+        db.add(farm)
+        db.commit()
+        db.refresh(farm)
+        farm_id = farm.id
 
-            farm_id = farm.id
+        # Cria farmer associado à fazenda
+        farmer = Farmer(
+            name="Test Farmer",
+            email=email,
+            password=hash_password(password),
+            farm_id=farm_id
+        )
+        db.add(farmer)
+        db.commit()
+        db.refresh(farmer)
 
-        # create inventory item
+    return {"farm_id": farm_id, "farmer_email": email, "farmer_password": password}
+
+
+@pytest.mark.asyncio
+async def test_create_inventory_item_with_token(setup_farm_farmer_and_token):
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # login e obter token
+        login_response = await ac.post("/auth/login", json={
+            "email": setup_farm_farmer_and_token["farmer_email"],
+            "password": setup_farm_farmer_and_token["farmer_password"]
+        })
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        # criar item
         response = await ac.post("/inventory/", json={
-            "farm_id": farm_id,
+            "farm_id": setup_farm_farmer_and_token["farm_id"],
             "item_name": "Feno",
             "quantity": 100,
             "unit": "kg",
             "consumption_rate": 5.5
-        })
+        }, headers={"Authorization": f"Bearer {token}"})
 
         assert response.status_code == 200
         assert response.json()["item_name"] == "Feno"
         assert response.json()["quantity"] == 100
 
-
-
-# get items from inventory
 @pytest.mark.asyncio
-async def test_get_inventory_items():
+async def test_get_inventory_items_with_token(setup_farm_farmer_and_token):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Act
-        response = await ac.get("/inventory/")
+        # login e obter token
+        login_response = await ac.post("/auth/login", json={
+            "email": setup_farm_farmer_and_token["farmer_email"],
+            "password": setup_farm_farmer_and_token["farmer_password"]
+        })
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
 
-        # Assert
+        response = await ac.get("/inventory/", headers={"Authorization": f"Bearer {token}"})
         assert response.status_code == 200
         assert isinstance(response.json(), list)
         assert len(response.json()) >= 1
-        assert "item_name" in response.json()[0]
 
-
-
-
-# get item by id from inventory
 @pytest.mark.asyncio
-async def test_get_inventory_item_by_id():
+async def test_get_inventory_item_by_id_with_token(setup_farm_farmer_and_token):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # create an inventory item
-
-        with SessionLocal() as db:
-            farm = db.query(Farm).first()
-            if not farm:
-                farm = Farm(name="Inventory Farm", location="Somewhere")
-                db.add(farm)
-                db.commit()
-                db.refresh(farm)
-            
-            farm_id = farm.id
-
-            # create new item
-            new_item = FarmInventory(
-                farm_id=farm_id,
-                item_name="Feno",
-                quantity=100,
-                unit="kg",
-                consumption_rate=5.5
-            )
-            db.add(new_item)
-            db.commit()
-            db.refresh(new_item)
-
-            # save the ID for later
-            item_id = new_item.id
-
-        # send GET request to fetch the item
-        response = await ac.get(f"/inventory/{item_id}")
-
-        # check the response and if it contains the correct data
-        assert response.status_code == 200
-        assert response.json()["id"] == item_id
-        assert response.json()["item_name"] == "Feno"
-        assert response.json()["quantity"] == 100
-
-
-
-
-
-# update inventory item by id
-@pytest.mark.asyncio
-async def test_update_inventory_item():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # create an inventory item
-        with SessionLocal() as db:
-            farm = db.query(Farm).first()
-            if not farm:
-                farm = Farm(name="Inventory Farm", location="Somewhere")
-                db.add(farm)
-                db.commit()
-                db.refresh(farm)
-            
-            farm_id = farm.id
-
-            # create new inventory item
-            new_item = FarmInventory(
-                farm_id=farm_id,
-                item_name="Feno",
-                quantity=100,
-                unit="kg",
-                consumption_rate=5.5
-            )
-            db.add(new_item)
-            db.commit()
-            db.refresh(new_item)
-
-            # save the ID for later 
-            item_id = new_item.id
-
-        # send PUT request to update the inventory item
-        response = await ac.put(f"/inventory/{item_id}", json={
-            "farm_id": farm_id,
-            "item_name": "Feno",
-            "quantity": 150,
-            "unit": "kg",
-            "consumption_rate": 5.5
+        # login e obter token
+        login_response = await ac.post("/auth/login", json={
+            "email": setup_farm_farmer_and_token["farmer_email"],
+            "password": setup_farm_farmer_and_token["farmer_password"]
         })
+        token = login_response.json()["access_token"]
 
-        # check that the updated quantity is reflected
+        # cria item manualmente
+        with SessionLocal() as db:
+            item = FarmInventory(
+                farm_id=setup_farm_farmer_and_token["farm_id"],
+                item_name="Saco de Ração",
+                quantity=50,
+                unit="kg",
+                consumption_rate=2.0
+            )
+            db.add(item)
+            db.commit()
+            db.refresh(item)
+            item_id = item.id
+
+        response = await ac.get(f"/inventory/{item_id}", headers={"Authorization": f"Bearer {token}"})
         assert response.status_code == 200
         assert response.json()["id"] == item_id
-        assert response.json()["quantity"] == 150
 
-
-
-
-# delete inventory item by id
 @pytest.mark.asyncio
-async def test_delete_inventory_item():
+async def test_update_inventory_item_with_token(setup_farm_farmer_and_token):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        login_response = await ac.post("/auth/login", json={
+            "email": setup_farm_farmer_and_token["farmer_email"],
+            "password": setup_farm_farmer_and_token["farmer_password"]
+        })
+        token = login_response.json()["access_token"]
 
+        # cria item manualmente
         with SessionLocal() as db:
-            farm = db.query(Farm).first()
-            if not farm:
-                farm = Farm(name="Inventory Farm", location="Somewhere")
-                db.add(farm)
-                db.commit()
-                db.refresh(farm)
-            
-            farm_id = farm.id
-
-            # create inventory item to delete
             item = FarmInventory(
-                farm_id=farm_id,
-                item_name="To Be Deleted",
-                quantity=10,
-                unit="kg",
+                farm_id=setup_farm_farmer_and_token["farm_id"],
+                item_name="Bloco Mineral",
+                quantity=30,
+                unit="unidade",
+                consumption_rate=0.5
+            )
+            db.add(item)
+            db.commit()
+            db.refresh(item)
+            item_id = item.id
+
+        # atualiza o item
+        response = await ac.put(f"/inventory/{item_id}", json={
+            "farm_id": setup_farm_farmer_and_token["farm_id"],
+            "item_name": "Bloco Mineral",
+            "quantity": 60,
+            "unit": "unidade",
+            "consumption_rate": 0.5
+        }, headers={"Authorization": f"Bearer {token}"})
+
+        assert response.status_code == 200
+        assert response.json()["quantity"] == 60
+
+@pytest.mark.asyncio
+async def test_delete_inventory_item_with_token(setup_farm_farmer_and_token):
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        login_response = await ac.post("/auth/login", json={
+            "email": setup_farm_farmer_and_token["farmer_email"],
+            "password": setup_farm_farmer_and_token["farmer_password"]
+        })
+        token = login_response.json()["access_token"]
+
+        # cria item manualmente
+        with SessionLocal() as db:
+            item = FarmInventory(
+                farm_id=setup_farm_farmer_and_token["farm_id"],
+                item_name="Medicamento",
+                quantity=20,
+                unit="ml",
                 consumption_rate=1.0
             )
             db.add(item)
             db.commit()
             db.refresh(item)
-
             item_id = item.id
 
-        # send DELETE request
-        response = await ac.delete(f"/inventory/{item_id}")
-
+        # deleta o item
+        response = await ac.delete(f"/inventory/{item_id}", headers={"Authorization": f"Bearer {token}"})
         assert response.status_code == 204
 
-        # confirm it's deleted
-        get_response = await ac.get(f"/inventory/{item_id}")
+        # confirma que foi deletado
+        get_response = await ac.get(f"/inventory/{item_id}", headers={"Authorization": f"Bearer {token}"})
         assert get_response.status_code == 404
-
-
-
-
-# tests with tokens
-
-# create item
-@pytest.mark.asyncio
-async def test_create_inventory_item_with_token():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
-        with SessionLocal() as db:
-            db.query(FarmInventory).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm + farmer
-            farm = Farm(name="Farm Inventory Test", location="Someplace")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            farmer = Farmer(
-                name="Inventory Farmer",
-                email="inventory@farm.com",
-                password=hash_password("123456"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-            db.refresh(farmer)
-
-        # login para obter o token
-        login_response = await ac.post("/auth/login", json={
-            "email": "inventory@farm.com",
-            "password": "123456"
-        })
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # criar item com token
-        response = await ac.post("/inventory/", json={
-            "farm_id": farm_id,
-            "item_name": "Feno",
-            "quantity": 100,
-            "unit": "kg",
-            "consumption_rate": 4.5
-        }, headers={"Authorization": f"Bearer {token}"})
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["item_name"] == "Feno"
-        assert data["quantity"] == 100
-        assert data["unit"] == "kg"
-        assert data["farm_id"] == farm_id
-
-
-
-# get items
-@pytest.mark.asyncio
-async def test_get_inventory_items_with_token():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        from database import SessionLocal
-        from models.farm import Farm
-        from models.farmer import Farmer
-        from models.farm_inventory import FarmInventory
-        from utils import hash_password
-
-        with SessionLocal() as db:
-            db.query(FarmInventory).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm
-            farm = Farm(name="Farm JWT", location="Secure Land")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            # create farmer
-            farmer = Farmer(
-                name="Inventory Farmer",
-                email="invfarmer@example.com",
-                password=hash_password("secure123"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-
-            # create item in inventory
-            item = FarmInventory(
-                farm_id=farm_id,
-                item_name="Sal Mineral",
-                quantity=50,
-                unit="kg",
-                consumption_rate=2.0
-            )
-            db.add(item)
-            db.commit()
-
-        # login to get token
-        login_response = await ac.post("/auth/login", json={
-            "email": "invfarmer@example.com",
-            "password": "secure123"
-        })
-
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # get with token
-        response = await ac.get("/inventory/", headers={
-            "Authorization": f"Bearer {token}"
-        })
-
-        assert response.status_code == 200
-        data = response.json()
-        assert isinstance(data, list)
-        assert len(data) >= 1
-        assert data[0]["item_name"] == "Sal Mineral"
-
-
-
-# get item by id
-@pytest.mark.asyncio
-async def test_get_inventory_item_by_id_with_token():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        from database import SessionLocal
-        from models.farm import Farm
-        from models.farmer import Farmer
-        from models.farm_inventory import FarmInventory
-        from utils import hash_password
-
-        with SessionLocal() as db:
-            db.query(FarmInventory).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm
-            farm = Farm(name="Token Farm", location="Somewhere")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            # create farmer
-            farmer = Farmer(
-                name="Farmer Token",
-                email="token@example.com",
-                password=hash_password("abc123"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-            db.refresh(farmer)
-
-            # create item
-            item = FarmInventory(
-                farm_id=farm_id,
-                item_name="Milho",
-                quantity=200,
-                unit="kg",
-                consumption_rate=10.0
-            )
-            db.add(item)
-            db.commit()
-            db.refresh(item)
-            item_id = item.id
-
-        # login
-        login_response = await ac.post("/auth/login", json={
-            "email": "token@example.com",
-            "password": "abc123"
-        })
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # GET item by id
-        response = await ac.get(f"/inventory/{item_id}", headers={
-            "Authorization": f"Bearer {token}"
-        })
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["id"] == item_id
-        assert data["item_name"] == "Milho"
-
-
-
-
-# put/update item in inventory
-@pytest.mark.asyncio
-async def test_update_inventory_item_with_token():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        from database import SessionLocal
-        from models.farm import Farm
-        from models.farmer import Farmer
-        from models.farm_inventory import FarmInventory
-        from utils import hash_password
-
-        with SessionLocal() as db:
-            db.query(FarmInventory).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm
-            farm = Farm(name="Update Farm", location="Somewhere")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            # create farmer
-            farmer = Farmer(
-                name="Inventory Farmer",
-                email="inv@test.com",
-                password=hash_password("123456"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-            db.refresh(farmer)
-
-            # create item
-            item = FarmInventory(
-                farm_id=farm_id,
-                item_name="Milho",
-                quantity=100,
-                unit="kg",
-                consumption_rate=5.0
-            )
-            db.add(item)
-            db.commit()
-            db.refresh(item)
-            item_id = item.id
-
-        # login
-        login_response = await ac.post("/auth/login", json={
-            "email": "inv@test.com",
-            "password": "123456"
-        })
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # dados atualizados
-        updated_data = {
-            "farm_id": farm_id,
-            "item_name": "Milho Atualizado",
-            "quantity": 180,
-            "unit": "kg",
-            "consumption_rate": 7.5
-        }
-
-        # PUT com token
-        response = await ac.put(
-            f"/inventory/{item_id}",
-            json=updated_data,
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["id"] == item_id
-        assert data["item_name"] == "Milho Atualizado"
-        assert data["quantity"] == 180
-
-
-
-
-# delete item
-@pytest.mark.asyncio
-async def test_delete_inventory_item_with_token():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        from database import SessionLocal
-        from models.farm import Farm
-        from models.farmer import Farmer
-        from models.farm_inventory import FarmInventory
-        from utils import hash_password
-
-        with SessionLocal() as db:
-            db.query(FarmInventory).delete()
-            db.query(Farmer).delete()
-            db.query(Farm).delete()
-            db.commit()
-
-            # create farm
-            farm = Farm(name="Delete Farm", location="Someplace")
-            db.add(farm)
-            db.commit()
-            db.refresh(farm)
-            farm_id = farm.id
-
-            # create farmer
-            farmer = Farmer(
-                name="Delete Farmer",
-                email="delete@test.com",
-                password=hash_password("123456"),
-                farm_id=farm_id
-            )
-            db.add(farmer)
-            db.commit()
-            db.refresh(farmer)
-
-            # create item
-            item = FarmInventory(
-                farm_id=farm_id,
-                item_name="Ração",
-                quantity=50,
-                unit="kg",
-                consumption_rate=2.0
-            )
-            db.add(item)
-            db.commit()
-            db.refresh(item)
-            item_id = item.id
-
-        # login
-        login_response = await ac.post("/auth/login", json={
-            "email": "delete@test.com",
-            "password": "123456"
-        })
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # DELETE com token
-        response = await ac.delete(
-            f"/inventory/{item_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 204
-
-        # confirm it was deleted
-        check = await ac.get(
-            f"/inventory/{item_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        assert check.status_code == 404

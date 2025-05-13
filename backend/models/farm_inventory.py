@@ -1,5 +1,4 @@
-
-from sqlalchemy import Column, Integer, String, Float, Text, TIMESTAMP, func, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, TIMESTAMP, func
 from database import Base
 
 class FarmInventory(Base):

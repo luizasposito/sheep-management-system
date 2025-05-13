@@ -4,6 +4,6 @@ from database import Base
 class Farm(Base):
     __tablename__ = "farm"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     location = Column(Text)

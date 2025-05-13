@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, EmailStr
 
 class FarmerCreate(BaseModel):
@@ -10,6 +9,5 @@ class FarmerCreate(BaseModel):
 class FarmerResponse(FarmerCreate):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        from_attributes = True

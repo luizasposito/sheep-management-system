@@ -1,0 +1,13 @@
+.line-graph-container {
+    width: 100%;
+    padding: 0;
+    background-color: transparent;
+    box-shadow: none;
+  }
+  
+  .line-graph-title {
+    margin-bottom: 16px;
+    font-size: 1.2rem;
+    color: #333;
+    text-align: center;
+  }
