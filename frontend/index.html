@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#36603c">
+    <link rel="icon" href="public/icons/icon-128x128.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(function (registration) {
+              console.log('Service Worker registered with scope:', registration.scope);
+            }, function (err) {
+              console.log('Service Worker registration failed:', err);
+            });
+        });
+      }
+    </script>
+    
+  </body>
+</html>

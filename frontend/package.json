@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-Dependencies for frontend
-=======
 {
   "name": "frontend",
   "private": true,
@@ -15,11 +12,16 @@ Dependencies for frontend
   },
   "dependencies": {
     "react": "^19.0.0",
+
     "react-calendar": "^5.1.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.5.3",
     "react-select": "^5.10.1",
     "recharts": "^2.15.3"
+=======
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.5.3"
+
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
@@ -44,4 +46,4 @@ Dependencies for frontend
     "vitest": "^3.1.2"
   }
 }
->>>>>>> Stashed changes
+
