@@ -1,0 +1,16 @@
+
+
+.pieChartContainer {
+    width: 100%;
+    padding: 0;
+    background-color: transparent;
+    box-shadow: none;
+  }
+  
+  .pieChartTitle {
+    margin-bottom: 16px;
+    font-size: 1.2rem;
+    color: #333;
+    text-align: center;
+  }
+  
