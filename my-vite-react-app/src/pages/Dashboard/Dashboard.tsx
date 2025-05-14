@@ -18,15 +18,16 @@ const vendasData = [
   { name: '07/01', produção: 472 },
 ];
 
-const lucroData = [
-  { name: '01/01', lucro: 200 },
-  { name: '02/01', lucro: 150 },
-  { name: '03/01', lucro: 100 },
-  { name: '04/01', lucro: 300 },
-  { name: '05/01', lucro: 300 },
-  { name: '06/01', lucro: 300 },
-  { name: '07/01', lucro: 300 },
+const producaoPorGrupoData = [
+  { name: '01/01', GrupoA: 120, GrupoB: 80, GrupoC: 60 },
+  { name: '02/01', GrupoA: 150, GrupoB: 90, GrupoC: 70 },
+  { name: '03/01', GrupoA: 130, GrupoB: 85, GrupoC: 65 },
+  { name: '04/01', GrupoA: 160, GrupoB: 95, GrupoC: 75 },
+  { name: '05/01', GrupoA: 170, GrupoB: 100, GrupoC: 80 },
+  { name: '06/01', GrupoA: 180, GrupoB: 110, GrupoC: 85 },
+  { name: '07/01', GrupoA: 190, GrupoB: 120, GrupoC: 90 },
 ];
+
 
 
 const pieChartData = [
@@ -47,7 +48,6 @@ export const Dashboard: React.FC = () => {
   const productionData = [
     { label: "Produção últimas 24h", value: "86 L", variation: "+5%" },
     { label: "Produção últimos 7 dias", value: "432 L", variation: "-3%" },
-    { label: "Produção últimos 30 dias", value: "967 L", variation: "+7%" },
   ];
 
   const activitiesData = [
@@ -85,15 +85,28 @@ export const Dashboard: React.FC = () => {
 
         <section className={styles.centerPanel}>
           <h2 className={styles.sectionTitle}>Produção de leite dos últimos 7 dias</h2>
-          
-          {/*<Card className={`${styles.whiteCard}`}>
-              <LineGraph data={vendasData} dataKey="vendas" title="Por grupo" strokeColor="#4CAF50" />
-          </Card>*/}
 
           <Card className={`${styles.whiteCard}`}>
-              <LineGraph data={vendasData} dataKey="produção" title="Geral" strokeColor="#FF9800" />
+            <LineGraph
+              data={vendasData}
+              dataKeys={[{ key: 'produção', color: '#FF9800', label: 'Total' }]}
+              title="Geral"
+            />
+          </Card>
+
+          <Card className={`${styles.whiteCard}`}>
+            <LineGraph
+              data={producaoPorGrupoData}
+              dataKeys={[
+                { key: 'GrupoA', color: '#FF6384', label: 'Grupo A' },
+                { key: 'GrupoB', color: '#36A2EB', label: 'Grupo B' },
+                { key: 'GrupoC', color: '#FFCE56', label: 'Grupo C' },
+              ]}
+              title="Por grupo"
+            />
           </Card>
         </section>
+
 
         <section className={styles.rightPanel}>
           <Card>

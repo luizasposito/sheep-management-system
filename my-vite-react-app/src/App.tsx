@@ -28,7 +28,7 @@ const App: React.FC = () => {
       <Route path="/animal" element={<Animals />} />
       <Route path="/animal/:id" element={<AnimalDetails />} />
       <Route path="/animal/:id/edit" element={<AnimalEdit />} />
-      <Route path="/animal/create" element={<AnimalCreate />} />
+      <Route path="/animal/add" element={<AnimalCreate />} />
 
       <Route path="/inventory" element={<Inventory />} />
       <Route path="/inventory/add" element={<InventoryCreate />} />
