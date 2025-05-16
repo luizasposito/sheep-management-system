@@ -9,12 +9,19 @@ from routers import auth
 from routers import appointment
 from routers import sheep_group   
 from routers import milk_production     
-from routers import sensor                                                                                                                                                            
+from routers import sensor
+from fastapi.middleware.cors import CORSMiddleware                                                                                                                                                           
 
 # Create the FastAPI app
 app = FastAPI()
 
-from models import farm
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # permite o frontend acessar o backend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Create all database tables (based on your models)
 Base.metadata.create_all(bind=engine)

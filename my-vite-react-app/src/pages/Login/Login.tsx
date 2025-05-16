@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "../../components/Card/Card";
@@ -9,50 +8,80 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-        document.title = "Login";
-      }, []);
+    document.title = "Login";
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, senha }),
-    });
+    try {
+      const res = await fetch("http://localhost:8000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: senha }),
+      });
 
-    if (res.ok) {
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        alert(errorData.detail || "Login inválido");
+        setLoading(false);
+        return;
+      }
+
       const data = await res.json();
-      const token = data.token;
+      const token = data.access_token;
       localStorage.setItem("token", token);
 
+      // Testar se o token funciona para acessar endpoint protegido
+      const meRes = await fetch("http://localhost:8000/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!meRes.ok) {
+        alert("Token inválido para acessar dados do usuário");
+        setLoading(false);
+        return;
+      }
+
+      const userData = await meRes.json();
+      console.log("Usuário autenticado:", userData);
+
+      // Decodificar token e navegar conforme role
       try {
         const decoded = JSON.parse(atob(token.split(".")[1]));
         if (decoded.role === "farmer") {
-          navigate("/");
-        } else if (decoded.role === "vet") {
+          navigate("/dashboard");
+        } else if (decoded.role === "veterinarian") {
           navigate("/appointment");
         } else {
           alert("Tipo de usuário desconhecido");
         }
       } catch (err) {
-        console.error("Token inválido");
+        console.error("Erro ao decodificar token:", err);
         alert("Erro ao processar login.");
       }
-    } else {
-      alert("Login inválido");
+    } catch (err) {
+      console.error("Erro na requisição de login:", err);
+      alert("Erro na comunicação com o servidor. Verifique se o backend está rodando.");
+    } finally {
+      setLoading(false);
     }
   };
+
 
   return (
     <div className={styles.container}>
       <Card className={styles.loginCard}>
         <h1 className={styles.title}>Login</h1>
 
-        {/* manter o conteúdo do form com flexbox do CSS */}
-        <form onSubmit={handleLogin} style={{ width: "100%", display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <form
+          onSubmit={handleLogin}
+          style={{ width: "100%", display: "flex", flexDirection: "column", gap: "1rem" }}
+        >
           <div className={styles.inputGroup}>
             <label htmlFor="email">Email</label>
             <input
@@ -62,6 +91,7 @@ export const Login: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="exemplo@email.com"
               required
+              disabled={loading}
             />
           </div>
 
@@ -74,12 +104,13 @@ export const Login: React.FC = () => {
               onChange={(e) => setSenha(e.target.value)}
               placeholder="inserir senha"
               required
+              disabled={loading}
             />
           </div>
 
           <div className={styles.buttonWrapper}>
-            <Button variant="dark" type="submit">
-              Entrar
+            <Button variant="dark" type="submit" disabled={loading}>
+              {loading ? "Entrando..." : "Entrar"}
             </Button>
           </div>
         </form>

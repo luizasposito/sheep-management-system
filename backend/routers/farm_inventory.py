@@ -1,14 +1,12 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from models.farm_inventory import FarmInventory
 from schemas.farm_inventory import InventoryCreate, InventoryResponse
 from typing import List
-from schemas.farm_inventory import InventoryResponse
-from models.farm_inventory import FarmInventory
 from routers.auth import get_current_user
 from schemas.auth import TokenUser
+from datetime import datetime
 
 
 router = APIRouter()
@@ -23,16 +21,23 @@ def create_inventory_item(
 ):
     if current_user.role != "farmer":
         raise HTTPException(status_code=403, detail="Access forbidden")
-    # convert from Pydantic to SQLAlchemy
-    new_item = FarmInventory(**item.model_dump())
 
-    # save to the database
+    if not current_user.farm_id:
+        raise HTTPException(status_code=400, detail="User is not linked to any farm")
+
+    # Preenche farm_id e last_updated se não enviados
+    data = item.model_dump()
+    data["farm_id"] = current_user.farm_id
+    if "last_updated" not in data or data["last_updated"] is None:
+        data["last_updated"] = datetime.utcnow()
+
+    new_item = FarmInventory(**data)
+
     db.add(new_item)
     db.commit()
     db.refresh(new_item)
 
     return new_item
-
 
 
 # GET /inventory - get all inventory items
@@ -44,9 +49,12 @@ def get_all_inventory(
     if current_user.role != "farmer":
         raise HTTPException(status_code=403, detail="Access forbidden")
 
-    items = db.query(FarmInventory).all()
+    items = db.query(FarmInventory)\
+        .filter(FarmInventory.farm_id == current_user.farm_id)\
+        .order_by(FarmInventory.item_name.asc())\
+        .all()
+    
     return items
-
 
 
 # GET /inventory/{id} - get an inventory item by ID
@@ -67,8 +75,6 @@ def get_inventory_item(
     return item
 
 
-
-
 # PUT /inventory/{id} - update an item in the inventory
 @router.put("/{id}", response_model=InventoryResponse)
 def update_inventory_item(
@@ -85,7 +91,6 @@ def update_inventory_item(
     if not existing_item:
         raise HTTPException(status_code=404, detail="Inventory item not found")
     
-    # Update the item
     for key, value in item.model_dump().items():
         setattr(existing_item, key, value)
 
@@ -93,7 +98,6 @@ def update_inventory_item(
     db.refresh(existing_item)
 
     return existing_item
-
 
 
 # DELETE /inventory/{id} - delete an item in the inventory
@@ -106,7 +110,6 @@ def delete_inventory_item(
     if current_user.role != "farmer":
         raise HTTPException(status_code=403, detail="Access forbidden")
     
-    
     item = db.query(FarmInventory).filter(FarmInventory.id == id).first()
 
     if not item:
@@ -114,4 +117,3 @@ def delete_inventory_item(
 
     db.delete(item)
     db.commit()
-    return
