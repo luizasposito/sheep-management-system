@@ -8,7 +8,8 @@ from routers import veterinarian
 from routers import auth
 from routers import appointment
 from routers import sheep_group   
-from routers import milk_production                                                                                                                                                                 
+from routers import milk_production     
+from routers import sensor                                                                                                                                                            
 
 # Create the FastAPI app
 app = FastAPI()
@@ -41,3 +42,6 @@ app.include_router(sheep_group.router, prefix="/sheep-group", tags=["Group"])
 
 # register milkproduction routes under /milk-production path
 app.include_router(milk_production.router, prefix="/milk-production", tags=["MilkProduction"])
+
+# register sensors routes under /sensor path
+app.include_router(sensor.router, prefix="/sensor", tags=["Sensor"])

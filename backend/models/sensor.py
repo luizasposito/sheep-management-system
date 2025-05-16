@@ -11,5 +11,4 @@ class Sensor(Base):
     min_value = Column(Float(5, 2))
     max_value = Column(Float(5, 2))
     current_value = Column(Float(5, 2), nullable=False)
-    unit = Column(String(10))
     timestamp = Column(TIMESTAMP, server_default=func.now())
