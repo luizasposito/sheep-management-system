@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../../components/Table/Table";
@@ -8,6 +7,16 @@ import { SearchInput } from "../../components/SearchInput/SearchInput";
 import { Card } from "../../components/Card/Card";
 import styles from "./Inventory.module.css";
 
+interface InventoryItem {
+  id: number;
+  item_name: string;
+  quantity: number;
+  unit: string;
+  consumption_rate: number;
+  last_updated: string;
+  category: string;
+}
+
 export const Inventory: React.FC = () => {
   const navigate = useNavigate();
 
@@ -15,6 +24,8 @@ export const Inventory: React.FC = () => {
     document.title = "Inventário";
   }, []);
 
+  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string[]>([]);
   const [adjustMode, setAdjustMode] = useState(false);
@@ -23,7 +34,7 @@ export const Inventory: React.FC = () => {
   const [isDirty, setIsDirty] = useState(false);
 
   const headers = [
-    "Tipo",
+    "Categoria",
     "Nome",
     "Data última compra",
     "Quantidade em estoque",
@@ -32,15 +43,40 @@ export const Inventory: React.FC = () => {
     adjustMode ? "Ações" : "",
   ].filter(Boolean);
 
-  const data = [
-    ["Alimentação", "Ração cria", "01/01/2024", "25", "kg", "01/06/2024"],
-    ["Alimentação", "Ração produção alta", "15/01/2024", "40", "kg", "15/06/2024"],
-    ["Alimentação", "Ração pré-parto", "10/02/2024", "35", "kg", "10/07/2024"],
-    ["Alimentação", "Ração pós-parto", "20/02/2024", "30", "kg", "20/07/2024"],
-    ["Limpeza", "Detergente", "05/03/2024", "10", "L", "05/08/2024"],
-  ];
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/inventory", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!response.ok) throw new Error("Erro ao buscar inventário");
 
-  const filteredData = data
+        const data = await response.json();
+        setInventoryData(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInventory();
+  }, []);
+
+  const categories = Array.from(new Set(inventoryData.map((item) => item.category)));
+
+  const formattedData = inventoryData.map((item) => [
+    item.category,
+    item.item_name,
+    new Date(item.last_updated).toLocaleDateString("pt-PT"),
+    item.quantity.toString(),
+    item.unit,
+    "-", // Pode ser substituído por lógica para próxima compra
+  ]);
+
+  const filteredData = formattedData
     .filter((row) => {
       const matchesSearch = row[1].toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = filterType.length === 0 || filterType.includes(row[0]);
@@ -72,11 +108,38 @@ export const Inventory: React.FC = () => {
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (selectedItem !== null && isDirty) {
-      console.log(`Salvar nova quantidade para ${data[selectedItem][1]}: ${editedQuantity}`);
-      setSelectedItem(null);
-      setIsDirty(false);
+      const itemToUpdate = inventoryData[selectedItem];
+      const updatedData = {
+        ...itemToUpdate,
+        quantity: Number(editedQuantity),
+      };
+
+      try {
+        const response = await fetch(`http://localhost:8000/inventory/${itemToUpdate.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(updatedData),
+        });
+
+        if (!response.ok) throw new Error("Erro ao atualizar item");
+
+        const updatedItem = await response.json();
+        setInventoryData((prev) =>
+          prev.map((item, index) =>
+            index === selectedItem ? updatedItem : item
+          )
+        );
+
+        setSelectedItem(null);
+        setIsDirty(false);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
@@ -115,35 +178,33 @@ export const Inventory: React.FC = () => {
 
           <div className={styles.filterGroup}>
             <p>Filtrar por</p>
-            <strong>Tipo</strong>
-            <label>
-              <input
-                type="checkbox"
-                checked={filterType.includes("Alimentação")}
-                onChange={() => toggleFilter("Alimentação")}
-              />
-              <span>Alimentação</span>
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={filterType.includes("Limpeza")}
-                onChange={() => toggleFilter("Limpeza")}
-              />
-              <span>Limpeza</span>
-            </label>
+            <strong>Categoria</strong>
+            {categories.map((cat) => (
+              <label key={cat}>
+                <input
+                  type="checkbox"
+                  checked={filterType.includes(cat)}
+                  onChange={() => toggleFilter(cat)}
+                />
+                <span>{cat}</span>
+              </label>
+            ))}
           </div>
         </aside>
 
         {/* Main content */}
         <main className={styles.mainContent}>
-          <Table headers={headers} data={filteredData} />
+          {loading ? (
+            <p>Carregando inventário...</p>
+          ) : (
+            <Table headers={headers} data={filteredData} />
+          )}
 
           {adjustMode && selectedItem !== null && (
             <Card className={styles.detailCard}>
-              <h2>{data[selectedItem][1]}</h2>
-              <p><strong>Tipo:</strong> {data[selectedItem][0]}</p>
-              <p><strong>Última compra:</strong> {data[selectedItem][2]}</p>
+              <h2>{inventoryData[selectedItem].item_name}</h2>
+              <p><strong>Categoria:</strong> {inventoryData[selectedItem].category}</p>
+              <p><strong>Última compra:</strong> {new Date(inventoryData[selectedItem].last_updated).toLocaleDateString("pt-PT")}</p>
               <label className={styles.inputGroup}>
                 <strong>Quantidade em estoque:</strong>
                 <input
@@ -151,12 +212,12 @@ export const Inventory: React.FC = () => {
                   value={editedQuantity}
                   onChange={(e) => {
                     setEditedQuantity(e.target.value);
-                    setIsDirty(e.target.value !== data[selectedItem][3]);
+                    setIsDirty(Number(e.target.value) !== inventoryData[selectedItem].quantity);
                   }}
                 />
               </label>
-              <p><strong>Unidade:</strong> {data[selectedItem][4]}</p>
-              <p><strong>Próxima compra:</strong> {data[selectedItem][5]}</p>
+              <p><strong>Unidade:</strong> {inventoryData[selectedItem].unit}</p>
+              <p><strong>Próxima compra:</strong> -</p>
               <div className={styles.buttonRow}>
                 <Button variant="dark" onClick={handleSave} disabled={!isDirty}>
                   Salvar
@@ -167,7 +228,6 @@ export const Inventory: React.FC = () => {
               </div>
             </Card>
           )}
-
         </main>
       </div>
     </PageLayout>

@@ -14,6 +14,7 @@ class TokenUser(BaseModel):
     name: str
     email: EmailStr
     role: str
+    farm_id: int
     class Config:
         from_attributes = True
 

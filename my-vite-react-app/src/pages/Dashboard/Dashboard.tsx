@@ -6,16 +6,20 @@ import PieChartGraph from "../../components/PieChart/PieChart";
 import styles from "./Dashboard.module.css";
 import axios from 'axios';
 
-// Tipos para os dados da produção e atividades
 interface ProductionData {
   label: string;
   value: string;
   variation: string;
 }
 
-interface GroupData {
-  group_name: string;
-  total_volume: number;
+interface PieChartData {
+  name: string;
+  value: number;
+}
+
+interface LineGraphData {
+  date: string;
+  [key: string]: string | number;
 }
 
 interface Activity {
@@ -24,52 +28,97 @@ interface Activity {
 }
 
 export const Dashboard: React.FC = () => {
-  const [vendasData, setVendasData] = useState<any[]>([]); // Tipar com 'any' se você não sabe o formato exato
-  const [producaoPorGrupoData, setProducaoPorGrupoData] = useState<any[]>([]); // O mesmo para esse
-  const [pieChartData, setPieChartData] = useState<{ name: string; value: number }[]>([]); // Tipagem para PieChart
-  const [productionData, setProductionData] = useState<ProductionData[]>([]);
-  const [activitiesData, setActivitiesData] = useState<Activity[]>([]);
+  const [productionCards, setProductionCards] = useState<ProductionData[]>([]);
+  const [totalLast7DaysData, setTotalLast7DaysData] = useState<{ total_volume: number } | null>(null);
+  const [pieChartData, setPieChartData] = useState<PieChartData[]>([]);
+  const [lineGraphGeneralData, setLineGraphGeneralData] = useState<LineGraphData[]>([]);
+  const [lineGraphGroupData, setLineGraphGroupData] = useState<LineGraphData[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
     document.title = "Dashboard";
 
-    // Carregar dados de produção
     const fetchData = async () => {
       try {
-        const totalTodayResponse = await axios.get("http://localhost:8000/api/milk-production/total-today");
-        const totalLast7DaysResponse = await axios.get("http://localhost:8000/api/milk-production/total-last-7-days");
-        const totalTodayByGroupResponse = await axios.get("http://localhost:8000/api/milk-production/total-today-by-group");
-        const dailyTotalLast7DaysResponse = await axios.get("http://localhost:8000/api/milk-production/daily-total-last-7-days");
+        const token = localStorage.getItem("token"); // ou sessionStorage.getItem
+        const authHeader = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        };
 
-        // Atualizar os estados com os dados da API
-        setVendasData(dailyTotalLast7DaysResponse.data);
-
-        setProductionData([
-          { label: "Produção últimas 24h", value: `${totalTodayResponse.data.total_volume} L`, variation: "+5%" },
-          { label: "Produção últimos 7 dias", value: `${totalLast7DaysResponse.data.total_volume} L`, variation: "-3%" },
+        const [
+          totalTodayRes,
+          totalLast7DaysRes,
+          totalTodayByGroupRes,
+          dailyTotalLast7DaysRes,
+          dailyByGroupLast7DaysRes,
+          sum2WeeksAgoRes
+        ] = await Promise.all([
+          axios.get("http://localhost:8000/milk-production/total-today", authHeader),
+          axios.get("http://localhost:8000/milk-production/sum-last-7-days", authHeader),
+          axios.get("http://localhost:8000/milk-production/total-today-by-group", authHeader),
+          axios.get("http://localhost:8000/milk-production/daily-total-last-7-days"),
+          axios.get("http://localhost:8000/milk-production/daily-by-group-last-7-days"),
+          axios.get("http://localhost:8000/milk-production/sum-2-weeks-ago", authHeader),
         ]);
 
-        const productionByGroup = totalTodayByGroupResponse.data.map((group: GroupData) => ({
+        const totalToday = totalTodayRes.data.total_volume || 0;
+        const totalLast7Days = totalLast7DaysRes.data.total_volume || 0;
+        const total2WeeksAgo = sum2WeeksAgoRes.data.total_volume || 0;
+
+        const calcVariation = (current: number, previous: number): string => {
+          if (previous === 0) return "+100%";
+          const diff = current - previous;
+          const percent = (diff / previous) * 100;
+          return (percent >= 0 ? "+" : "") + percent.toFixed(1) + "%";
+        };
+
+        setProductionCards([
+          {
+            label: "Produção últimas 24h",
+            value: `${totalToday.toFixed(2)} L`,
+            variation: calcVariation(totalToday, totalLast7Days / 7),
+          },
+          {
+            label: "Produção últimos 7 dias",
+            value: `${totalLast7Days.toFixed(2)} L`,
+            variation: calcVariation(totalLast7Days, total2WeeksAgo),
+          },
+        ]);
+
+        const generalLineData = dailyTotalLast7DaysRes.data.map((item: any) => ({
+          date: item.date,
+          total_volume: item.total_volume || 0,
+        }));
+        setLineGraphGeneralData(generalLineData);
+
+        const groupedByDate: { [date: string]: LineGraphData } = {};
+        dailyByGroupLast7DaysRes.data.forEach((entry: any) => {
+          const { date, group_name, total_volume } = entry;
+          if (!groupedByDate[date]) {
+            groupedByDate[date] = { date };
+          }
+          groupedByDate[date][group_name] = total_volume || 0;
+        });
+
+        const groupLineData = Object.values(groupedByDate).sort((a, b) =>
+          a.date.localeCompare(b.date)
+        );
+        setLineGraphGroupData(groupLineData);
+
+        const pieData = totalTodayByGroupRes.data.map((group: any) => ({
           name: group.group_name,
           value: group.total_volume,
         }));
-        setPieChartData(productionByGroup);
+        setPieChartData(pieData);
 
-        const productionByGroup7Days = dailyTotalLast7DaysResponse.data.map((group: any) => ({
-          name: group.date,
-          ...group,
-        }));
-        setProducaoPorGrupoData(productionByGroup7Days);
-
-        // Supondo que você também tenha dados de atividades
-        setActivitiesData([
-          { activity: "Atividade 1", date: "2025-05-14" },
-          { activity: "Atividade 2", date: "2025-05-13" },
-          // Adicione atividades reais aqui
+        setActivities([
+          { activity: "Verificação diária das ovelhas", date: "2025-05-14" },
+          { activity: "Manutenção do equipamento de ordenha", date: "2025-05-13" },
         ]);
-
       } catch (error) {
-        console.error("Erro ao carregar dados da API", error);
+        console.error("Erro ao carregar dados da API:", error);
       }
     };
 
@@ -80,7 +129,7 @@ export const Dashboard: React.FC = () => {
     <PageLayout>
       <main className={styles.mainContent}>
         <section className={styles.leftPanel}>
-          {productionData.map((item, index) => (
+          {productionCards.map((item, index) => (
             <Card key={index}>
               <div className={styles.cardContent}>
                 <h3>{item.label}</h3>
@@ -100,21 +149,21 @@ export const Dashboard: React.FC = () => {
         <section className={styles.centerPanel}>
           <h2 className={styles.sectionTitle}>Produção de leite dos últimos 7 dias</h2>
 
-          <Card className={`${styles.whiteCard}`}>
+          <Card className={styles.whiteCard}>
             <LineGraph
-              data={vendasData}
+              data={lineGraphGeneralData}
               dataKeys={[{ key: 'total_volume', color: '#FF9800', label: 'Total' }]}
               title="Geral"
             />
           </Card>
 
-          <Card className={`${styles.whiteCard}`}>
+          <Card className={styles.whiteCard}>
             <LineGraph
-              data={producaoPorGrupoData}
+              data={lineGraphGroupData}
               dataKeys={[
-                { key: 'GrupoA', color: '#FF6384', label: 'Grupo A' },
-                { key: 'GrupoB', color: '#36A2EB', label: 'Grupo B' },
-                { key: 'GrupoC', color: '#FFCE56', label: 'Grupo C' },
+                { key: 'Grupo A', color: '#FF6384', label: 'Grupo A' },
+                { key: 'Grupo B', color: '#36A2EB', label: 'Grupo B' },
+                { key: 'Grupo C', color: '#FFCE56', label: 'Grupo C' },
               ]}
               title="Por grupo"
             />
@@ -129,7 +178,7 @@ export const Dashboard: React.FC = () => {
           <Card>
             <h3>Avisos</h3>
             <ul className={styles.activitiesList}>
-              {activitiesData.map(({ activity, date }, index) => (
+              {activities.map(({ activity, date }, index) => (
                 <details key={index} className={styles.activityItem}>
                   <summary>{activity} - {date}</summary>
                   <p>Descrição: blabla bla bla.</p>

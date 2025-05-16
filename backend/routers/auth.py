@@ -53,5 +53,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         id=user.id,
         name=user.name,
         email=user.email,
-        role=role
+        role=role,
+        farm_id=user.farm_id,
     )

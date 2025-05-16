@@ -11,3 +11,4 @@ class FarmInventory(Base):
     unit = Column(String(50), nullable=False)
     last_updated = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
     consumption_rate = Column(Float, nullable=False, default=0)
+    category = Column(String(99), nullable=False)
