@@ -1,69 +1,83 @@
-
-
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "../../components/Card/Card";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import LineGraph from '../../components/LineGraph/LineGraph';
 import PieChartGraph from "../../components/PieChart/PieChart";
 import styles from "./Dashboard.module.css";
+import axios from 'axios';
 
+// Tipos para os dados da produção e atividades
+interface ProductionData {
+  label: string;
+  value: string;
+  variation: string;
+}
 
-const vendasData = [
-  { name: '01/01', produção: 327 },
-  { name: '02/01', produção: 465 },
-  { name: '03/01', produção: 217 },
-  { name: '04/01', produção: 236 },
-  { name: '05/01', produção: 333 },
-  { name: '06/01', produção: 369 },
-  { name: '07/01', produção: 472 },
-];
+interface GroupData {
+  group_name: string;
+  total_volume: number;
+}
 
-const producaoPorGrupoData = [
-  { name: '01/01', GrupoA: 120, GrupoB: 80, GrupoC: 60 },
-  { name: '02/01', GrupoA: 150, GrupoB: 90, GrupoC: 70 },
-  { name: '03/01', GrupoA: 130, GrupoB: 85, GrupoC: 65 },
-  { name: '04/01', GrupoA: 160, GrupoB: 95, GrupoC: 75 },
-  { name: '05/01', GrupoA: 170, GrupoB: 100, GrupoC: 80 },
-  { name: '06/01', GrupoA: 180, GrupoB: 110, GrupoC: 85 },
-  { name: '07/01', GrupoA: 190, GrupoB: 120, GrupoC: 90 },
-];
-
-
-
-const pieChartData = [
-  { name: 'Grupo A', value: 8 },
-  { name: 'Grupo B', value: 127 },
-  { name: 'Grupo C', value: 53 },
-  { name: 'Grupo D', value: 223 },
-];
-
-
+interface Activity {
+  activity: string;
+  date: string;
+}
 
 export const Dashboard: React.FC = () => {
+  const [vendasData, setVendasData] = useState<any[]>([]); // Tipar com 'any' se você não sabe o formato exato
+  const [producaoPorGrupoData, setProducaoPorGrupoData] = useState<any[]>([]); // O mesmo para esse
+  const [pieChartData, setPieChartData] = useState<{ name: string; value: number }[]>([]); // Tipagem para PieChart
+  const [productionData, setProductionData] = useState<ProductionData[]>([]);
+  const [activitiesData, setActivitiesData] = useState<Activity[]>([]);
 
   useEffect(() => {
-      document.title = "Dashboard";
-    }, []);
+    document.title = "Dashboard";
 
-  const productionData = [
-    { label: "Produção últimas 24h", value: "86 L", variation: "+5%" },
-    { label: "Produção últimos 7 dias", value: "432 L", variation: "-3%" },
-  ];
+    // Carregar dados de produção
+    const fetchData = async () => {
+      try {
+        const totalTodayResponse = await axios.get("http://localhost:8000/api/milk-production/total-today");
+        const totalLast7DaysResponse = await axios.get("http://localhost:8000/api/milk-production/total-last-7-days");
+        const totalTodayByGroupResponse = await axios.get("http://localhost:8000/api/milk-production/total-today-by-group");
+        const dailyTotalLast7DaysResponse = await axios.get("http://localhost:8000/api/milk-production/daily-total-last-7-days");
 
-  const activitiesData = [
-    ["Ecografia", "10/05/2025"],
-    ["Parto", "13/05/2025"],
-    ["Vacinação", "22/06/2025"],
-    ["Consulta", "30/07/2025"],
-  ];
+        // Atualizar os estados com os dados da API
+        setVendasData(dailyTotalLast7DaysResponse.data);
 
-  
+        setProductionData([
+          { label: "Produção últimas 24h", value: `${totalTodayResponse.data.total_volume} L`, variation: "+5%" },
+          { label: "Produção últimos 7 dias", value: `${totalLast7DaysResponse.data.total_volume} L`, variation: "-3%" },
+        ]);
+
+        const productionByGroup = totalTodayByGroupResponse.data.map((group: GroupData) => ({
+          name: group.group_name,
+          value: group.total_volume,
+        }));
+        setPieChartData(productionByGroup);
+
+        const productionByGroup7Days = dailyTotalLast7DaysResponse.data.map((group: any) => ({
+          name: group.date,
+          ...group,
+        }));
+        setProducaoPorGrupoData(productionByGroup7Days);
+
+        // Supondo que você também tenha dados de atividades
+        setActivitiesData([
+          { activity: "Atividade 1", date: "2025-05-14" },
+          { activity: "Atividade 2", date: "2025-05-13" },
+          // Adicione atividades reais aqui
+        ]);
+
+      } catch (error) {
+        console.error("Erro ao carregar dados da API", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <PageLayout>
-      {/* <header className={styles.header}>
-        <h1>Nome da Fazenda</h1> 
-      </header> */}
-
       <main className={styles.mainContent}>
         <section className={styles.leftPanel}>
           {productionData.map((item, index) => (
@@ -89,7 +103,7 @@ export const Dashboard: React.FC = () => {
           <Card className={`${styles.whiteCard}`}>
             <LineGraph
               data={vendasData}
-              dataKeys={[{ key: 'produção', color: '#FF9800', label: 'Total' }]}
+              dataKeys={[{ key: 'total_volume', color: '#FF9800', label: 'Total' }]}
               title="Geral"
             />
           </Card>
@@ -107,7 +121,6 @@ export const Dashboard: React.FC = () => {
           </Card>
         </section>
 
-
         <section className={styles.rightPanel}>
           <Card>
             <PieChartGraph data={pieChartData} title="Distribuição por Grupo" />
@@ -116,7 +129,7 @@ export const Dashboard: React.FC = () => {
           <Card>
             <h3>Avisos</h3>
             <ul className={styles.activitiesList}>
-              {activitiesData.map(([activity, date], index) => (
+              {activitiesData.map(({ activity, date }, index) => (
                 <details key={index} className={styles.activityItem}>
                   <summary>{activity} - {date}</summary>
                   <p>Descrição: blabla bla bla.</p>
@@ -126,62 +139,6 @@ export const Dashboard: React.FC = () => {
           </Card>
         </section>
       </main>
-
-      <section className={styles.monitoramentoSection}>
-        <h2 className={styles.sectionTitle}>Ambiente interno</h2>
-        <div className={styles.cardsContainer}>
-          {[
-            {
-              label: "Oxigênio",
-              atual: 50,
-              minimo: 10,
-              maximo: 60,
-              alerta: false,
-            },
-            {
-              label: "Amoníaco",
-              atual: 45,
-              minimo: 35,
-              maximo: 65,
-              alerta: false,
-            },
-            {
-              label: "Temperatura",
-              atual: 33,
-              minimo: 21,
-              maximo: 30,
-              alerta: true,
-            },
-          ].map((sensor) => (
-            <Card
-              key={sensor.label}
-              className={`${styles.sensorCard} ${sensor.alerta ? styles.alerta : ""}`}
-            >
-              <h3 className={styles.sensorTitle}>{sensor.label}</h3>
-              <p className={styles.valorAtualLabel}>Valor atual</p>
-              <div
-                className={`${styles.valorAtual} ${
-                  sensor.alerta ? styles.alertaValor : ""
-                }`}
-              >
-                {sensor.atual}
-              </div>
-              <div className={styles.limites}>
-                <div>
-                  <p>Valor mínimo</p>
-                  <input type="text" value={sensor.minimo} readOnly />
-                </div>
-                <div>
-                  <p>Valor máximo</p>
-                  <input type="text" value={sensor.maximo} readOnly />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-
     </PageLayout>
   );
 };
