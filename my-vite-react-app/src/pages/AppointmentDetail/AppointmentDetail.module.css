@@ -111,3 +111,10 @@
     margin-bottom: 0.5rem;
   }
   
+
+  .animalList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}

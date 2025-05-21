@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Card } from "../../components/Card/Card";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
-import LineGraph from '../../components/LineGraph/LineGraph';
+import LineGraph from "../../components/LineGraph/LineGraph";
 import PieChartGraph from "../../components/PieChart/PieChart";
 import styles from "./Dashboard.module.css";
-import axios from 'axios';
+import axios from "axios";
 
 interface ProductionData {
   label: string;
@@ -29,22 +29,25 @@ interface Activity {
 
 export const Dashboard: React.FC = () => {
   const [productionCards, setProductionCards] = useState<ProductionData[]>([]);
-  const [totalLast7DaysData, setTotalLast7DaysData] = useState<{ total_volume: number } | null>(null);
+  const [totalLast7DaysData, setTotalLast7DaysData] = useState<{
+    total_volume: number;
+  } | null>(null);
   const [pieChartData, setPieChartData] = useState<PieChartData[]>([]);
   const [lineGraphGeneralData, setLineGraphGeneralData] = useState<LineGraphData[]>([]);
   const [lineGraphGroupData, setLineGraphGroupData] = useState<LineGraphData[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [sheepCountByGroup, setSheepCountByGroup] = useState<PieChartData[]>([]); // 👈 NOVO
 
   useEffect(() => {
     document.title = "Dashboard";
 
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token"); // ou sessionStorage.getItem
+        const token = localStorage.getItem("token");
         const authHeader = {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         };
 
         const [
@@ -53,7 +56,8 @@ export const Dashboard: React.FC = () => {
           totalTodayByGroupRes,
           dailyTotalLast7DaysRes,
           dailyByGroupLast7DaysRes,
-          sum2WeeksAgoRes
+          sum2WeeksAgoRes,
+          sheepCountByGroupRes // 👈 NOVO
         ] = await Promise.all([
           axios.get("http://localhost:8000/milk-production/total-today", authHeader),
           axios.get("http://localhost:8000/milk-production/sum-last-7-days", authHeader),
@@ -61,6 +65,7 @@ export const Dashboard: React.FC = () => {
           axios.get("http://localhost:8000/milk-production/daily-total-last-7-days"),
           axios.get("http://localhost:8000/milk-production/daily-by-group-last-7-days"),
           axios.get("http://localhost:8000/milk-production/sum-2-weeks-ago", authHeader),
+          axios.get("http://localhost:8000/sheep-group/sheep-count-by-group", authHeader), // 👈 NOVO
         ]);
 
         const totalToday = totalTodayRes.data.total_volume || 0;
@@ -113,6 +118,12 @@ export const Dashboard: React.FC = () => {
         }));
         setPieChartData(pieData);
 
+        const sheepCountPieData = sheepCountByGroupRes.data.map((group: any) => ({
+          name: group.group_name,
+          value: group.count,
+        }));
+        setSheepCountByGroup(sheepCountPieData); // 👈 NOVO
+
         setActivities([
           { activity: "Verificação diária das ovelhas", date: "2025-05-14" },
           { activity: "Manutenção do equipamento de ordenha", date: "2025-05-13" },
@@ -152,7 +163,7 @@ export const Dashboard: React.FC = () => {
           <Card className={styles.whiteCard}>
             <LineGraph
               data={lineGraphGeneralData}
-              dataKeys={[{ key: 'total_volume', color: '#FF9800', label: 'Total' }]}
+              dataKeys={[{ key: "total_volume", color: "#FF9800", label: "Total" }]}
               title="Geral"
             />
           </Card>
@@ -161,9 +172,9 @@ export const Dashboard: React.FC = () => {
             <LineGraph
               data={lineGraphGroupData}
               dataKeys={[
-                { key: 'Grupo A', color: '#FF6384', label: 'Grupo A' },
-                { key: 'Grupo B', color: '#36A2EB', label: 'Grupo B' },
-                { key: 'Grupo C', color: '#FFCE56', label: 'Grupo C' },
+                { key: "Grupo A", color: "#FF6384", label: "Grupo A" },
+                { key: "Grupo B", color: "#36A2EB", label: "Grupo B" },
+                { key: "Grupo C", color: "#FFCE56", label: "Grupo C" },
               ]}
               title="Por grupo"
             />
@@ -172,7 +183,7 @@ export const Dashboard: React.FC = () => {
 
         <section className={styles.rightPanel}>
           <Card>
-            <PieChartGraph data={pieChartData} title="Distribuição por Grupo" />
+            <PieChartGraph data={sheepCountByGroup} title="Distribuição por Grupo" />
           </Card>
 
           <Card>
@@ -180,7 +191,9 @@ export const Dashboard: React.FC = () => {
             <ul className={styles.activitiesList}>
               {activities.map(({ activity, date }, index) => (
                 <details key={index} className={styles.activityItem}>
-                  <summary>{activity} - {date}</summary>
+                  <summary>
+                    {activity} - {date}
+                  </summary>
                   <p>Descrição: blabla bla bla.</p>
                 </details>
               ))}

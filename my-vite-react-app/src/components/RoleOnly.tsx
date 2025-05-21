@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { useUser } from "../UserContext"; // ajuste o caminho se necessário
 
 type RoleOnlyProps = {
-  role: "farmer" | "vet";
+  role: "farmer" | "veterinarian";
   children: ReactNode;
 };
 

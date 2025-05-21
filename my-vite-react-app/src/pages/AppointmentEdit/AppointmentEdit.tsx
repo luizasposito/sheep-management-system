@@ -1,6 +1,6 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useUser } from "../../UserContext";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
@@ -9,24 +9,77 @@ import styles from "./AppointmentEdit.module.css";
 type Medication = {
   name: string;
   dosage: string;
-  instructions: string;
+  indication: string;
 };
 
 export const AppointmentEdit: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [comments, setComments] = useState("");
+  const [motivo, setMotivo] = useState("");
   const [medications, setMedications] = useState<Medication[]>([
-    { name: "", dosage: "", instructions: "" }
+    { name: "", dosage: "", indication: "" },
   ]);
 
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // null = carregando
+
+  const token = localStorage.getItem("token");
+  const { user } = useUser();
+  const role = user?.role;
+
+  const [initialState, setInitialState] = useState({
+    comments: "",
+    motivo: "",
+    medications: [] as Medication[],
+  });
+
+
+  // Verificar role corretamente
+  useEffect(() => {
+    console.log("Role:", role);
+    if (role === undefined) return; // Ainda carregando
+    if (role !== "veterinarian") {
+      navigate("/unauthorized");
+    } else {
+      setIsAuthorized(true);
+    }
+  }, [role, navigate]);
+
+
+  // Título da página
   useEffect(() => {
     document.title = "Editar Consulta";
-    // fetch consulta existente para preencher os campos, se necessário
-    // Exemplo (mock):
-    // setComments("Animal com febre");
-    // setMedications([{ name: "Dipirona", dosage: "10ml", instructions: "2x ao dia" }]);
   }, []);
+
+  // Buscar dados da consulta
+  useEffect(() => {
+    const fetchAppointment = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/appointment/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Erro ao carregar consulta");
+        const data = await res.json();
+
+        setComments(data.comentarios || "");
+        setMotivo(data.motivo || "");
+        setMedications(data.medications || []);
+        setInitialState({
+          comments: data.comentarios || "",
+          motivo: data.motivo || "",
+          medications: data.medications || [],
+        });
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (token) {
+      fetchAppointment();
+    }
+  }, [id, token]);
 
   const handleMedicationChange = (
     index: number,
@@ -38,8 +91,19 @@ export const AppointmentEdit: React.FC = () => {
     setMedications(updated);
   };
 
+  const hasChanges = () => {
+    const medsChanged = JSON.stringify(initialState.medications) !== JSON.stringify(medications);
+    const motivoChanged = motivo !== initialState.motivo;
+    const commentsChanged = comments !== initialState.comments;
+    return motivoChanged || commentsChanged || medsChanged;
+  };
+
+
   const addMedication = () => {
-    setMedications([...medications, { name: "", dosage: "", instructions: "" }]);
+    setMedications([
+      ...medications,
+      { name: "", dosage: "", indication: "" },
+    ]);
   };
 
   const removeMedication = (index: number) => {
@@ -47,14 +111,58 @@ export const AppointmentEdit: React.FC = () => {
     setMedications(updated);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const validMedications = medications.filter(med => med.name.trim() !== "");
+
+      const res = await fetch(`http://localhost:8000/appointment/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          motivo,
+          comentarios: comments,
+          medications: validMedications.map((med) => ({
+            name: med.name,
+            dosage: med.dosage,
+            indication: med.indication,
+          })),
+        }),
+      });
+
+
+      if (!res.ok) throw new Error("Erro ao salvar consulta");
+      navigate(`/appointment/${id}`);
+    } catch (err) {
+      console.error(err);
+      alert("Falha ao salvar.");
+    }
+  };
+
+  // Enquanto não autorizou, não renderiza
+  if (isAuthorized === null) return null;
+
   return (
     <PageLayout>
       <h1 className={styles.title}>Editar Consulta {id}</h1>
 
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <Card className={styles.card}>
           <div className={styles.grid}>
             <div className={styles.leftColumn}>
+              <label>
+                Motivo:
+                <input
+                  type="text"
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
+                  placeholder="Motivo da consulta"
+                />
+              </label>
+
               <label>
                 Comentários:
                 <textarea
@@ -89,12 +197,16 @@ export const AppointmentEdit: React.FC = () => {
                   <input
                     type="text"
                     placeholder="Indicações"
-                    value={med.instructions}
+                    value={med.indication}
                     onChange={(e) =>
-                      handleMedicationChange(index, "instructions", e.target.value)
+                      handleMedicationChange(index, "indication", e.target.value)
                     }
                   />
-                  <Button variant="dark" type="button" onClick={() => removeMedication(index)}>
+                  <Button
+                    variant="dark"
+                    type="button"
+                    onClick={() => removeMedication(index)}
+                  >
                     Remover
                   </Button>
                 </div>
@@ -107,8 +219,14 @@ export const AppointmentEdit: React.FC = () => {
         </Card>
 
         <div className={styles.buttonGroup}>
-          <Button variant="dark" type="submit">Salvar</Button>
-          <Button variant="light" type="button" onClick={() => navigate(`/appointment/${id}`)}>
+          <Button variant="dark" type="submit" disabled={!hasChanges()}>
+            Salvar
+          </Button>
+          <Button
+            variant="light"
+            type="button"
+            onClick={() => navigate(`/appointment/${id}`)}
+          >
             Cancelar
           </Button>
         </div>

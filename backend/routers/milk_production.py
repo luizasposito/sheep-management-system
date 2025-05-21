@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Body, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from fastapi.security import OAuth2PasswordBearer
@@ -11,6 +11,7 @@ from models.sheep_group import SheepGroup
 from sqlalchemy import func, text
 from datetime import date
 from routers.auth import get_current_user, get_db
+from schemas.milk_production import MilkProductionCreate, MilkProductionResponse, MilkProductionUpdate
 from schemas.auth import TokenUser
 from datetime import timedelta
 
@@ -312,3 +313,33 @@ async def daily_by_group_last_7_days(db: Session = Depends(get_db)):
         {"date": str(r[0]), "group_name": r[1], "total_volume": r[2] if r[2] is not None else 0}
         for r in result
     ]
+
+
+
+@router.get("/by-sheep-date", response_model=MilkProductionResponse)
+async def get_milk_by_sheep_and_date(
+    sheep_id: int = Query(..., description="ID da ovelha"),
+    date_query: date = Query(..., alias="date", description="Data da produção de leite"),
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    # Buscar o fazendeiro logado
+    farmer = db.query(Farmer).filter(Farmer.email == current_user.email).first()
+    if not farmer:
+        raise HTTPException(status_code=404, detail="Farmer not found")
+
+    # Verifica se a ovelha pertence à fazenda do fazendeiro
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id, Sheep.farm_id == farmer.farm_id).first()
+    if not sheep:
+        raise HTTPException(status_code=404, detail="Sheep not found or does not belong to your farm")
+
+    # Buscar a produção de leite na data específica
+    milk_production = db.query(MilkProduction).filter(
+        MilkProduction.sheep_id == sheep_id,
+        MilkProduction.date == date_query
+    ).first()
+
+    if not milk_production:
+        raise HTTPException(status_code=404, detail="Milk production not found for this sheep on this date")
+
+    return milk_production

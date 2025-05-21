@@ -1,25 +1,41 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class AppointmentBase(BaseModel):
-    sheep_id: int
+    sheep_ids: List[int]
     vet_id: int
+
+class MedicationInput(BaseModel):
+    name: str
+    dosage: Optional[str]
+    indication: Optional[str]
+
+class MedicationResponse(BaseModel):
+    id: int
+    name: str
+    dosage: Optional[str]
+    indication: Optional[str]
+
+    class Config:
+        from_attributes = True
 
 class AppointmentCreate(AppointmentBase):
     motivo: Optional[str] = None
     comentarios: Optional[str] = None
+    date: Optional[datetime] = None  # Adicione este campo
 
 class AppointmentStartRequest(BaseModel):
-    sheep_id: int
+    sheep_ids: List[int]
 
 class AppointmentResponse(BaseModel):
     id: int
-    sheep_id: int
+    sheep_ids: List[int]
     vet_id: int
     date: datetime
     motivo: Optional[str] = None
     comentarios: Optional[str] = None
+    medications: Optional[List[MedicationResponse]] = []
 
     class Config:
         from_attributes = True
@@ -27,3 +43,4 @@ class AppointmentResponse(BaseModel):
 class AppointmentUpdate(BaseModel):
     motivo: Optional[str] = None
     comentarios: Optional[str] = None
+    medications: Optional[List[MedicationInput]] = None
