@@ -48,7 +48,7 @@ export const AnimalDetails: React.FC = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    document.title = "Detalhes Animal";
+    document.title = "Detalhes animal";
     if (!id || !token) return;
 
     const fetchAnimal = async () => {
@@ -103,7 +103,6 @@ export const AnimalDetails: React.FC = () => {
           data.map((c: any) => ({
             id: c.id,
             data: c.date.split("T")[0],
-            titulo: `Consulta ${c.id}`,
             motivo: c.motivo || "Sem motivo informado",
           }))
         );
@@ -158,7 +157,7 @@ export const AnimalDetails: React.FC = () => {
                       variant="dark"
                       onClick={() => navigate(`/animal/${parent.id}`)}
                     >
-                      {parent.gender === "male" ? `Pai - ${parent.id}` : `Mãe - ${parent.id}`}
+                      {parent.gender.toLowerCase() === "macho" ? `Pai - ${parent.id}` : `Mãe - ${parent.id}`}
                     </Button>
                   ))
                 )}
@@ -170,7 +169,7 @@ export const AnimalDetails: React.FC = () => {
               {animal?.gender === "Fêmea" && (
                 <p><strong>Produção leiteira (em litros):</strong> {"N/D"}</p>
               )}
-              <p><strong>Feno para ingestão diária:</strong> {animal?.feeding_hay ?? "N/D"} kg</p>
+              <p><strong>Fardo para ingestão diária:</strong> {animal?.feeding_hay ?? "N/D"} kg</p>
               <p><strong>Ração para ingestão diária:</strong> {animal?.feeding_feed ?? "N/D"} kg</p>
             </div>
           </div>

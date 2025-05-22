@@ -43,7 +43,7 @@ export const AppointmentCreate: React.FC = () => {
   const [animalOptions, setAnimalOptions] = useState<SelectOption[]>([]);
 
   useEffect(() => {
-    document.title = "Nova Consulta";
+    document.title = "Agendar consulta";
   }, []);
 
   useEffect(() => {

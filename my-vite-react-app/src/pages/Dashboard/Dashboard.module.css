@@ -100,13 +100,13 @@
     color: #555;
   }
   
-  .activitiesList {
+  .appointmentList {
     list-style: none;
     padding: 0;
     margin: 0;
   }
   
-  .activityItem {
+  .appointmentItem {
     margin-bottom: 1rem;
     background-color: #ffffff;
     border-radius: 8px;
@@ -204,4 +204,22 @@
   text-align: left;
   box-shadow: none !important;
   border-radius: 0 !important;
+}
+
+.pieChartCard {
+  width: 100%;
+  min-height: 400px;
+  min-width: 350px;
+  position: relative;
+  padding: 1rem;
+  box-sizing: border-box;
+  background-color: white !important;
+  color: #2d5137;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }

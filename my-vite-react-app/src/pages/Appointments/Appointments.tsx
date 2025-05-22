@@ -190,14 +190,14 @@ export const Appointments: React.FC = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const appointmentsByTab = appointmentData.filter((item) => {
-    const itemDate = new Date(item.data);
-    itemDate.setHours(0, 0, 0, 0);
+  const appointmentsByTab = viewMode === "calendario"
+    ? appointmentData
+    : appointmentData.filter((item) => {
+        const itemDate = new Date(item.data);
+        itemDate.setHours(0, 0, 0, 0);
+        return tab === "futuras" ? itemDate >= today : itemDate < today;
+      });
 
-    return tab === "futuras"
-      ? itemDate >= today
-      : itemDate < today;
-  });
 
   // Aplicar filtros para lista e calendário
   const filteredAppointments = appointmentsByTab.filter(applyFilters);
@@ -230,23 +230,32 @@ export const Appointments: React.FC = () => {
             Agendar consulta
           </Button>
         </RoleOnly>
-        <Button
-          variant={tab === "futuras" ? "dark" : "light"}
-          onClick={() => setTab("futuras")}
-        >
-          Próximas consultas
-        </Button>
-        <Button
-          variant={tab === "historico" ? "dark" : "light"}
-          onClick={() => setTab("historico")}
-        >
-          Histórico de consultas
-        </Button>
 
-        <Button variant="light" onClick={toggleView}>
-          Alternar para {viewMode === "calendario" ? "lista" : "calendário"}
+        {viewMode === "lista" && (
+          <>
+            <Button
+              variant={tab === "futuras" ? "dark" : "light"}
+              onClick={() => setTab("futuras")}
+            >
+              Próximas consultas
+            </Button>
+            <Button
+              variant={tab === "historico" ? "dark" : "light"}
+              onClick={() => setTab("historico")}
+            >
+              Histórico de consultas
+            </Button>
+          </>
+        )}
+
+        <Button
+          variant="light"
+          onClick={toggleView}
+        >
+          {viewMode === "calendario" ? "Calendário" : "Lista"} - Alternar para {viewMode === "calendario" ? "lista" : "calendário"}
         </Button>
       </div>
+
 
       <div className={styles.searchBar}>
         <SearchInput

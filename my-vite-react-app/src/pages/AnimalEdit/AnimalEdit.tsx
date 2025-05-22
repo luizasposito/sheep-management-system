@@ -46,13 +46,13 @@ export const AnimalEdit: React.FC = () => {
         setAnimal(animalData);
         setForm({
           birth_date: animalData.birth_date,
-          feeding_hay: animalData.feeding_hay,
-          feeding_feed: animalData.feeding_feed,
+          feeding_hay: animalData.feeding_hay ?? 0,
+          feeding_feed: animalData.feeding_feed ?? 0,
           gender: animalData.gender,
-          group_id: animalData.group_id || "",
+          group_id: animalData.group_id ?? null,
           farm_id: animalData.farm_id,
-          father_id: animalData.father_id || "",
-          mother_id: animalData.mother_id || "",
+          father_id: animalData.father_id?.toString() ?? "",
+          mother_id: animalData.mother_id?.toString() ?? "",
         });
 
         // Busca todos os animais da mesma fazenda (excluindo o próprio animal)
@@ -65,6 +65,11 @@ export const AnimalEdit: React.FC = () => {
           (a: any) => a.farm_id === animalData.farm_id && a.id !== animalData.id
         );
         setFarmAnimals(sameFarmAnimals);
+
+        const fatherExists = sameFarmAnimals.some((a: any) => a.id === animalData.father_id);
+        const motherExists = sameFarmAnimals.some((a: any) => a.id === animalData.mother_id);
+        console.log("ID do pai:", animalData.father_id, "Existe?", fatherExists);
+        console.log("ID da mãe:", animalData.mother_id, "Existe?", motherExists);
 
         // Busca grupos
         const groupRes = await fetch("http://localhost:8000/sheep-group", {
@@ -83,22 +88,45 @@ export const AnimalEdit: React.FC = () => {
   }, [id, token]);
 
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
     setForm((prev: any) => {
-      const updated = { ...prev, [name]: value };
-      setIsChanged(JSON.stringify(updated) !== JSON.stringify({
-        birth_date: animal.birth_date,
-        feeding_hay: animal.feeding_hay,
-        feeding_feed: animal.feeding_feed,
-        gender: animal.gender,
-        group_id: animal.group_id || "",
-        farm_id: animal.farm_id,
-      }));
+      let val: any = value;
+
+      // converte números
+      if (name === "feeding_hay" || name === "feeding_feed") {
+        val = value === "" ? 0 : parseFloat(value);
+      }
+
+      // converte IDs para números ou null (pai, mãe, grupo)
+      if (["father_id", "mother_id", "group_id"].includes(name)) {
+        val = value; // mantém como string no estado
+      }
+
+
+      const updated = { ...prev, [name]: val };
+
+      setIsChanged(
+        JSON.stringify(updated) !==
+        JSON.stringify({
+          birth_date: animal.birth_date,
+          feeding_hay: animal.feeding_hay ?? 0,
+          feeding_feed: animal.feeding_feed ?? 0,
+          gender: animal.gender,
+          group_id: animal.group_id?.toString() ?? "",
+          farm_id: animal.farm_id,
+          father_id: animal.father_id?.toString() ?? "",
+          mother_id: animal.mother_id?.toString() ?? "",
+        })
+      );
+
+
+
       return updated;
     });
   };
+
 
   const handleSubmit = async () => {
     try {
@@ -108,7 +136,13 @@ export const AnimalEdit: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ...form }),
+        
+        body: JSON.stringify({
+          ...form,
+          father_id: form.father_id === "" ? null : Number(form.father_id),
+          mother_id: form.mother_id === "" ? null : Number(form.mother_id),
+          group_id: form.group_id === "" ? null : Number(form.group_id),
+        }),
       });
 
       if (!res.ok) throw new Error("Erro ao atualizar animal");
@@ -148,37 +182,39 @@ export const AnimalEdit: React.FC = () => {
 
               <div className={styles.formGroup}>
                 <label>ID do pai:</label>
-                <select name="father_id" value={form.father_id || ""} onChange={handleChange}>
+                <select name="father_id" value={form.father_id?.toString() || ""} onChange={handleChange}>
                   <option value="">Nenhum</option>
                   {farmAnimals
-                    .filter((a) => a.gender.toLowerCase() === "macho")
+                    .filter((a) => (a.gender || "").toLowerCase() === "macho")
                     .map((a) => (
-                      <option key={a.id} value={a.id}>
+                      <option key={a.id} value={a.id.toString()}>
                         {a.id} - {a.gender}
                       </option>
                     ))}
                 </select>
+
               </div>
 
               <div className={styles.formGroup}>
                 <label>ID da mãe:</label>
-                <select name="mother_id" value={form.mother_id || ""} onChange={handleChange}>
+                <select name="mother_id" value={form.mother_id?.toString() || ""} onChange={handleChange}>
                   <option value="">Nenhum</option>
                   {farmAnimals
                     .filter((a) => a.gender.toLowerCase() === "fêmea")
                     .map((a) => (
-                      <option key={a.id} value={a.id}>
+                      <option key={a.id} value={a.id.toString()}>
                         {a.id} - {a.gender}
                       </option>
                     ))}
                 </select>
+
               </div>
 
             </div>
 
             <div className={styles.rightColumn}>
               <div className={styles.formGroup}>
-                <label>Feno para ingestão diária (kg):</label>
+                <label>Fardo para ingestão diária (kg):</label>
                 <input
                   type="number"
                   name="feeding_hay"

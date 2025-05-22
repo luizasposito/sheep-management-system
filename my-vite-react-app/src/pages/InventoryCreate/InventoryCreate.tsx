@@ -66,7 +66,7 @@ export const InventoryCreate: React.FC = () => {
 
   return (
     <PageLayout>
-      <h1 className={styles.title}>Adicionar Item ao Inventário</h1>
+      <h1 className={styles.title}>Adicionar item ao inventário</h1>
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <Card className={styles.card}>

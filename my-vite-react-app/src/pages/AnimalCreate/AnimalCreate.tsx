@@ -1,4 +1,3 @@
-// AnimalCreate.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
@@ -10,38 +9,45 @@ export const AnimalCreate: React.FC = () => {
   const navigate = useNavigate();
 
   const [sexo, setSexo] = useState("");
-  const [producaoLeiteira, setProducaoLeiteira] = useState("");
   const [nascimento, setNascimento] = useState(() => new Date().toISOString().split("T")[0]);
   const [fatherId, setFatherId] = useState("");
   const [motherId, setMotherId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [farmId, setFarmId] = useState<number | null>(null);
+  const [farmAnimals, setFarmAnimals] = useState<any[]>([]);
 
   useEffect(() => {
     document.title = "Adicionar Animal";
 
-    const fetchFarmId = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("Usuário não autenticado.");
 
-        const response = await fetch("http://localhost:8000/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        // Buscar dados do usuário
+        const userRes = await fetch("http://localhost:8000/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (!response.ok) throw new Error("Erro ao buscar informações do usuário.");
-
-        const userData = await response.json();
+        if (!userRes.ok) throw new Error("Erro ao buscar informações do usuário.");
+        const userData = await userRes.json();
         setFarmId(userData.farm_id);
+
+        // Buscar animais da fazenda
+        const animalsRes = await fetch("http://localhost:8000/sheep", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!animalsRes.ok) throw new Error("Erro ao buscar animais.");
+        const allAnimals = await animalsRes.json();
+        const sameFarmAnimals = allAnimals.filter((a: any) => a.farm_id === userData.farm_id);
+        setFarmAnimals(sameFarmAnimals);
+
       } catch (err: any) {
-        setError(err.message || "Erro ao buscar fazenda do usuário.");
+        setError(err.message || "Erro ao buscar dados.");
       }
     };
 
-    fetchFarmId();
+    fetchData();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,68 +61,35 @@ export const AnimalCreate: React.FC = () => {
       return;
     }
 
-    const novoAnimal: any = {
-      birth_date: nascimento,
-      gender: sexo.trim(),
-      status: status.trim(),
-      feeding_hay: 0,
-      feeding_feed: 0,
-      farm_id: farmId,
-    };
-
-    // Campos opcionais: IDs dos pais
-    if (fatherId.trim() !== "") novoAnimal.father_id = parseInt(fatherId);
-    if (motherId.trim() !== "") novoAnimal.mother_id = parseInt(motherId);
-
-    if (!novoAnimal.gender) {
-      setError("Por favor, preencha os campos obrigatórios.");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Usuário não autenticado.");
       setLoading(false);
       return;
     }
 
+    const novoAnimal: any = {
+      birth_date: nascimento,
+      gender: sexo.trim().toLowerCase(),
+      father_id: fatherId === "" ? null : Number(fatherId),
+      mother_id: motherId === "" ? null : Number(motherId),
+      farm_id: farmId,
+    };
+
     try {
-      const animalResponse = await fetch("http://localhost:8000/sheep/", {
+      const res = await fetch("http://localhost:8000/sheep", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(novoAnimal),
       });
 
-      if (!animalResponse.ok) {
-        const errData = await animalResponse.json().catch(() => ({}));
-        throw new Error(errData.detail || "Erro ao adicionar animal.");
-      }
-
-      const animalData = await animalResponse.json();
-      const animalId = animalData.id;
-
-      const volume = parseFloat(producaoLeiteira);
-      if (!isNaN(volume) && volume >= 0) {
-        const milkData = {
-          date: nascimento,
-          volume,
-        };
-
-        const milkResponse = await fetch(`http://localhost:8000/sheep/${animalId}/milk-yield`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(milkData),
-        });
-
-        if (!milkResponse.ok) {
-          const milkErr = await milkResponse.json().catch(() => ({}));
-          throw new Error(milkErr.detail || "Erro ao registrar produção de leite.");
-        }
-      }
-
-      navigate("/animal");
+      if (!res.ok) throw new Error("Erro ao criar animal.");
+      navigate("/animals");
     } catch (err: any) {
-      setError(err.message || "Erro desconhecido");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -124,82 +97,69 @@ export const AnimalCreate: React.FC = () => {
 
   return (
     <PageLayout>
-      <h1 className={styles.title}>Adicionar novo animal</h1>
+      <h1 className={styles.title}>Adicionar Animal</h1>
+      {error && <p className={styles.error}>{error}</p>}
 
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        <Card className={styles.card}>
-          <div className={styles.grid}>
-            <div className={styles.leftColumn}>
-              <label>
-                Data de nascimento:
-                <input
-                  type="date"
-                  value={nascimento}
-                  onChange={(e) => setNascimento(e.target.value)}
-                  max={new Date().toISOString().split("T")[0]}
-                  required
-                  disabled={loading}
-                />
-              </label>
-
-              <label>
-                Sexo:
-                <select value={sexo} onChange={(e) => setSexo(e.target.value)} disabled={loading} required>
-                  <option value="">Selecione</option>
-                  <option value="Fêmea">Fêmea</option>
-                  <option value="Macho">Macho</option>
-                </select>
-              </label>
-
-              <label>
-                Produção leiteira (em litros):
-                <input
-                  type="number"
-                  value={producaoLeiteira}
-                  onChange={(e) => setProducaoLeiteira(e.target.value)}
-                  placeholder="Litros"
-                  min="0"
-                  step="any"
-                  disabled={loading}
-                />
-              </label>
-
-              <label>
-                ID Pai (opcional):
-                <input
-                  type="number"
-                  value={fatherId}
-                  onChange={(e) => setFatherId(e.target.value)}
-                  min="1"
-                  disabled={loading}
-                />
-              </label>
-
-              <label>
-                ID Mãe (opcional):
-                <input
-                  type="number"
-                  value={motherId}
-                  onChange={(e) => setMotherId(e.target.value)}
-                  min="1"
-                  disabled={loading}
-                />
-              </label>
-            </div>
+      <Card className={styles.formCard}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label>Data de nascimento:</label>
+            <input
+              type="date"
+              value={nascimento}
+              onChange={(e) => setNascimento(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              required
+            />
           </div>
 
-          {error && <p className={styles.error}>{error}</p>}
-        </Card>
+          <div className={styles.formGroup}>
+            <label>Sexo:</label>
+            <select value={sexo} onChange={(e) => setSexo(e.target.value)} required>
+              <option value="">Selecione</option>
+              <option value="macho">Macho</option>
+              <option value="fêmea">Fêmea</option>
+            </select>
+          </div>
 
-        <div className={styles.buttonGroup}>
-          <Button variant="dark" type="submit" disabled={loading || !farmId}>
-            {loading ? "Salvando..." : "Salvar"}
-          </Button>
-          <Button variant="light" type="button" onClick={() => navigate("/animal")} disabled={loading}>
-            Cancelar
-          </Button>
-        </div>
-      </form>
+          <div className={styles.formGroup}>
+            <label>ID do pai:</label>
+            <select value={fatherId} onChange={(e) => setFatherId(e.target.value)}>
+              <option value="">Nenhum</option>
+              {farmAnimals
+                .filter((a) => (a.gender || "").toLowerCase() === "macho")
+                .map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.id} - {a.gender}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>ID da mãe:</label>
+            <select value={motherId} onChange={(e) => setMotherId(e.target.value)}>
+              <option value="">Nenhum</option>
+              {farmAnimals
+                .filter((a) => (a.gender || "").toLowerCase() === "fêmea")
+                .map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.id} - {a.gender}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className={styles.buttonGroup}>
+            <Button variant="dark" type="submit" disabled={loading}>
+              {loading ? "Salvando..." : "Salvar"}
+            </Button>
+            <Button variant="dark" type="button" onClick={() => navigate(-1)}>
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </Card>
     </PageLayout>
   );
 };

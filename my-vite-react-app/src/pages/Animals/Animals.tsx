@@ -380,7 +380,7 @@ export const Animals: React.FC = () => {
 
       <div className={styles.buttonGroup}>
         <RoleOnly role="farmer">
-          <Button variant="light" onClick={() => navigate("/animal/add")}>Criar</Button>
+          <Button variant="light" onClick={() => navigate("/animal/add")}>Adicionar animal</Button>
         </RoleOnly>
       </div>
 
@@ -439,7 +439,6 @@ export const Animals: React.FC = () => {
                   <div className={styles.cardContent}>
                     <p><strong>ID:</strong> {animal.id}</p>
 
-                    {/* Exibir "produção leiteira" somente se animal não for macho */}
                     {animal.gender !== "Macho" && (
                       <p><strong>produção leiteira:</strong> {animal.producaoLeiteira}</p>
                     )}
@@ -449,7 +448,6 @@ export const Animals: React.FC = () => {
                   </div>
                 </Card>
 
-                {/* Se for macho, não mostrar botões */}
                 {animal.gender !== "Macho" && (
                   activeFormId === animal.id ? (
                     <div className={styles.buttonContainer}>
@@ -475,31 +473,36 @@ export const Animals: React.FC = () => {
                     </div>
                   ) : (
                     <div className={styles.buttonContainer}>
-                      <Button
-                        onClick={() => {
-                          setActiveFormId(animal.id);
-                          setFormVolume("");
-                          setExistingVolume(null);
-                          setFormMode("update");
-                        }}
-                      >
-                        Atualizar produção
-                      </Button>
-                      <Button
-                        onClick={async () => {
-                          const vol = await fetchTodayMilkProduction(animal.id);
-                          if (vol !== null) {
+                      <RoleOnly role="farmer">
+                        <Button
+                          onClick={() => {
                             setActiveFormId(animal.id);
-                            setFormVolume(vol.toString());
-                            setExistingVolume(vol);
-                            setFormMode("edit");
-                          } else {
-                            alert("Nenhum registro encontrado para hoje.");
-                          }
-                        }}
-                      >
-                        Editar produção
-                      </Button>
+                            setFormVolume("");
+                            setExistingVolume(null);
+                            setFormMode("update");
+                          }}
+                        >
+                          Atualizar produção
+                        </Button>
+                      </RoleOnly>
+
+                      <RoleOnly role="farmer">
+                        <Button
+                          onClick={async () => {
+                            const vol = await fetchTodayMilkProduction(animal.id);
+                            if (vol !== null) {
+                              setActiveFormId(animal.id);
+                              setFormVolume(vol.toString());
+                              setExistingVolume(vol);
+                              setFormMode("edit");
+                            } else {
+                              alert("Nenhum registro encontrado para hoje.");
+                            }
+                          }}
+                        >
+                          Editar produção
+                        </Button>
+                      </RoleOnly>
                     </div>
                   )
                 )}

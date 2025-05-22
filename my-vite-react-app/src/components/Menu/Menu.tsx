@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./Menu.module.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../Button/Button";
 import { useUser } from "../../UserContext";
 
@@ -9,6 +9,10 @@ export const Menu: React.FC = () => {
   const menuRef = useRef<HTMLUListElement>(null);
   const { user, setUser } = useUser();
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const currentPath = location.pathname + location.search;
+
 
   const handleMenuClick = (menuName: string) => {
     setOpenMenu(prev => (prev === menuName ? null : menuName));
@@ -81,41 +85,50 @@ export const Menu: React.FC = () => {
         {user?.role === "farmer" && (
           <li className={styles.menuItem}>
             <Link to="/dashboard" className={styles.menuLink}>
-              <Button variant="light">Início</Button>
+              <Button variant={currentPath.startsWith("/dashboard") ? "dark" : "light"}>
+                Início
+              </Button>
             </Link>
           </li>
         )}
 
+
         {menuItems
           .filter(item => user?.role && item.roles.includes(user.role))
-          .map(({ name, subItems }) => (
-            <li key={name} className={styles.menuItem}>
-              <Button
-                variant="light"
-                onClick={() => handleMenuClick(name)}
-                aria-haspopup="true"
-                aria-expanded={openMenu === name}
-              >
-                {name}
-              </Button>
+          .map(({ name, subItems }) => {
+            const isActive = subItems.some(sub => currentPath.startsWith(sub.to));
 
-              {openMenu === name && (
-                <ul className={styles.submenu} aria-label={`Submenu ${name}`}>
-                  {subItems.map(({ label, to }) => (
-                    <li key={label}>
-                      <Link
-                        to={to}
-                        className={styles.submenuLink}
-                        onClick={() => setOpenMenu(null)}
-                      >
-                        {label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
+            return (
+              <li key={name} className={styles.menuItem}>
+                <Button
+                  variant={isActive ? "dark" : "light"}
+                  onClick={() => handleMenuClick(name)}
+                  aria-haspopup="true"
+                  aria-expanded={openMenu === name}
+                >
+                  {name}
+                </Button>
+
+                {openMenu === name && (
+                  <ul className={styles.submenu} aria-label={`Submenu ${name}`}>
+                    {subItems.map(({ label, to }) => (
+                      <li key={label}>
+                        <Link
+                          to={to}
+                          className={styles.submenuLink}
+                          onClick={() => setOpenMenu(null)}
+                        >
+                          {label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })
+        }
+
 
         {/* Botão de Sair (visível para todos os usuários autenticados) */}
         {user && (
