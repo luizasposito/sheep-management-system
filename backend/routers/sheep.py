@@ -8,13 +8,15 @@ from models.farm_inventory import FarmInventory
 from models.farmer import Farmer
 from models.milk_production import MilkProduction
 from models.sheep_parentage import SheepParentage
-from schemas.sheep import SheepCreate, SheepResponse
+from schemas.sheep import SheepCreate, SheepResponse, SheepUpdate
 from schemas.milk_production import MilkProductionCreate, MilkProductionResponse, MilkProductionUpdate
 from typing import List
 from routers.auth import get_current_user
 from schemas.auth import TokenUser
 from pydantic import BaseModel
 from database import SessionLocal
+from datetime import date
+
 
 # router for all /sheep endpoints
 router = APIRouter()
@@ -62,16 +64,27 @@ def create_sheep(
     return new_sheep
 
 
-
 # GET /sheep - return a list of all sheep
 @router.get("/", response_model=List[SheepResponse])
 def get_all_sheep(
     db: Session = Depends(get_db),
-    current_user: TokenUser = Depends(get_current_user)  # exige autenticação
+    current_user: TokenUser = Depends(get_current_user)
 ):
-    # get all sheep from the database
     sheep_list = db.query(Sheep).all()
-    return sheep_list
+    enriched_list = []
+
+    for sheep in sheep_list:
+        latest_milk = None
+        if sheep.milk_productions:
+            latest_milk = max(sheep.milk_productions, key=lambda m: m.date)
+
+        sheep_data = {
+            **sheep.__dict__,
+            "milk_production": latest_milk.volume if latest_milk else None
+        }
+        enriched_list.append(sheep_data)
+
+    return enriched_list
 
 
 
@@ -82,48 +95,76 @@ def get_sheep_by_id(
     db: Session = Depends(get_db),
     current_user: TokenUser = Depends(get_current_user)
 ):
-    # look for a sheep by ID
+    # Busca o animal
     sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
 
-    # if not found, raise an error
     if sheep is None:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
-    return sheep
+    # Busca a produção de leite do dia atual
+    today = date.today()
+    milk_today = (
+        db.query(MilkProduction)
+        .filter(MilkProduction.sheep_id == sheep_id, MilkProduction.date == today)
+        .first()
+    )
+
+    # Extrai pai e mãe (se existirem)
+    father_id = None
+    mother_id = None
+    for rel in sheep.parents:
+        parent = rel.parent
+        if parent:
+            gender = parent.gender.lower() if parent.gender else None
+            if gender == "macho":
+                father_id = parent.id
+            elif gender == "fêmea":
+                mother_id = parent.id
+
+    # Constrói a resposta
+    sheep_data = {
+        **sheep.__dict__,
+        "father_id": father_id,
+        "mother_id": mother_id,
+        "milk_production": milk_today.volume if milk_today else None
+    }
+
+    return sheep_data
+
 
 
 
 # PUT /sheep/{id} - update existing sheep
-@router.put("/{sheep_id}", response_model=SheepResponse)
+@router.put("/{sheep_id}")
 def update_sheep(
     sheep_id: int,
-    updated_sheep: SheepCreate,
+    data: SheepUpdate,
     db: Session = Depends(get_db),
-    current_user: TokenUser = Depends(get_current_user)
+    current_user = Depends(get_current_user)
 ):
-    # only farmers
-    if current_user.role != "farmer":
-        raise HTTPException(status_code=403, detail="Access forbidden")
-
-    # search sheep
     sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
-    # verify if farmer is the right one
-    farmer = db.query(Farmer).filter(Farmer.id == current_user.id).first()
-    if not farmer or farmer.farm_id != sheep.farm_id:
-        raise HTTPException(status_code=403, detail="You don't have permission to update this sheep")
+    # Atualiza campos simples
+    for field, value in data.dict(exclude_unset=True).items():
+        if field not in ["father_id", "mother_id"]:
+            setattr(sheep, field, value)
 
-    # update sheep
-    for field, value in updated_sheep.model_dump().items():
-        setattr(sheep, field, value)
+    # Atualiza pai/mãe via relacionamento
+    # Remover ligações antigas
+    db.query(SheepParentage).filter(SheepParentage.offspring_id == sheep_id).delete()
+
+    if data.father_id:
+        parentage = SheepParentage(parent_id=data.father_id, offspring_id=sheep_id)
+        db.add(parentage)
+    if data.mother_id:
+        parentage = SheepParentage(parent_id=data.mother_id, offspring_id=sheep_id)
+        db.add(parentage)
 
     db.commit()
     db.refresh(sheep)
-
     return sheep
-
 
 
 
@@ -146,8 +187,6 @@ def delete_sheep(
     db.delete(sheep)
     db.commit()
     return
-
-
 
 
 # Endpoint para atualizar o rendimento de leite
@@ -193,8 +232,6 @@ async def update_milk_yield(
         "milk_production": new_milk_production.volume,
         "date": new_milk_production.date
     }
-
-
 
 
 # GET /sheep/{id}/parents

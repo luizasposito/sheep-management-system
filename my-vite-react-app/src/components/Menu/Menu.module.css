@@ -61,3 +61,30 @@
   background-color: #d2e5be;
   border-radius: 8px;
 }
+
+
+.logoutWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.logoutCardContent {
+  position: absolute;
+  top: var(--logout-card-top);
+  left: var(--logout-card-left);
+  transform: translateX(-50%);
+  padding: 1rem;
+  z-index: 100;
+}
+
+
+.hidden {
+  display: none;
+}
+
+.logoutButtons {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
