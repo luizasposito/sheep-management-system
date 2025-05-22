@@ -7,6 +7,7 @@ from models.farm import Farm
 from models.farm_inventory import FarmInventory
 from models.farmer import Farmer
 from models.milk_production import MilkProduction
+from models.sheep_parentage import SheepParentage
 from schemas.sheep import SheepCreate, SheepResponse
 from schemas.milk_production import MilkProductionCreate, MilkProductionResponse, MilkProductionUpdate
 from typing import List
@@ -15,10 +16,8 @@ from schemas.auth import TokenUser
 from pydantic import BaseModel
 from database import SessionLocal
 
-
 # router for all /sheep endpoints
 router = APIRouter()
-
 
 def get_db():
     db = SessionLocal()
@@ -38,12 +37,29 @@ def create_sheep(
     if current_user.role != "farmer":
         raise HTTPException(status_code=403, detail="Access forbidden")
 
-    new_sheep = Sheep(**sheep.model_dump())
+    # Cria a ovelha
+    new_sheep_data = sheep.model_dump(exclude={"father_id", "mother_id"})
+    new_sheep = Sheep(**new_sheep_data)
     db.add(new_sheep)
     db.commit()
     db.refresh(new_sheep)
-    return new_sheep
 
+    # Cria vínculos de paternidade/maternidade se existirem
+    if sheep.father_id:
+        father = db.query(Sheep).filter(Sheep.id == sheep.father_id).first()
+        if not father:
+            raise HTTPException(status_code=404, detail="Father not found")
+        db.add(SheepParentage(parent_id=sheep.father_id, offspring_id=new_sheep.id))
+
+    if sheep.mother_id:
+        mother = db.query(Sheep).filter(Sheep.id == sheep.mother_id).first()
+        if not mother:
+            raise HTTPException(status_code=404, detail="Mother not found")
+        db.add(SheepParentage(parent_id=sheep.mother_id, offspring_id=new_sheep.id))
+
+    db.commit()
+
+    return new_sheep
 
 
 
@@ -74,7 +90,6 @@ def get_sheep_by_id(
         raise HTTPException(status_code=404, detail="Sheep not found")
 
     return sheep
-
 
 
 
@@ -178,3 +193,41 @@ async def update_milk_yield(
         "milk_production": new_milk_production.volume,
         "date": new_milk_production.date
     }
+
+
+
+
+# GET /sheep/{id}/parents
+@router.get("/{sheep_id}/parents", response_model=List[SheepResponse])
+def get_parents_of_sheep(
+    sheep_id: int,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+    if not sheep:
+        raise HTTPException(status_code=404, detail="Sheep not found")
+
+    # Buscar os pais (ovelhas onde sheep é o filho)
+    parent_relations = db.query(SheepParentage).filter(SheepParentage.offspring_id == sheep_id).all()
+    parent_sheep = [relation.parent for relation in parent_relations]
+
+    return parent_sheep
+
+
+# GET /sheep/{id}/children
+@router.get("/{sheep_id}/children", response_model=List[SheepResponse])
+def get_children_of_sheep(
+    sheep_id: int,
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+    if not sheep:
+        raise HTTPException(status_code=404, detail="Sheep not found")
+
+    # Buscar os filhos (ovelhas onde sheep é o pai/mãe)
+    child_relations = db.query(SheepParentage).filter(SheepParentage.parent_id == sheep_id).all()
+    child_sheep = [relation.offspring for relation in child_relations]
+
+    return child_sheep

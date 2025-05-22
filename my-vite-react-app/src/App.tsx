@@ -1,8 +1,6 @@
 
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-
-
 import { Login } from './pages/Login/Login'
 import { Dashboard } from './pages/Dashboard/Dashboard'
 import { Animals } from './pages/Animals/Animals'
@@ -13,7 +11,6 @@ import { AppointmentCreate } from './pages/AppointmentCreate/AppointmentCreate'
 import { AppointmentEdit } from './pages/AppointmentEdit/AppointmentEdit'
 import { AppointmentDetail } from './pages/AppointmentDetail/AppointmentDetail'
 import { Appointments } from './pages/Appointments/Appointments'
-import { AppointmentHistory } from './pages/AppointmentHistory/AppointmentHistory'
 import { Inventory } from './pages/Inventory/Inventory'
 import { InventoryCreate } from './pages/InventoryCreate/InventoryCreate'
 
@@ -34,10 +31,9 @@ const App: React.FC = () => {
       <Route path="/inventory/add" element={<InventoryCreate />} />
 
       <Route path="/appointment" element={<Appointments />} />
-      <Route path="/appointment/history" element={<AppointmentHistory />} />
       <Route path="/appointment/:id" element={<AppointmentDetail />} />
       <Route path="/appointment/:id/edit" element={<AppointmentEdit />} />
-      <Route path="/appointment/create" element={<AppointmentCreate />} />
+      <Route path="/appointment/add" element={<AppointmentCreate />} />
 
     </Routes>
   )

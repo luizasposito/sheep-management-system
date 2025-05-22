@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
 from database import Base
 from sqlalchemy.orm import relationship
+from typing import Optional
+from models.appointment_sheep import appointment_sheep
 
 class Sheep(Base):
     __tablename__ = "sheep"
@@ -11,7 +13,21 @@ class Sheep(Base):
     feeding_hay = Column(Float(5, 2), nullable=False, default=0)
     feeding_feed = Column(Float(5, 2), nullable=False, default=0)
     gender = Column(String(10))
-    status = Column(String(50))
     group_id = Column(Integer, ForeignKey("sheep_group.id"))  # Relacionado ao grupo de ovelhas
 
     milk_productions = relationship("MilkProduction", back_populates="sheep")
+    appointments = relationship("Appointment", secondary=appointment_sheep, back_populates="sheeps")
+
+    # filhos deste animal (ou seja, este é o pai ou a mãe)
+    children = relationship(
+        "SheepParentage",
+        foreign_keys="[SheepParentage.parent_id]",
+        back_populates="parent"
+    )
+
+    # pais deste animal (ou seja, este é o filho)
+    parents = relationship(
+        "SheepParentage",
+        foreign_keys="[SheepParentage.offspring_id]",
+        back_populates="offspring"
+    )

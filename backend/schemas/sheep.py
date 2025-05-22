@@ -11,7 +11,10 @@ class SheepCreate(BaseModel):
     feeding_hay: float
     feeding_feed: float
     gender: str
-    status: str
+    group_id: Optional[int] = None
+
+    father_id: Optional[int] = None
+    mother_id: Optional[int] = None
 
 # GET/POST responses
 class SheepResponse(SheepCreate):

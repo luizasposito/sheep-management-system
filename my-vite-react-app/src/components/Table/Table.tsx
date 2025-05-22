@@ -1,12 +1,12 @@
-
-
 import React from "react";
 import styles from "./Table.module.css";
 
-type TableProps = {
+type TableCell = string | number | React.ReactNode;
+
+interface TableProps {
   headers: string[];
-  data: (string | number)[][];
-};
+  data: TableCell[][];
+}
 
 export const Table: React.FC<TableProps> = ({ headers, data }) => {
   return (

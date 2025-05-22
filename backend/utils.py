@@ -17,7 +17,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 # JWT Setup
 SECRET_KEY = os.getenv("SECRET_KEY", "secret")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 300
 
 
 # how to create an access token

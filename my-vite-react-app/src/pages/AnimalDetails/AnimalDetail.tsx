@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Calendar from "react-calendar";
@@ -7,55 +6,120 @@ import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { RoleOnly } from "../../components/RoleOnly";
 import styles from "./AnimalDetail.module.css";
-import "react-calendar/dist/Calendar.css"; // calendário base
+import "react-calendar/dist/Calendar.css";
 
 type Consulta = {
+  id: number;
   data: string;
-  titulo: string;
-  animais: string[];
   motivo: string;
 };
 
-const mockConsultas: Consulta[] = [
-  {
-    data: "2025-05-12",
-    titulo: "Vacinação coletiva",
-    animais: ["A123", "B456"],
-    motivo: "Aplicação da vacina anual"
-  },
-  {
-    data: "2025-05-15",
-    titulo: "Consulta de rotina",
-    animais: ["A123"],
-    motivo: "Exame preventivo"
-  }
-];
+type Animal = {
+  id: number;
+  gender: string;
+  birth_date: string;
+  feeding_hay: number;
+  feeding_feed: number;
+  farm_id: number;
+  group_id?: number;
+};
+
+type SheepGroup = {
+  id: number;
+  name: string;
+  description?: string;
+  farm_id: number;
+};
 
 export const AnimalDetails: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [animal, setAnimal] = useState<any>(null);
+  const [animal, setAnimal] = useState<Animal | null>(null);
+  const [group, setGroup] = useState<SheepGroup | null>(null);
+  const [consultas, setConsultas] = useState<Consulta[]>([]);
   const [viewMode, setViewMode] = useState<"calendario" | "lista">("lista");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const [parents, setParents] = useState<Animal[]>([]);
+  const [children, setChildren] = useState<Animal[]>([]);
+
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    document.title = "Detalhes Animal";
+    document.title = "Detalhes animal";
+    if (!id || !token) return;
 
-    // Simulando fetch de dados
-    setAnimal({
-      sexo: "Fêmea",
-      status: "Ativa",
-      producao: 22,
-      comentario: "Animal saudável e com excelente produção"
-    });
-  }, [id]);
+    const fetchAnimal = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/sheep/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Erro ao buscar animal");
+        const data = await res.json();
+        setAnimal(data);
+
+        if (data.group_id) {
+          const groupRes = await fetch(`http://localhost:8000/sheep-group/${data.group_id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (groupRes.ok) {
+            const groupData = await groupRes.json();
+            setGroup(groupData);
+          }
+        }
+
+        // Fetch parents
+        const parentsRes = await fetch(`http://localhost:8000/sheep/${id}/parents`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (parentsRes.ok) {
+          const parentData = await parentsRes.json();
+          setParents(parentData);
+        }
+
+        // Fetch children
+        const childrenRes = await fetch(`http://localhost:8000/sheep/${id}/children`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (childrenRes.ok) {
+          const childrenData = await childrenRes.json();
+          setChildren(childrenData);
+        }
+      } catch (err: any) {
+        setError(err.message);
+      }
+    };
+
+    const fetchConsultas = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/appointment?sheep_id=${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Erro ao buscar consultas");
+        const data = await res.json();
+        setConsultas(
+          data.map((c: any) => ({
+            id: c.id,
+            data: c.date.split("T")[0],
+            motivo: c.motivo || "Sem motivo informado",
+          }))
+        );
+      } catch (err: any) {
+        setError(err.message);
+      }
+    };
+
+    fetchAnimal();
+    fetchConsultas();
+  }, [id, token]);
 
   const consultasDoDia = selectedDate
-    ? mockConsultas.filter(c => c.data === selectedDate.toISOString().split("T")[0])
+    ? consultas.filter(c => c.data === selectedDate.toISOString().split("T")[0])
     : [];
 
-  const datasMarcadas = new Set(mockConsultas.map(c => c.data));
+  const datasMarcadas = new Set(consultas.map(c => c.data));
 
   const toggleView = () => {
     setViewMode(viewMode === "lista" ? "calendario" : "lista");
@@ -67,10 +131,13 @@ export const AnimalDetails: React.FC = () => {
       <h1 className={styles.title}>Animal {id}</h1>
 
       <div className={styles.buttonGroup}>
+        <Button variant="light" onClick={() => navigate(`/animal`)}>Lista de animais</Button>
         <RoleOnly role="farmer">
           <Button variant="light" onClick={() => navigate(`/animal/${id}/edit`)}>Editar</Button>
         </RoleOnly>
       </div>
+
+      {error && <p className={styles.error}>{error}</p>}
 
       <div className={styles.grid}>
         {/* Dados principais */}
@@ -78,25 +145,33 @@ export const AnimalDetails: React.FC = () => {
           <div className={styles.columns}>
             <div>
               <p><strong>ID:</strong> {id}</p>
-              <p><strong>Sexo:</strong> {animal?.sexo || "Carregando..."}</p>
+              <p><strong>Sexo:</strong> {animal?.gender || "Carregando..."}</p>
+              <strong>Pai e Mãe</strong>
+              <div className={styles.chipList}>
+                {parents.length === 0 ? (
+                  <p>Nenhuma informação disponível.</p>
+                ) : (
+                  parents.map((parent) => (
+                    <Button
+                      key={parent.id}
+                      variant="dark"
+                      onClick={() => navigate(`/animal/${parent.id}`)}
+                    >
+                      {parent.gender.toLowerCase() === "macho" ? `Pai - ${parent.id}` : `Mãe - ${parent.id}`}
+                    </Button>
+                  ))
+                )}
+              </div>
             </div>
             <div>
-              <p><strong>Status:</strong> {animal?.status || "Carregando..."}</p>
-              <p><strong>Produção leiteira (em litros):</strong> {animal?.producao ?? "Carregando..."}</p>
+              <p><strong>Grupo:</strong> {group?.name || "Sem grupo"}</p>
+              {/* Exibir produção leiteira só se for fêmea */}
+              {animal?.gender === "Fêmea" && (
+                <p><strong>Produção leiteira (em litros):</strong> {"N/D"}</p>
+              )}
+              <p><strong>Fardo para ingestão diária:</strong> {animal?.feeding_hay ?? "N/D"} kg</p>
+              <p><strong>Ração para ingestão diária:</strong> {animal?.feeding_feed ?? "N/D"} kg</p>
             </div>
-          </div>
-
-          <div>
-            <strong>Pai e Mãe</strong>
-            <div className={styles.chipList}>
-              <Button variant="dark">P123</Button>
-              <Button variant="dark">M456</Button>
-            </div>
-          </div>
-
-          <div className={styles.commentsSection}>
-            <h3>Comentários</h3>
-            <p className={styles.commentText}>{animal?.comentario || "Nenhum comentário disponível."}</p>
           </div>
         </Card>
 
@@ -104,13 +179,21 @@ export const AnimalDetails: React.FC = () => {
         <Card className={styles.crias}>
           <h3>Crias</h3>
           <div className={styles.chipGrid}>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Button key={i} variant="dark">&lt;id&gt;</Button>
-            ))}
+            {children.length === 0 ? (
+              <p>Nenhuma cria registrada.</p>
+            ) : (
+              children.map((child) => (
+                <Button
+                  key={child.id}
+                  variant="dark"
+                  onClick={() => navigate(`/animal/${child.id}`)}
+                >
+                  C{child.id}
+                </Button>
+              ))
+            )}
           </div>
         </Card>
-
-        
 
         {/* Visualização de marcações */}
         <Card className={styles.calendar}>
@@ -123,14 +206,18 @@ export const AnimalDetails: React.FC = () => {
 
           {viewMode === "lista" ? (
             <div className={styles.scrollArea}>
-              {mockConsultas.map((c, i) => (
-                <Card key={i} className={styles.historyItem}>
+              {consultas.map((c) => (
+                <Card
+                  key={c.id}
+                  className={styles.historyItem}
+                  onClick={() => navigate(`/appointment/${c.id}`)}
+                  style={{ cursor: "pointer" }}
+                >
                   <p><strong>Data:</strong> {c.data}</p>
-                  <p><strong>Título:</strong> {c.titulo}</p>
-                  <p><strong>Animais:</strong> {c.animais.join(", ")}</p>
                   <p><strong>Motivo:</strong> {c.motivo}</p>
                 </Card>
               ))}
+
             </div>
           ) : (
             <div className={styles.calendarGrid}>
@@ -138,9 +225,7 @@ export const AnimalDetails: React.FC = () => {
                 onClickDay={setSelectedDate}
                 tileContent={({ date }) => {
                   const dateStr = date.toISOString().split("T")[0];
-                  return datasMarcadas.has(dateStr) ? (
-                    <div className={styles.dot}></div>
-                  ) : null;
+                  return datasMarcadas.has(dateStr) ? <div className={styles.dot}></div> : null;
                 }}
               />
               {selectedDate && (
@@ -149,13 +234,17 @@ export const AnimalDetails: React.FC = () => {
                   {consultasDoDia.length === 0 ? (
                     <p>Nenhuma consulta neste dia.</p>
                   ) : (
-                    consultasDoDia.map((c, i) => (
-                      <Card key={i} className={styles.historyItem}>
-                        <p><strong>Título:</strong> {c.titulo}</p>
-                        <p><strong>Animais:</strong> {c.animais.join(", ")}</p>
+                    consultasDoDia.map((c) => (
+                      <Card
+                        key={c.id}
+                        className={styles.historyItem}
+                        onClick={() => navigate(`/appointment/${c.id}`)}
+                        style={{ cursor: "pointer" }}
+                      >
                         <p><strong>Motivo:</strong> {c.motivo}</p>
                       </Card>
                     ))
+
                   )}
                 </div>
               )}

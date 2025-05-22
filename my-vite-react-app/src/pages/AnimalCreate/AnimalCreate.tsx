@@ -1,140 +1,165 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
-import styles from "./AnimalCreate.module.css"; // reutilizando os mesmos estilos
+import styles from "./AnimalCreate.module.css";
 
 export const AnimalCreate: React.FC = () => {
   const navigate = useNavigate();
 
+  const [sexo, setSexo] = useState("");
+  const [nascimento, setNascimento] = useState(() => new Date().toISOString().split("T")[0]);
+  const [fatherId, setFatherId] = useState("");
+  const [motherId, setMotherId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [farmId, setFarmId] = useState<number | null>(null);
+  const [farmAnimals, setFarmAnimals] = useState<any[]>([]);
+
   useEffect(() => {
     document.title = "Adicionar Animal";
-  }, []);
 
-  // Estados locais para os campos do formulário
-  const [sexo, setSexo] = useState("");
-  const [status, setStatus] = useState("");
-  const [producaoLeiteira, setProducaoLeiteira] = useState("");
-  const [pai, setPai] = useState("");
-  const [mae, setMae] = useState("");
-  const [comentarios, setComentarios] = useState("");
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Usuário não autenticado.");
 
-  // Geração fictícia de ID e data atual
-  const generatedId = "00X"; // Substituir por lógica real
-  const nascimento = new Date().toISOString().split("T")[0]; // formato yyyy-mm-dd
+        // Buscar dados do usuário
+        const userRes = await fetch("http://localhost:8000/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!userRes.ok) throw new Error("Erro ao buscar informações do usuário.");
+        const userData = await userRes.json();
+        setFarmId(userData.farm_id);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+        // Buscar animais da fazenda
+        const animalsRes = await fetch("http://localhost:8000/sheep", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!animalsRes.ok) throw new Error("Erro ao buscar animais.");
+        const allAnimals = await animalsRes.json();
+        const sameFarmAnimals = allAnimals.filter((a: any) => a.farm_id === userData.farm_id);
+        setFarmAnimals(sameFarmAnimals);
 
-    const novoAnimal = {
-      id: generatedId,
-      dataNascimento: nascimento,
-      sexo,
-      status,
-      producaoLeiteira,
-      pai,
-      mae,
-      comentarios,
+      } catch (err: any) {
+        setError(err.message || "Erro ao buscar dados.");
+      }
     };
 
-    console.log("Novo animal:", novoAnimal);
+    fetchData();
+  }, []);
 
-    // Aqui você pode fazer o POST para o backend...
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    navigate("/animal"); // redirecionar após salvar
+    if (!farmId) {
+      setError("ID da fazenda não encontrado.");
+      setLoading(false);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Usuário não autenticado.");
+      setLoading(false);
+      return;
+    }
+
+    const novoAnimal: any = {
+      birth_date: nascimento,
+      gender: sexo.trim().toLowerCase(),
+      father_id: fatherId === "" ? null : Number(fatherId),
+      mother_id: motherId === "" ? null : Number(motherId),
+      farm_id: farmId,
+    };
+
+    try {
+      const res = await fetch("http://localhost:8000/sheep", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(novoAnimal),
+      });
+
+      if (!res.ok) throw new Error("Erro ao criar animal.");
+      navigate("/animals");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <PageLayout>
-      <h1 className={styles.title}>Adicionar novo animal</h1>
+      <h1 className={styles.title}>Adicionar Animal</h1>
+      {error && <p className={styles.error}>{error}</p>}
 
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <Card className={styles.card}>
-          <div className={styles.grid}>
-            <div className={styles.leftColumn}>
-              <label>
-                ID:
-                <input type="text" value={generatedId} readOnly />
-              </label>
-
-              <label>
-                Data de nascimento:
-                <input type="date" value={nascimento} readOnly />
-              </label>
-
-              <label>
-                Sexo:
-                <select value={sexo} onChange={(e) => setSexo(e.target.value)}>
-                  <option value="">Selecione</option>
-                  <option value="Fêmea">Fêmea</option>
-                  <option value="Macho">Macho</option>
-                </select>
-              </label>
-
-              <label>
-                Status:
-                <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                  <option value="">Selecione</option>
-                  <option value="Cria">Cria</option>
-                  <option value="Prenha">Prenha</option>
-                  <option value="Pós-parto">Pós-parto</option>
-                  <option value="Macho">Macho</option>
-                </select>
-              </label>
-
-              <label>
-                Produção leiteira (em litros):
-                <input
-                  type="number"
-                  value={producaoLeiteira}
-                  onChange={(e) => setProducaoLeiteira(e.target.value)}
-                  placeholder="Litros"
-                />
-              </label>
-            </div>
-
-            <div className={styles.rightColumn}>
-              <label>
-                Pai:
-                <input
-                  type="text"
-                  value={pai}
-                  onChange={(e) => setPai(e.target.value)}
-                  placeholder="ID do pai"
-                />
-              </label>
-
-              <label>
-                Mãe:
-                <input
-                  type="text"
-                  value={mae}
-                  onChange={(e) => setMae(e.target.value)}
-                  placeholder="ID da mãe"
-                />
-              </label>
-            </div>
+      <Card className={styles.formCard}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label>Data de nascimento:</label>
+            <input
+              type="date"
+              value={nascimento}
+              onChange={(e) => setNascimento(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              required
+            />
           </div>
 
-          {/* Campo de comentários */}
-          <label className={styles.fullWidth}>
-            Comentários:
-            <textarea
-              value={comentarios}
-              onChange={(e) => setComentarios(e.target.value)}
-              rows={4}
-              placeholder="Informações adicionais sobre o animal"
-            />
-          </label>
-        </Card>
+          <div className={styles.formGroup}>
+            <label>Sexo:</label>
+            <select value={sexo} onChange={(e) => setSexo(e.target.value)} required>
+              <option value="">Selecione</option>
+              <option value="macho">Macho</option>
+              <option value="fêmea">Fêmea</option>
+            </select>
+          </div>
 
-        <div className={styles.buttonGroup}>
-          <Button variant="dark" type="submit">Salvar</Button>
-          <Button variant="light" type="button" onClick={() => navigate("/animal")}>Cancelar</Button>
-        </div>
-      </form>
+          <div className={styles.formGroup}>
+            <label>ID do pai:</label>
+            <select value={fatherId} onChange={(e) => setFatherId(e.target.value)}>
+              <option value="">Nenhum</option>
+              {farmAnimals
+                .filter((a) => (a.gender || "").toLowerCase() === "macho")
+                .map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.id} - {a.gender}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>ID da mãe:</label>
+            <select value={motherId} onChange={(e) => setMotherId(e.target.value)}>
+              <option value="">Nenhum</option>
+              {farmAnimals
+                .filter((a) => (a.gender || "").toLowerCase() === "fêmea")
+                .map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.id} - {a.gender}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className={styles.buttonGroup}>
+            <Button variant="dark" type="submit" disabled={loading}>
+              {loading ? "Salvando..." : "Salvar"}
+            </Button>
+            <Button variant="dark" type="button" onClick={() => navigate(-1)}>
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </Card>
     </PageLayout>
   );
 };

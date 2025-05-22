@@ -24,3 +24,9 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  .button:focus,
+  .button:active {
+    outline: none;
+    box-shadow: none;
+  }

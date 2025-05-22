@@ -5,11 +5,17 @@ type CardProps = {
   children: React.ReactNode;
   className?: string;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
+  style?: React.CSSProperties;
 };
 
-export const Card: React.FC<CardProps> = ({ children, className = "", onClick }) => {
+
+export const Card: React.FC<CardProps> = ({ children, className = "", onClick, style }) => {
   return (
-    <div className={`${styles.card} ${className}`} onClick={onClick}>
+    <div
+      className={`${styles.card} ${className}`}
+      onClick={onClick}
+      style={style}
+    >
       {children}
     </div>
   );

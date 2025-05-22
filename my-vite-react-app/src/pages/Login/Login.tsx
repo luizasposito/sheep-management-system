@@ -2,17 +2,24 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
+import { useUser } from "../../UserContext";
 import styles from "./Login.module.css";
+import showPassIcon from "../../icons/show-pass.png";
+import hidePassIcon from "../../icons/hide-pass.png";
+
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const { setUser } = useUser();
 
   useEffect(() => {
     document.title = "Login";
   }, []);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +55,7 @@ export const Login: React.FC = () => {
       }
 
       const userData = await meRes.json();
+      setUser(userData);
       console.log("Usuário autenticado:", userData);
 
       // Decodificar token e navegar conforme role
@@ -80,7 +88,7 @@ export const Login: React.FC = () => {
 
         <form
           onSubmit={handleLogin}
-          style={{ width: "100%", display: "flex", flexDirection: "column", gap: "1rem" }}
+          className={styles.form}
         >
           <div className={styles.inputGroup}>
             <label htmlFor="email">Email</label>
@@ -97,15 +105,28 @@ export const Login: React.FC = () => {
 
           <div className={styles.inputGroup}>
             <label htmlFor="senha">Senha</label>
-            <input
-              id="senha"
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="inserir senha"
-              required
-              disabled={loading}
-            />
+            <div className={styles.passwordWrapper}>
+              <input
+                id="senha"
+                type={showPassword ? "text" : "password"}
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                placeholder="inserir senha"
+                required
+                disabled={loading}
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+                onClick={() => setShowPassword(!showPassword)}
+                className={styles.showPasswordBtn}
+              >
+                <img
+                  src={showPassword ? hidePassIcon : showPassIcon}
+                  alt={showPassword ? "Esconder senha" : "Mostrar senha"}
+                />
+              </button>
+            </div>
           </div>
 
           <div className={styles.buttonWrapper}>

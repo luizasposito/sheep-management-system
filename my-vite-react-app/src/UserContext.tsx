@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
     id: number;
     email: string;
     farmId: number;
-    role: "farmer" | "vet";
+    role: "farmer" | "veterinarian";
   };
   
   // 2. Tipo do contexto

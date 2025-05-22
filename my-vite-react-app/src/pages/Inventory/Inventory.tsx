@@ -73,7 +73,7 @@ export const Inventory: React.FC = () => {
     new Date(item.last_updated).toLocaleDateString("pt-PT"),
     item.quantity.toString(),
     item.unit,
-    "-", // Pode ser substituído por lógica para próxima compra
+    "-",
   ]);
 
   const filteredData = formattedData
@@ -154,7 +154,7 @@ export const Inventory: React.FC = () => {
 
       <div className={styles.buttonGroup}>
         <Button variant="light" onClick={() => navigate("/inventory/add")}>
-          Criar
+          Adicionar item
         </Button>
         <Button
           variant={adjustMode ? "dark" : "light"}

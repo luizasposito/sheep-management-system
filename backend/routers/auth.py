@@ -8,6 +8,7 @@ from schemas.auth import LoginRequest, TokenResponse
 from utils import verify_password, create_access_token
 from fastapi.security import OAuth2PasswordBearer
 from utils import decode_token
+from blacklist import blacklisted_tokens, is_token_blacklisted, add_token_to_blacklist
 from schemas.auth import TokenUser
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -30,6 +31,11 @@ def login(user_data: LoginRequest, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+# POST /logout - user logs out of the system
+@router.post("/logout")
+def logout(token: str = Depends(oauth2_scheme)):
+    add_token_to_blacklist(token)
+    return {"message": "Logout realizado com sucesso"}
 
 
 # GET /me - get user's token
