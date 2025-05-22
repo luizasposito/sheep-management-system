@@ -42,12 +42,13 @@ export const Animals: React.FC = () => {
   const [formAnimals, setFormAnimals] = useState<string[]>([]);
   const [originalName, setOriginalName] = useState("");
   const [originalAnimals, setOriginalAnimals] = useState<string[]>([]);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
 
   const [activeFormId, setActiveFormId] = useState<string | null>(null);
   const [formVolume, setFormVolume] = useState<string>("");
   const [existingVolume, setExistingVolume] = useState<number | null>(null);
   const [formMode, setFormMode] = useState<"update" | "edit" | null>(null);
-
+  const [todayMilkProductionMap, setTodayMilkProductionMap] = useState<Record<string, number | null>>({});
 
   const uniqueGenders = useMemo(() => {
     const gendersSet = new Set<string>();
@@ -87,32 +88,67 @@ export const Animals: React.FC = () => {
   };
 
   const submitMilkProduction = async (sheepId: string, volume: number) => {
+    setLoading(true);
     const today = new Date().toISOString().split("T")[0];
-    const payload = {
-      date: today,
-      volume
-    };
+    const payload = { date: today, volume };
 
     try {
       const res = await fetch(`http://localhost:8000/sheep/${sheepId}/milk-yield`, {
         method: "PATCH",
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        await fetchAnimals(); // Recarrega os dados
+        // Atualiza localmente o estado animalData para refletir a nova produção sem precisar esperar o fetchAnimals
+        setAnimalData(prevAnimals =>
+          prevAnimals.map(animal =>
+            animal.id === sheepId ? { ...animal, producaoLeiteira: volume.toString() } : animal
+          )
+        );
+
         resetFormStates();
       } else {
         alert("Erro ao atualizar produção.");
       }
     } catch (err) {
       console.error("Erro ao enviar produção:", err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedGroupId) return;
+
+    try {
+      const res = await fetch(`http://localhost:8000/sheep-group/${selectedGroupId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Erro ao apagar grupo.");
+      }
+
+      // Atualiza grupos e animais
+      await fetchGroups();
+      await fetchAnimals();
+
+      setSelectedGroupId(null);
+      setDeleteConfirmVisible(false);
+      setMode("normal");
+
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Erro inesperado ao apagar grupo.");
+    }
+  };
+
 
   const resetFormStates = () => {
     setActiveFormId(null);
@@ -120,8 +156,6 @@ export const Animals: React.FC = () => {
     setExistingVolume(null);
     setFormMode(null);
   };
-
-
 
   useEffect(() => {
     document.title = "Animais";
@@ -132,10 +166,9 @@ export const Animals: React.FC = () => {
     if (!(user.role === "farmer" || user.role === "veterinarian")) navigate("/unauthorized");
   }, [user]);
 
-
   const fetchAnimals = async () => {
     try {
-      const response = await fetch("http://localhost:8000/sheep/", {
+      const response = await fetch(`http://localhost:8000/sheep/?_=${Date.now()}`, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("token")}`,
@@ -146,15 +179,26 @@ export const Animals: React.FC = () => {
 
       const data = await response.json();
 
-      const formattedData = data.map((item: any) => ({
+      const formattedData: Animal[] = data.map((item: any): Animal => ({
         id: item.id.toString(),
-        producaoLeiteira: item.producaoLeiteira || "N/A",
+        producaoLeiteira: item.milk_production?.toString() || "-",
         gender: item.gender,
-        status: item.status,
-        group_id: item.group_id?.toString() || null,
+        group_id: item.group_id?.toString() || undefined,
       }));
 
       setAnimalData(formattedData);
+
+      // Buscar produção de hoje para cada ovelha
+      const productions = await Promise.all(
+        formattedData.map(animal => fetchTodayMilkProduction(animal.id))
+      );
+
+      const map: Record<string, number | null> = {};
+      formattedData.forEach((animal, idx) => {
+        map[animal.id] = productions[idx];
+      });
+      setTodayMilkProductionMap(map);
+
     } catch (error) {
       console.error("Erro ao buscar animais:", error);
     } finally {
@@ -222,7 +266,6 @@ export const Animals: React.FC = () => {
     fetchAnimals();
     fetchGroups();
   }, []);
-
 
 
   // Criar um mapa de group_id -> nome do grupo
@@ -332,7 +375,7 @@ export const Animals: React.FC = () => {
           }
         }
       } else {
-        // Criar novo grupo
+        // Cria o grupo e pega o id do grupo criado
         const newGroupResponse = await fetch("http://localhost:8000/sheep-group", {
           method: "POST",
           headers: {
@@ -341,14 +384,38 @@ export const Animals: React.FC = () => {
           },
           body: JSON.stringify({
             name: formName,
-            animal_ids: formAnimals,
+            // Pode enviar animal_ids, mas o backend provavelmente não associa direto
+            // animal_ids: formAnimals,
           }),
         });
 
         if (!newGroupResponse.ok) {
           throw new Error("Erro ao criar novo grupo.");
         }
+
+        const newGroupData = await newGroupResponse.json();
+        const newGroupId = newGroupData.id.toString();
+
+        // Associa os animais ao grupo criado
+        const patchResults = await Promise.all(
+          formAnimals.map(animalId =>
+            fetch(`http://localhost:8000/sheep-group/${animalId}/change-group`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({ new_group_id: Number(newGroupId) }),
+            })
+          )
+        );
+
+        const allSuccess = patchResults.every(res => res.ok);
+        if (!allSuccess) {
+          throw new Error("Falha ao associar alguns animais ao novo grupo.");
+        }
       }
+
 
       // Após salvar, refazer o fetch dos grupos e animais para sincronizar os dados
       await fetchAnimals();
@@ -410,20 +477,22 @@ export const Animals: React.FC = () => {
             ))}
 
           </div>
-
-          <div className={styles.filterGroup}>
-            <strong>Grupos</strong>
-            {groups.map(group => (
-              <label key={group.id}>
-                <input
-                  type="checkbox"
-                  checked={filterGroups.includes(group.id)}
-                  onChange={() => toggleFilter(group.id, filterGroups, setFilterGroups)}
-                />
-                <span>{group.name}</span>
-              </label>
-            ))}
-          </div>
+          
+          <RoleOnly role="farmer">
+            <div className={styles.filterGroup}>
+              <strong>Grupos</strong>
+              {groups.map(group => (
+                <label key={group.id}>
+                  <input
+                    type="checkbox"
+                    checked={filterGroups.includes(group.id)}
+                    onChange={() => toggleFilter(group.id, filterGroups, setFilterGroups)}
+                  />
+                  <span>{group.name}</span>
+                </label>
+              ))}
+            </div>
+          </RoleOnly>
         </aside>
 
         <section className={styles.cards}>
@@ -433,14 +502,16 @@ export const Animals: React.FC = () => {
             filteredAnimals.map(animal => (
               <div key={animal.id} className={styles.animalCardWrapper}>
                 <Card
+                  key={`${animal.id}-${animal.producaoLeiteira}`} // chave muda se a produção mudar
                   className={styles.clickableCard}
                   onClick={() => navigate(`/animal/${animal.id}`)}
                 >
+
                   <div className={styles.cardContent}>
                     <p><strong>ID:</strong> {animal.id}</p>
 
                     {animal.gender !== "Macho" && (
-                      <p><strong>produção leiteira:</strong> {animal.producaoLeiteira}</p>
+                      <p><strong>produção leiteira:</strong> {animal.producaoLeiteira} L</p> // garante que use animalData atualizado
                     )}
 
                     <p><strong>sexo:</strong> {animal.gender}</p>
@@ -467,7 +538,7 @@ export const Animals: React.FC = () => {
                               : formVolume.trim() === existingVolume?.toString()
                           }
                         >
-                          {formMode === "edit" ? "Editar" : "Atualizar"}
+                          Salvar
                         </Button>
                       </div>
                     </div>
@@ -481,8 +552,9 @@ export const Animals: React.FC = () => {
                             setExistingVolume(null);
                             setFormMode("update");
                           }}
+                          disabled={todayMilkProductionMap[animal.id] !== null}
                         >
-                          Atualizar produção
+                          Adicionar produção de hoje
                         </Button>
                       </RoleOnly>
 
@@ -500,7 +572,7 @@ export const Animals: React.FC = () => {
                             }
                           }}
                         >
-                          Editar produção
+                          Editar produção de hoje
                         </Button>
                       </RoleOnly>
                     </div>
@@ -512,125 +584,158 @@ export const Animals: React.FC = () => {
           )}
         </section>
 
-        <Card className={styles.groupCard}>
-          <h2>Lista de Grupos</h2>
+        <RoleOnly role="farmer">
+          <Card className={styles.groupCard}>
+            <h2>Lista de grupos</h2>
 
-          {mode === "normal" && (
-            <>
-              {groups.length === 0 ? (
-                <p>Nenhum grupo cadastrado.</p>
-              ) : (
-                groups.map((group) => (
-                  <p key={group.id}>
-                    <strong>{group.name}</strong> ({group.animalIds.length} animais)
-                  </p>
-                ))
-              )}
+            {mode === "normal" && (
+              <>
+                {groups.length === 0 ? (
+                  <p>Nenhum grupo cadastrado.</p>
+                ) : (
+                  groups.map((group) => (
+                    <p key={group.id}>
+                      <strong>{group.name}</strong> ({group.animalIds.length} animais)
+                    </p>
+                  ))
+                )}
 
-              <div className={styles.buttonRow}>
-                <Button onClick={() => setMode("creating")}>Criar</Button>
-                <Button onClick={() => setMode("selecting-edit")}>
-                  Editar
-                </Button>
-                <Button onClick={() => setMode("selecting-del")}>Apagar</Button>
+                <div className={styles.buttonRow}>
+                  <Button onClick={() => setMode("creating")}>Criar</Button>
+                  <Button onClick={() => setMode("selecting-edit")}>
+                    Editar
+                  </Button>
+                  {mode === "normal" && (
+                    <Button onClick={() => setMode("selecting-del")}>Apagar</Button>
+                  )}
+                </div>
+              </>
+            )}
+
+            {(mode === "creating" || mode === "editing") && (
+              <div className={styles.formGroup}>
+                <div className={styles.formField}>
+                  <label htmlFor="group-name">Nome do grupo</label>
+                  <input
+                    id="group-name"
+                    type="text"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                  />
+                </div>
+
+                <div className={styles.formField}>
+                  <label>Selecionar animais</label>
+                  <Select
+                    options={animalOptions}
+                    isMulti
+                    value={animalOptions.filter((opt) => formAnimals.includes(opt.value))}
+                    onChange={(selectedOptions) =>
+                      setFormAnimals(selectedOptions.map((opt) => opt.value))
+                    }
+                  />
+                </div>
+
+                <div className={styles.buttonRow}>
+                  <Button
+                    onClick={handleSave}
+                    disabled={
+                      mode === "editing" &&
+                      formName === originalName &&
+                      JSON.stringify([...formAnimals].sort()) ===
+                        JSON.stringify([...originalAnimals].sort())
+                    }
+                  >
+                    Salvar
+                  </Button>
+                  <Button variant="light" onClick={resetForm}>
+                    Cancelar
+                  </Button>
+                </div>
               </div>
-            </>
-          )}
+            )}
 
-          {(mode === "creating" || mode === "editing") && (
-            <div className={styles.formGroup}>
-              <div className={styles.formField}>
-                <label htmlFor="group-name">Nome do grupo</label>
-                <input
-                  id="group-name"
-                  type="text"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                />
-              </div>
+            {mode === "selecting-edit" && (
+              <>
+                <div className={styles.radioList}>
+                  {groups.map((group) => (
+                    <label key={group.id} className={styles.radioItem}>
+                      <input
+                        type="radio"
+                        name="group"
+                        value={group.id}
+                        onChange={() => setSelectedGroupId(group.id)}
+                      />
+                      <span>{group.name} ({group.animalIds.length} animais)</span>
+                    </label>
+                  ))}
+                </div>
 
-              <div className={styles.formField}>
-                <label>Selecionar animais</label>
-                <Select
-                  options={animalOptions}
-                  isMulti
-                  value={animalOptions.filter((opt) => formAnimals.includes(opt.value))}
-                  onChange={(selectedOptions) =>
-                    setFormAnimals(selectedOptions.map((opt) => opt.value))
-                  }
-                />
-              </div>
+                <div className={styles.buttonRow}>
+                  <Button variant="light" onClick={resetForm}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleEditSelect} disabled={!selectedGroupId}>
+                    Editar
+                  </Button>
+                </div>
+              </>
+            )}
+            {mode === "selecting-del" && (
+              <>
+                <div>
+                  {groups.map(group => (
+                    <label key={group.id} className={styles.groupSelectLabel}>
+                      <input
+                        type="radio"
+                        name="groupSelect"
+                        value={group.id}
+                        checked={selectedGroupId === group.id}
+                        onChange={() => setSelectedGroupId(group.id)}
+                      />
+                      {group.name} - {group.animalIds.length} animais
+                    </label>
+                  ))}
+                </div>
 
-              <div className={styles.buttonRow}>
-                <Button
-                  onClick={handleSave}
-                  disabled={
-                    mode === "editing" &&
-                    formName === originalName &&
-                    JSON.stringify([...formAnimals].sort()) ===
-                      JSON.stringify([...originalAnimals].sort())
-                  }
-                >
-                  Salvar
-                </Button>
-                <Button variant="light" onClick={resetForm}>
-                  Cancelar
-                </Button>
+                <div className={styles.groupDeleteButtons}>
+                  <Button
+                    variant="light"
+                    disabled={!selectedGroupId}
+                    onClick={() => setDeleteConfirmVisible(true)}
+                  >
+                    Apagar
+                  </Button>
+                  <Button variant="light" onClick={() => {
+                    setSelectedGroupId(null);
+                    setMode("normal");
+                  }}>
+                    Cancelar
+                  </Button>
+                </div>
+              </>
+            )}
+            {deleteConfirmVisible && selectedGroupId && (
+              <div className={styles.confirmationBox}>
+                <p>
+                  Tem certeza que deseja apagar o grupo{" "}
+                  <strong>
+                    {groups.find(g => g.id === selectedGroupId)?.name}
+                  </strong> -{" "}
+                  <strong>
+                    {groups.find(g => g.id === selectedGroupId)?.animalIds.length}
+                  </strong>{" "}
+                  animais?
+                </p>
+                <div>
+                  <Button variant="light" onClick={() => setDeleteConfirmVisible(false)}>Cancelar</Button>
+                  <Button variant="dark" onClick={handleConfirmDelete}>Confirmar</Button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {mode === "selecting-edit" && (
-            <>
-              <div className={styles.radioList}>
-                {groups.map((group) => (
-                  <label key={group.id} className={styles.radioItem}>
-                    <input
-                      type="radio"
-                      name="group"
-                      value={group.id}
-                      onChange={() => setSelectedGroupId(group.id)}
-                    />
-                    <span>{group.name} ({group.animalIds.length} animais)</span>
-                  </label>
-                ))}
-              </div>
-
-              <div className={styles.buttonRow}>
-                <Button variant="light" onClick={resetForm}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleEditSelect} disabled={!selectedGroupId}>
-                  Editar
-                </Button>
-              </div>
-            </>
-          )}
-          {mode === "selecting-del" && (
-            <>
-              <ul>
-                {groups.map(group => (
-                  <li key={group.id}>
-                    <input
-                      type="radio"
-                      name="selectedGroup"
-                      value={group.id}
-                      onChange={() => setSelectedGroupId(group.id)}
-                    />
-                    {group.name} ({group.animalIds.length} animais)
-                  </li>
-                ))}
-              </ul>
-              <Button onClick={resetForm}>Cancelar</Button>
-              <Button
-                onClick={() => setMode("deletingConfirm")}
-                disabled={!selectedGroupId}
-              >
-                Apagar
-              </Button>
-            </>
-          )}
-        </Card>
+          </Card>
+        </RoleOnly>
         
       </div>
     </PageLayout>

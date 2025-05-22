@@ -4,11 +4,13 @@ import type { ReactNode } from "react";
   
   // 1. Defina o tipo do usuário (pode ajustar conforme seu token)
   type User = {
-    id: number;
-    email: string;
-    farmId: number;
-    role: "farmer" | "veterinarian";
-  };
+  id: number;
+  name: string;
+  email: string;
+  farmId: number;
+  role: "farmer" | "veterinarian";
+};
+
   
   // 2. Tipo do contexto
   type UserContextType = {
@@ -30,14 +32,31 @@ import type { ReactNode } from "react";
     useEffect(() => {
       const token = localStorage.getItem("token");
       if (token) {
-        try {
-          const decoded = JSON.parse(atob(token.split(".")[1]));
-          setUser(decoded);
-        } catch (e) {
-          console.error("Token inválido");
-        }
+        fetch("http://localhost:8000/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("Erro ao buscar utilizador");
+            return res.json();
+          })
+          .then(data => {
+            setUser({
+              id: data.id,
+              name: data.name,
+              email: data.email,
+              farmId: data.farm_id,
+              role: data.role,
+            });
+          })
+          .catch(err => {
+            console.error("Erro ao carregar utilizador:", err);
+            localStorage.removeItem("token");
+          });
       }
     }, []);
+
   
     return (
       <UserContext.Provider value={{ user, setUser }}>

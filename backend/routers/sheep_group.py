@@ -63,28 +63,6 @@ def get_sheep_groups(
     return groups
 
 
-
-@router.get("/{group_id}", response_model=SheepGroupResponse)
-def get_sheep_group_by_id(
-    group_id: int,
-    db: Session = Depends(get_db),
-    current_farmer = Depends(get_current_user)
-):
-    farmer = db.query(Farmer).filter(Farmer.email == current_farmer.email).first()
-
-    group = db.query(SheepGroup).filter(
-        SheepGroup.id == group_id,
-        SheepGroup.farm_id == farmer.farm_id
-    ).first()
-
-    if not group:
-        raise HTTPException(status_code=404, detail="Sheep group not found")
-
-    return group
-
-
-
-
 @router.put("/{group_id}", response_model=SheepGroupResponse)
 def update_sheep_group(
     group_id: int,
@@ -108,7 +86,6 @@ def update_sheep_group(
     db.commit()
     db.refresh(group)
     return group
-
 
 
 
@@ -152,7 +129,6 @@ def count_sheep_in_group(
     return count
 
 
-
 @router.get("/sheep-count-by-group")
 def get_sheep_count_by_group(
     db: Session = Depends(get_db),
@@ -162,9 +138,10 @@ def get_sheep_count_by_group(
     if not farmer:
         raise HTTPException(status_code=404, detail="Farmer not found")
 
+    # Contagem por grupo, incluindo aqueles com group_id == None
     result = (
         db.query(Sheep.group_id, func.count(Sheep.id).label("count"))
-        .filter(Sheep.farm_id == farmer.farm_id, Sheep.group_id != None)
+        .filter(Sheep.farm_id == farmer.farm_id)
         .group_by(Sheep.group_id)
         .all()
     )
@@ -174,13 +151,34 @@ def get_sheep_count_by_group(
         for g in db.query(SheepGroup).filter(SheepGroup.farm_id == farmer.farm_id)
     }
 
-    response = [
-        {"group_name": group_map.get(r.group_id, "Sem Nome"), "count": r.count}
-        for r in result
-    ]
+    response = []
+    for r in result:
+        if r.group_id is None:
+            response.append({"group_name": "Sem grupo", "count": r.count})
+        else:
+            response.append({"group_name": group_map.get(r.group_id, "Sem Nome"), "count": r.count})
 
     return response
 
+
+
+@router.get("/{group_id}", response_model=SheepGroupResponse)
+def get_sheep_group_by_id(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_farmer = Depends(get_current_user)
+):
+    farmer = db.query(Farmer).filter(Farmer.email == current_farmer.email).first()
+
+    group = db.query(SheepGroup).filter(
+        SheepGroup.id == group_id,
+        SheepGroup.farm_id == farmer.farm_id
+    ).first()
+
+    if not group:
+        raise HTTPException(status_code=404, detail="Sheep group not found")
+
+    return group
 
 
 @router.get("/{group_id}/sheep", response_model=List[SheepResponse])
@@ -228,10 +226,6 @@ def change_sheep_group(
     db.commit()
     db.refresh(sheep)
     return {"message": f"Sheep {sheep.id} moved to group {new_group_id}"}
-
-
-
-
 
 
 @router.patch("/{group_id}/update-sheep")

@@ -22,6 +22,7 @@ type Animal = {
   feeding_feed: number;
   farm_id: number;
   group_id?: number;
+  milk_production?: number;
 };
 
 type SheepGroup = {
@@ -167,7 +168,7 @@ export const AnimalDetails: React.FC = () => {
               <p><strong>Grupo:</strong> {group?.name || "Sem grupo"}</p>
               {/* Exibir produção leiteira só se for fêmea */}
               {animal?.gender === "Fêmea" && (
-                <p><strong>Produção leiteira (em litros):</strong> {"N/D"}</p>
+                <p><strong>Produção leiteira (em litros):</strong> {animal.milk_production ?? "N/D"} L</p>
               )}
               <p><strong>Fardo para ingestão diária:</strong> {animal?.feeding_hay ?? "N/D"} kg</p>
               <p><strong>Ração para ingestão diária:</strong> {animal?.feeding_feed ?? "N/D"} kg</p>
