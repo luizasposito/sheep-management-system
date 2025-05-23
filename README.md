@@ -1,10 +1,10 @@
-# Sheep Management System 🐑
+# Farm Animal Management System
 
 ## Overview
-Web and mobile prototype of an information system focused on sheep
+Web and mobile prototype of an information system focused on small ruminants
 
 ## Features
-- Sheep management
+- Animal management
 - Inventory management
 - Veterinary consultation tracking
 - Facilities monitoring
