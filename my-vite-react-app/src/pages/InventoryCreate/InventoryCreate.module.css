@@ -1,4 +1,10 @@
-
+/* Evita scroll horizontal em toda a página */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+}
 
 .title {
   font-size: 2rem;
@@ -6,6 +12,8 @@
   text-align: center;
   color: #3e6440;
   margin-bottom: 1rem;
+  padding: 0 1rem; /* pequeno padding para evitar encostar nas bordas */
+  box-sizing: border-box;
 }
 
 .form {
@@ -13,6 +21,9 @@
   flex-direction: column;
   gap: 1.5rem;
   padding: 0 2rem;
+  box-sizing: border-box;
+  max-width: 900px;
+  margin: 0 auto; /* centraliza o form na tela */
 }
 
 .form input:focus {
@@ -23,6 +34,7 @@
 
 .card {
   padding: 1.5rem;
+  box-sizing: border-box;
 }
 
 .grid {
@@ -30,6 +42,10 @@
   gap: 2rem;
   justify-content: space-between;
   flex-wrap: wrap;
+  max-width: 900px;
+  margin: 0 auto; /* centraliza o grid */
+  padding: 0 1rem;
+  box-sizing: border-box;
 }
 
 .leftColumn,
@@ -39,6 +55,7 @@
   gap: 1rem;
   flex: 1;
   min-width: 240px;
+  box-sizing: border-box;
 }
 
 label {
@@ -56,16 +73,46 @@ select {
   background-color: #ddd;
   border: none;
   border-radius: 4px;
+  box-sizing: border-box;
+  width: 100%; /* para preencher a coluna */
 }
 
 .buttonGroup {
   display: flex;
   justify-content: center;
   gap: 1rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+  max-width: 900px;
+  margin: 1rem auto 0 auto;
 }
 
+/* === MEDIA QUERIES PARA RESPONSIVIDADE === */
 @media (max-width: 768px) {
   .grid {
     flex-direction: column;
+    padding: 0 1rem;
+  }
+
+  .form {
+    padding: 0 1rem;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .leftColumn,
+  .rightColumn {
+    min-width: auto; /* para ocupar 100% na coluna */
   }
 }

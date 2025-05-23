@@ -109,9 +109,13 @@ export const Menu: React.FC = () => {
         <ul className={styles.menu} ref={menuRef}>
           {user?.role === "farmer" && (
             <li className={styles.menuItem}>
-              <Link to="/dashboard" className={styles.menuLink}>
-                <Button variant={currentPath.startsWith("/dashboard") ? "dark" : "light"}>Início</Button>
-              </Link>
+              <Button
+                variant={currentPath.startsWith("/dashboard") ? "dark" : "light"}
+                onClick={() => navigate("/dashboard")}
+              >
+                Início
+              </Button>
+
             </li>
           )}
 

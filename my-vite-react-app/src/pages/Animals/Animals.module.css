@@ -1,173 +1,122 @@
-
+/* Evita scroll horizontal em toda a página */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+}
 
 .title {
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    color: #3e6440;
-    margin-bottom: 1rem;
-  }
-  
-  .buttonGroup {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  
-  .searchBar {
-    margin: 12px 0;
-  }
-  
-  .content {
-    display: flex;
-    align-items: flex-start;
-    gap: 2rem;
-  }
-  
-  .cards {
-    flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    min-width: 0; /* Garante que flexbox funcione corretamente em alguns browsers */
-  }
-  
-  .groupCard {
-    width: 300px;
-    flex-shrink: 0;
-    padding: 1rem;
-    border-radius: 12px;
-    background-color: #f4f4f4;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    height: fit-content;
-  }
-  
-  
-  .filters {
-    min-width: 240px;
-    max-width: 100%;
-    flex-shrink: 0;
-  }
-  
-  
-  .filterGroup {
-    margin-bottom: 12px;
-  }
-  
-  .filterGroup label {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-    font-size: 1rem;
-    line-height: 1.5;
-  }
-  
-  .filterGroup label span {
-    display: inline-block;
-  }  
-  
-  .cards {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    flex-grow: 1;
-  }
-  
-  .cardContent {
-    text-align: left;
-    font-size: 1.2rem;
-  }
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #3e6440;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
 
-  .clickableCard {
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .clickableCard:hover {
-    background-color: #3e6440; /* Verde escuro da paleta */
-    color: white;
-  }
-  
-  @media (max-width: 768px) {
-    .mainContent {
-      flex-direction: column;
-    }
-  
-    .centerPanel {
-      grid-template-columns: 1fr;
-      padding: 0;
-    }
-  }
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
 
+.searchBar {
+  margin: 12px 0;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
 
-  .groupCard {
-    flex: 0 0 300px;
-    padding: 1rem;
-    border-radius: 12px;
-    background-color: #ffffff;
-    box-shadow: 0 2px 6px #ffffff;
-    height: fit-content;
-  }
-  
-  .groupCard h2 {
-    margin-top: 0;
-  }
-  
-  .groupCard label,
-  .groupCard select,
-  .groupCard input {
-    display: block;
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
-  
-  .groupCard select {
-    height: 100px;
-  }
-  
-  .groupCard button {
-    margin-right: 0.5rem;
-    margin-top: 0.5rem;
-  }
+/* Conteúdo principal com flex para sidebar + cards */
+.content {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  box-sizing: border-box;
+  flex-wrap: nowrap; /* inicialmente não quebra para desktops */
+}
 
+/* Cards container flexível */
+.cards {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  min-width: 0; /* para evitar overflow no flexbox */
+  justify-content: center; /* centraliza cards no espaço disponível */
+}
 
-  .multiselect {
-    width: 100%;
-    height: auto;
-    min-height: 120px;
-    padding: 0.5rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    font-size: 1rem;
-  }
+/* Card individual */
+.groupCard {
+  flex: 0 0 300px;
+  padding: 1rem;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px #ffffff;
+  height: fit-content;
+  box-sizing: border-box;
+}
 
-  
-  .animalCheckboxList {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 0.5rem 0;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #fafafa;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  
-  .animalCheckboxItem {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.groupCard h2 {
+  margin-top: 0;
+}
 
-  
+.groupCard label,
+.groupCard select,
+.groupCard input {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+}
 
-  .markedDay {
+.groupCard select {
+  height: 100px;
+}
+
+.groupCard button {
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.multiselect {
+  width: 100%;
+  height: auto;
+  min-height: 120px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  font-size: 1rem;
+}
+
+.animalCheckboxList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fafafa;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.animalCheckboxItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.markedDay {
   background-color: #d1f0d1;
   color: #2d5137;
   border-radius: 4px;
@@ -182,15 +131,15 @@
   padding: 0.5rem;
   resize: vertical;
   font-size: 1rem;
+  box-sizing: border-box;
 }
 
 .commentsSection {
   margin-top: 1.5rem;
 }
 
-
 .animalCardWrapper {
-  margin-bottom: 32px; /* separação entre um card e o próximo */
+  margin-bottom: 32px;
 }
 
 .buttonContainer {
@@ -205,6 +154,7 @@
   gap: 8px;
 }
 
+/* Modal */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -221,11 +171,13 @@
 .modalCard {
   max-width: 400px;
   padding: 2rem;
-  background-color: #f4f4f4; /* mantive sua cor para não perder identidade */
+  background-color: #f4f4f4;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   font-size: 1.1rem;
   color: #3e6440;
+  width: 90%;
+  box-sizing: border-box;
 }
 
 .modalCard p {
@@ -241,4 +193,57 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
+}
+
+/* === MEDIA QUERIES === */
+
+/* Tablets e telas médias */
+@media (max-width: 1024px) {
+  .content {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  .groupCard {
+    flex: 1 1 45%; /* Dois cards por linha */
+    max-width: 45%;
+  }
+}
+
+/* Telas pequenas (celulares maiores e tablets em pé) */
+@media (max-width: 768px) {
+  .content {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+
+  .filters {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .cards {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .groupCard {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+/* Telas muito pequenas (celulares) */
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 }

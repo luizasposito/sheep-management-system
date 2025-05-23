@@ -1,120 +1,133 @@
-
-
+/* Prevenção de rolagem lateral e ajuste global */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, sans-serif;
+}
 
 .title {
-    text-align: center;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #3e6440;
-    margin-bottom: 1rem;
-  }
-  
-  
-  .grid {
-    display: grid;
-    gap: 1rem;
-    grid-template-areas:
-      "mainInfo crias"
-      "history upcoming";
-    grid-template-columns: 1fr 1fr; /* Agora divide igualmente */
-  }
-  
-  
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #3e6440;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
 
-  .mainInfo {
-    grid-area: mainInfo;
-    font-size: 1.3rem;
-    text-align: left;
-  }
-  
-  
-  .crias {
-    grid-area: crias;
-    font-size: 1.3rem;
-  }
-  
-  .history {
-    grid-area: history;
-    font-size: 1.3rem;
-  }
-  
-  .upcoming {
-    grid-area: upcoming;
-    font-size: 1.3rem;
-  }
-  
-  .chipList,
-  .chipGrid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-  
-  .chipGrid {
-    justify-content: center;
-    flex-wrap: wrap;
-    max-height: 8rem;
-    overflow-y: auto;
-    gap: 0.5rem;
-  }
-  
-  .scrollArea {
-    max-height: 12rem;
-    overflow-y: auto;
-    padding-right: 0.5rem;
-  }
-  
-  .historyItem,
-  .upcomingItem {
-    background-color: #2d5137;
-    color: white;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .buttonGroup {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-areas:
+    "mainInfo crias"
+    "history upcoming";
+  grid-template-columns: 1fr 1fr;
+  padding: 0 1rem;
+}
 
-  .columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  
-  @media (max-width: 768px) {
-    .mainContent {
-      flex-direction: column;
-    }
-  
-    .centerPanel {
-      grid-template-columns: 1fr;
-      padding: 0;
-    }
-  }
+.mainInfo {
+  grid-area: mainInfo;
+  font-size: 1.3rem;
+  text-align: left;
+}
 
-  .whiteCard {
-    background-color: white !important;
-    color: #2d5137;
-    text-align: left;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-  }
-  
-  
-  .whiteCard h3 {
-    margin-bottom: 0.5rem;
-  }
-  
+.crias {
+  grid-area: crias;
+  font-size: 1.3rem;
+}
 
-  .animalList {
+.history {
+  grid-area: history;
+  font-size: 1.3rem;
+}
+
+.upcoming {
+  grid-area: upcoming;
+  font-size: 1.3rem;
+}
+
+.chipList,
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.chipGrid {
+  justify-content: center;
+  max-height: 8rem;
+  overflow-y: auto;
+}
+
+.scrollArea {
+  max-height: 12rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.historyItem,
+.upcomingItem {
+  background-color: #2d5137;
+  color: white;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+.whiteCard {
+  background-color: white !important;
+  color: #2d5137;
+  text-align: left;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 1rem;
+}
+
+.whiteCard h3 {
+  margin-bottom: 0.5rem;
+}
+
+.animalList {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.5rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-areas:
+      "mainInfo"
+      "crias"
+      "history"
+      "upcoming";
+    grid-template-columns: 1fr;
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    align-items: center;
+  }
 }

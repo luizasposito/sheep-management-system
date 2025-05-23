@@ -1,69 +1,68 @@
+/* Evita scroll horizontal na página */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+}
 
 .title {
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    color: #3e6440;
-    margin-bottom: 1rem;
-  }
-  
-  .form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 0 2rem;
-  }
-  
-  .card {
-    padding: 1.5rem;
-  }
-  
-  
-  label {
-    font-weight: bold;
-    color: #2d5137;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  input,
-  select {
-    padding: 0.5rem;
-    font-size: 1rem;
-    background-color: #ddd;
-    border: none;
-  }
-  
-  
-  @media (max-width: 768px) {
-    .mainContent {
-      flex-direction: column;
-    }
-  
-    .centerPanel {
-      grid-template-columns: 1fr;
-      padding: 0;
-    }
-  }
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #3e6440;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
 
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
 
-  .textarea {
-    padding: 0.5rem;
-    font-size: 1rem;
-    background-color: #ffffff;
-    border: none;
-    resize: vertical;
-    min-height: 100px;
-  }
-  
-  .medicationItem {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  
+.card {
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+label {
+  font-weight: bold;
+  color: #2d5137;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+input,
+select {
+  padding: 0.5rem;
+  font-size: 1rem;
+  background-color: #ddd;
+  border: none;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.textarea {
+  padding: 0.5rem;
+  font-size: 1rem;
+  background-color: #ffffff;
+  border: none;
+  resize: vertical;
+  min-height: 100px;
+  box-sizing: border-box;
+}
+
+.medicationItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
 
 .formGroup {
   display: flex;
@@ -76,15 +75,18 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  box-sizing: border-box;
 }
 
-/* Garante que as colunas fiquem lado a lado */
+/* Grid para colunas lado a lado */
 .grid {
   display: flex;
   flex-direction: row;
   gap: 2rem;
   justify-content: space-between;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* permite quebrar para telas pequenas */
+  padding: 0 2rem;
+  box-sizing: border-box;
 }
 
 .leftColumn,
@@ -93,11 +95,51 @@
   flex-direction: column;
   gap: 1rem;
   flex: 1;
-  min-width: 250px;
+  min-width: 250px; /* mantém mínimo de largura */
+  box-sizing: border-box;
 }
 
 .buttonGroup {
   display: flex;
   justify-content: center;
   gap: 1rem;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+/* === MEDIA QUERIES === */
+
+/* Para telas até 768px (tablets, celulares grandes) */
+@media (max-width: 768px) {
+  .grid {
+    flex-direction: column;
+    padding: 0 1rem;
+  }
+
+  .leftColumn,
+  .rightColumn {
+    min-width: 100%; /* colunas ocupam toda largura */
+  }
+
+  .form {
+    padding: 0 1rem;
+  }
+
+  .buttonGroup {
+    padding: 0 1rem;
+  }
+}
+
+/* Para telas bem pequenas até 480px */
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 1rem;
+  }
 }

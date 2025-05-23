@@ -1,143 +1,150 @@
+/* Evita overflow horizontal no body */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+}
 
-  .dashboardContainer {
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-  }
-  
-  .header {
-    text-align: center;
-    padding: 1rem 0;
-    background-color: #ffffff;
-    color: #3e6440;
-    margin-bottom: 1rem;
-    font-size: 0.6rem;
-  }
-  
-  .mainContent {
-    display: flex;
-    flex-wrap: nowrap;
-    padding: 1rem;
-    gap: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  /* Distribuição das três colunas */
-  .leftPanel,
-  .centerPanel,
-  .rightPanel {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .leftPanel {
-    flex: 1;
-  }
-  
-  .centerPanel {
-    flex: 2;
-    padding: 1rem 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    box-sizing: border-box;
-  }
-  
-  
-  .rightPanel {
-    flex: 1;
-  }
-  
-  /* Media query para dispositivos móveis */
-  @media (max-width: 768px) {
-    .mainContent {
-      flex-direction: column;
-    }
-  
-    .centerPanel {
-      grid-template-columns: 1fr;
-      padding: 0;
-    }
-  }
-  
-  .cardContent {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .liters {
-    font-size: 2rem;
-    font-weight: bold;
-    margin: 0.5rem 0;
-  }
-  
-  .variation {
-    font-size: 1.2rem;
-    font-weight: bold;
-  }
-  
-  .up {
-    color: green;
-  }
-  
-  .down {
-    color: rgb(205, 0, 0);
-  }
-  
-  .chartPlaceholder {
-    width: 500px;
-    height: 300px;
-    background-color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    color: #555;
-  }
-  
-  .appointmentList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .appointmentItem {
-    margin-bottom: 1rem;
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .activityItem summary {
-    font-weight: bold;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-  
-  .activityItem[open] {
-    background-color: #ffffff;
-  }
-  
-  .activityItem p {
-    margin: 0.5rem 0 0 1rem;
-  }
-  
-  .sectionTitle {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    text-align: center;
-    color: #36603c;
-  }
+/* Container principal */
+.dashboardContainer {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0 1rem; /* padding horizontal para espaçamento */
+}
 
+/* Header */
+.header {
+  text-align: center;
+  padding: 1rem 0;
+  background-color: #ffffff;
+  color: #3e6440;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  box-sizing: border-box;
+}
 
-  /* Seção: Monitoramento do Ambiente Interno */
+/* Main content: 3 colunas no desktop */
+.mainContent {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto; /* centraliza no desktop */
+}
+
+/* Painéis */
+.leftPanel,
+.centerPanel,
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-sizing: border-box;
+}
+
+/* Proporções das colunas */
+.leftPanel {
+  flex: 1;
+  min-width: 200px; /* evita ficar muito pequeno */
+}
+
+.centerPanel {
+  flex: 2;
+  padding: 1rem 2rem;
+  box-sizing: border-box;
+  min-width: 300px;
+}
+
+.rightPanel {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Conteúdo do card */
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Textos e variações */
+.liters {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.variation {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.up {
+  color: green;
+}
+
+.down {
+  color: rgb(205, 0, 0);
+}
+
+/* Placeholder do gráfico */
+.chartPlaceholder {
+  width: 100%;
+  max-width: 500px;
+  height: 300px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Lista de agendamentos */
+.appointmentList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.appointmentItem {
+  margin-bottom: 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.activityItem summary {
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.activityItem[open] {
+  background-color: #ffffff;
+}
+
+.activityItem p {
+  margin: 0.5rem 0 0 1rem;
+}
+
+/* Títulos das seções */
+.sectionTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #36603c;
+}
+
+/* Monitoramento Ambiente Interno */
 .monitoramentoSection {
   margin-top: 3rem;
   display: flex;
@@ -155,7 +162,10 @@
 
 .sensorCard {
   width: 250px;
+  box-sizing: border-box;
 }
+
+/* Outras classes permanecem iguais... */
 
 .sensorTitle {
   font-weight: bold;
@@ -224,7 +234,6 @@
   align-items: center;
 }
 
-
 .sensorCard {
   display: flex;
   flex-direction: column;
@@ -245,6 +254,11 @@
 .valueTitle {
   font-weight: bold;
   margin-bottom: 0.25rem;
+  font-size: 1rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .valueRect {
@@ -261,17 +275,6 @@
   justify-content: center; /* ou space-around */
   gap: 1.5rem;
   align-items: center;
-}
-
-
-.valueTitle {
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .valueRectSmall {
@@ -292,8 +295,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -350,7 +353,6 @@
   height: 100px;
 }
 
-
 .alertaValor {
   background-color: #e02323 !important; /* vermelho */
   color: white !important;
@@ -378,4 +380,83 @@
   justify-content: center;
   gap: 1rem;
   margin-top: 1rem;
+}
+
+/* === Media Queries para responsividade === */
+
+@media (max-width: 1024px) {
+  .mainContent {
+    max-width: 90vw;
+    padding: 0 0.5rem;
+  }
+
+  .centerPanel {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Stack vertical nos painéis */
+  .mainContent {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .leftPanel,
+  .centerPanel,
+  .rightPanel {
+    min-width: 100%;
+    padding: 0;
+  }
+
+  .centerPanel {
+    padding: 0;
+  }
+
+  /* Ajusta tamanho dos gráficos e cards */
+  .chartPlaceholder {
+    max-width: 100%;
+    width: 100%;
+    height: 250px;
+  }
+
+  .sensorCard {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+  }
+
+  .pieChartCard {
+    min-width: auto;
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    font-size: 0.7rem;
+    padding: 0.5rem 0;
+  }
+
+  .liters {
+    font-size: 1.5rem;
+  }
+
+  .variation {
+    font-size: 1rem;
+  }
+
+  .valueRect {
+    font-size: 1.4rem;
+  }
+
+  .valueRectSmall {
+    font-size: 1.2rem;
+    min-height: 3rem;
+  }
+
+  .sensorTitle {
+    font-size: 1rem;
+  }
 }
