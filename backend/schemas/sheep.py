@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import date
 from typing import Optional, Literal
 
@@ -21,18 +21,14 @@ class SheepResponse(SheepCreate):
     id: int
     milk_production: Optional[float] = None
     
-    model_config = {
-    # tells FastAPI to convert SQLAlchemy objects to JSON
-    "from_attributes": True
-}
-    
+    model_config = ConfigDict(from_attributes=True)
 
 class SheepUpdate(BaseModel):
-    birth_date: Optional[date]
-    feeding_hay: Optional[float]
-    feeding_feed: Optional[float]
-    gender: Optional[str]
-    group_id: Optional[int]
-    farm_id: Optional[int]
-    father_id: Optional[int]
-    mother_id: Optional[int]
+    birth_date: Optional[date] = None
+    feeding_hay: Optional[float] = None
+    feeding_feed: Optional[float] = None
+    gender: Optional[Literal["Macho", "Fêmea"]] = None
+    group_id: Optional[int] = None
+    farm_id: Optional[int] = None
+    father_id: Optional[int] = None
+    mother_id: Optional[int] = None

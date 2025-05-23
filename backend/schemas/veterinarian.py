@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 class VeterinarianCreate(BaseModel):
     name: str
@@ -11,6 +11,4 @@ class VeterinarianCreate(BaseModel):
 class VeterinarianResponse(VeterinarianCreate):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = ConfigDict(from_attributes=True)

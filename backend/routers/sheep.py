@@ -18,7 +18,6 @@ from database import SessionLocal
 from datetime import date
 
 
-# router for all /sheep endpoints
 router = APIRouter()
 
 def get_db():
@@ -29,7 +28,7 @@ def get_db():
         db.close()
 
 
-# POST /sheep - create a new sheep record
+# POST /sheep/ - create a new sheep record
 @router.post("/", response_model=SheepResponse)
 def create_sheep(
     sheep: SheepCreate,
@@ -39,14 +38,12 @@ def create_sheep(
     if current_user.role != "farmer":
         raise HTTPException(status_code=403, detail="Access forbidden")
 
-    # Cria a ovelha
     new_sheep_data = sheep.model_dump(exclude={"father_id", "mother_id"})
     new_sheep = Sheep(**new_sheep_data)
     db.add(new_sheep)
     db.commit()
     db.refresh(new_sheep)
 
-    # Cria vínculos de paternidade/maternidade se existirem
     if sheep.father_id:
         father = db.query(Sheep).filter(Sheep.id == sheep.father_id).first()
         if not father:
@@ -64,7 +61,7 @@ def create_sheep(
     return new_sheep
 
 
-# GET /sheep - return a list of all sheep
+# GET /sheep/ - return a list of all sheep
 @router.get("/", response_model=List[SheepResponse])
 def get_all_sheep(
     db: Session = Depends(get_db),
@@ -135,7 +132,7 @@ def get_sheep_by_id(
 
 
 # PUT /sheep/{id} - update existing sheep
-@router.put("/{sheep_id}")
+@router.put("/{sheep_id}", response_model=SheepResponse)
 def update_sheep(
     sheep_id: int,
     data: SheepUpdate,
@@ -189,7 +186,7 @@ def delete_sheep(
     return
 
 
-# Endpoint para atualizar o rendimento de leite
+# PATCH /sheep/{id} - update existing sheep's milk yield
 @router.patch("/{sheep_id}/milk-yield")
 async def update_milk_yield(
     sheep_id: int,
@@ -217,7 +214,6 @@ async def update_milk_yield(
             "date": existing_milk_production.date
         }
 
-    # Caso não exista produção de leite para o mesmo dia, cria uma nova entrada
     new_milk_production = MilkProduction(
         sheep_id=sheep_id,
         volume=milk_yield.volume,
@@ -245,7 +241,6 @@ def get_parents_of_sheep(
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
-    # Buscar os pais (ovelhas onde sheep é o filho)
     parent_relations = db.query(SheepParentage).filter(SheepParentage.offspring_id == sheep_id).all()
     parent_sheep = [relation.parent for relation in parent_relations]
 
@@ -263,7 +258,6 @@ def get_children_of_sheep(
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
-    # Buscar os filhos (ovelhas onde sheep é o pai/mãe)
     child_relations = db.query(SheepParentage).filter(SheepParentage.parent_id == sheep_id).all()
     child_sheep = [relation.offspring for relation in child_relations]
 

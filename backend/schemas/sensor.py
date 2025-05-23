@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -8,7 +8,6 @@ class SensorBase(BaseModel):
     min_value: Optional[float] = Field(None, description="Valor mínimo aceitável do sensor")
     max_value: Optional[float] = Field(None, description="Valor máximo aceitável do sensor")
     current_value: float
-    unit: Optional[str] = Field(None, description="Unidade de medida do sensor")
 
 class SensorCreate(SensorBase):
     pass
@@ -21,5 +20,4 @@ class SensorResponse(SensorBase):
     farm_id: int
     timestamp: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

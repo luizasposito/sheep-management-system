@@ -12,10 +12,17 @@ export const AnimalCreate: React.FC = () => {
   const [nascimento, setNascimento] = useState(() => new Date().toISOString().split("T")[0]);
   const [fatherId, setFatherId] = useState("");
   const [motherId, setMotherId] = useState("");
+
   const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
   const [farmId, setFarmId] = useState<number | null>(null);
   const [farmAnimals, setFarmAnimals] = useState<any[]>([]);
+
+  const [feedingHay, setFeedingHay] = useState(0);
+  const [feedingFeed, setFeedingFeed] = useState(0);
+
 
   useEffect(() => {
     document.title = "Adicionar Animal";
@@ -70,11 +77,14 @@ export const AnimalCreate: React.FC = () => {
 
     const novoAnimal: any = {
       birth_date: nascimento,
-      gender: sexo.trim().toLowerCase(),
+      gender: sexo.trim().charAt(0).toUpperCase() + sexo.trim().slice(1),
       father_id: fatherId === "" ? null : Number(fatherId),
       mother_id: motherId === "" ? null : Number(motherId),
       farm_id: farmId,
+      feeding_hay: feedingHay,
+      feeding_feed: feedingFeed,
     };
+
 
     try {
       const res = await fetch("http://localhost:8000/sheep", {
@@ -87,7 +97,7 @@ export const AnimalCreate: React.FC = () => {
       });
 
       if (!res.ok) throw new Error("Erro ao criar animal.");
-      navigate("/animals");
+      navigate("/animal");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -102,52 +112,82 @@ export const AnimalCreate: React.FC = () => {
 
       <Card className={styles.formCard}>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label>Data de nascimento:</label>
-            <input
-              type="date"
-              value={nascimento}
-              onChange={(e) => setNascimento(e.target.value)}
-              max={new Date().toISOString().split("T")[0]}
-              required
-            />
-          </div>
+          <div className={styles.grid}>
+            <div className={styles.leftColumn}>
+              <div className={styles.formGroup}>
+                <label>Data de nascimento:</label>
+                <input
+                  type="date"
+                  value={nascimento}
+                  onChange={(e) => setNascimento(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                  required
+                />
+              </div>
 
-          <div className={styles.formGroup}>
-            <label>Sexo:</label>
-            <select value={sexo} onChange={(e) => setSexo(e.target.value)} required>
-              <option value="">Selecione</option>
-              <option value="macho">Macho</option>
-              <option value="fêmea">Fêmea</option>
-            </select>
-          </div>
+              <div className={styles.formGroup}>
+                <label>ID do pai:</label>
+                <select value={fatherId} onChange={(e) => setFatherId(e.target.value)}>
+                  <option value="">Nenhum</option>
+                  {farmAnimals
+                    .filter((a) => (a.gender || "").toLowerCase() === "macho")
+                    .map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.id} - {a.gender}
+                      </option>
+                    ))}
+                </select>
+              </div>
 
-          <div className={styles.formGroup}>
-            <label>ID do pai:</label>
-            <select value={fatherId} onChange={(e) => setFatherId(e.target.value)}>
-              <option value="">Nenhum</option>
-              {farmAnimals
-                .filter((a) => (a.gender || "").toLowerCase() === "macho")
-                .map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.id} - {a.gender}
-                  </option>
-                ))}
-            </select>
-          </div>
+              <div className={styles.formGroup}>
+                <label>ID da mãe:</label>
+                <select value={motherId} onChange={(e) => setMotherId(e.target.value)}>
+                  <option value="">Nenhum</option>
+                  {farmAnimals
+                    .filter((a) => (a.gender || "").toLowerCase() === "fêmea")
+                    .map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.id} - {a.gender}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
 
-          <div className={styles.formGroup}>
-            <label>ID da mãe:</label>
-            <select value={motherId} onChange={(e) => setMotherId(e.target.value)}>
-              <option value="">Nenhum</option>
-              {farmAnimals
-                .filter((a) => (a.gender || "").toLowerCase() === "fêmea")
-                .map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.id} - {a.gender}
-                  </option>
-                ))}
-            </select>
+            <div className={styles.rightColumn}>
+              <div className={styles.formGroup}>
+                <label>Sexo:</label>
+                <select value={sexo} onChange={(e) => setSexo(e.target.value)} required>
+                  <option value="">Selecione</option>
+                  <option value="Macho">Macho</option>
+                  <option value="Fêmea">Fêmea</option>
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Feno (kg):</label>
+                <input
+                  type="number"
+                  value={feedingHay}
+                  onChange={(e) => setFeedingHay(parseFloat(e.target.value))}
+                  min={0}
+                  step={0.01}
+                  required
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Ração (kg):</label>
+                <input
+                  type="number"
+                  value={feedingFeed}
+                  onChange={(e) => setFeedingFeed(parseFloat(e.target.value))}
+                  min={0}
+                  step={0.01}
+                  required
+                />
+              </div>
+            </div>
           </div>
 
           <div className={styles.buttonGroup}>
@@ -160,6 +200,7 @@ export const AnimalCreate: React.FC = () => {
           </div>
         </form>
       </Card>
+
     </PageLayout>
   );
 };

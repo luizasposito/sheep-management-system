@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -15,8 +15,8 @@ class TokenUser(BaseModel):
     email: EmailStr
     role: str
     farm_id: int
-    class Config:
-        from_attributes = True
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class TokenData(BaseModel):
     sub: str  # the user's email (subject of the token)

@@ -716,23 +716,23 @@ export const Animals: React.FC = () => {
               </>
             )}
             {deleteConfirmVisible && selectedGroupId && (
-              <div className={styles.confirmationBox}>
-                <p>
-                  Tem certeza que deseja apagar o grupo{" "}
-                  <strong>
-                    {groups.find(g => g.id === selectedGroupId)?.name}
-                  </strong> -{" "}
-                  <strong>
-                    {groups.find(g => g.id === selectedGroupId)?.animalIds.length}
-                  </strong>{" "}
-                  animais?
-                </p>
-                <div>
-                  <Button variant="light" onClick={() => setDeleteConfirmVisible(false)}>Cancelar</Button>
-                  <Button variant="dark" onClick={handleConfirmDelete}>Confirmar</Button>
+              <div className={styles.modalOverlay}>
+                <div className={styles.modalCard}>
+                  <p>
+                    Tem certeza que deseja apagar o grupo{" "}
+                    <strong>{groups.find(g => g.id === selectedGroupId)?.name}</strong> -{" "}
+                    <strong>{groups.find(g => g.id === selectedGroupId)?.animalIds.length}</strong>{" "}
+                    animais?
+                  </p>
+                  <div>
+                    <Button variant="light" onClick={() => setDeleteConfirmVisible(false)}>Cancelar</Button>
+                    <Button variant="dark" onClick={handleConfirmDelete}>Confirmar</Button>
+                  </div>
                 </div>
               </div>
             )}
+
+
 
           </Card>
         </RoleOnly>

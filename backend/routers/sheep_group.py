@@ -19,7 +19,7 @@ from typing import Optional
 
 router = APIRouter()
 
-@router.post("", response_model=SheepGroupResponse)
+@router.post("/", response_model=SheepGroupResponse)
 def create_sheep_group(
     group: SheepGroupCreate,
     db: Session = Depends(get_db),
@@ -50,7 +50,7 @@ def create_sheep_group(
 
 
 
-@router.get("", response_model=List[SheepGroupResponse])
+@router.get("/", response_model=List[SheepGroupResponse])
 def get_sheep_groups(
     db: Session = Depends(get_db),
     current_farmer = Depends(get_current_user)
