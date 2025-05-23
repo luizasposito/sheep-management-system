@@ -19,18 +19,14 @@ export const RequireRole: React.FC<RequireRoleProps> = ({ allowedRoles, children
   const location = useLocation();
 
   if (!isLoggedIn()) {
-    // Usuário não autenticado: redireciona para login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   const userRole = getUserRole();
 
   if (!userRole || !allowedRoles.includes(userRole)) {
-    // Usuário logado mas sem permissão
-    // Você pode redirecionar para página de acesso negado ou para a home
-    return <Navigate to="/access-denied" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
-  // Usuário autenticado e com role permitida
   return children;
 };

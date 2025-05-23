@@ -1,109 +1,135 @@
+/* Evita scroll horizontal em toda a página */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+}
 
+.title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #3e6440;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
 
-  .title {
-    text-align: center;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #3e6440;
-    margin-bottom: 1rem;
-  }
-  
-  
+/* Grid principal com áreas nomeadas */
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-areas:
+    "mainInfo crias"
+    "history upcoming";
+  grid-template-columns: 2fr 1fr;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+.mainInfo {
+  grid-area: mainInfo;
+  font-size: 1.3rem;
+  text-align: left;
+}
+
+.crias {
+  grid-area: crias;
+  font-size: 1.3rem;
+}
+
+.history {
+  grid-area: history;
+  font-size: 1.3rem;
+}
+
+.upcoming {
+  grid-area: upcoming;
+  font-size: 1.3rem;
+}
+
+.chipList,
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.chipGrid {
+  justify-content: center;
+  max-height: 8rem;
+  overflow-y: auto;
+  gap: 0.5rem;
+}
+
+.scrollArea {
+  max-height: 12rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.historyItem,
+.upcomingItem {
+  background-color: #2d5137;
+  color: white;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Media query para telas menores que 768px (tablets e celulares) */
+@media (max-width: 768px) {
   .grid {
-    display: grid;
-    gap: 1rem;
     grid-template-areas:
-      "mainInfo crias"
-      "history upcoming";
-    grid-template-columns: 2fr 1fr;
-  }
-  
-
-  .mainInfo {
-    grid-area: mainInfo;
-    font-size: 1.3rem;
-    text-align: left;
-  }
-  
-  
-  .crias {
-    grid-area: crias;
-    font-size: 1.3rem;
-  }
-  
-  .history {
-    grid-area: history;
-    font-size: 1.3rem;
-  }
-  
-  .upcoming {
-    grid-area: upcoming;
-    font-size: 1.3rem;
-  }
-  
-  .chipList,
-  .chipGrid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-  
-  .chipGrid {
-    justify-content: center;
-    flex-wrap: wrap;
-    max-height: 8rem;
-    overflow-y: auto;
-    gap: 0.5rem;
-  }
-  
-  .scrollArea {
-    max-height: 12rem;
-    overflow-y: auto;
-    padding-right: 0.5rem;
-  }
-  
-  .historyItem,
-  .upcomingItem {
-    background-color: #2d5137;
-    color: white;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .buttonGroup {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
+      "mainInfo"
+      "crias"
+      "history"
+      "upcoming";
+    grid-template-columns: 1fr;
+    padding: 0 0.5rem;
   }
 
   .columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    grid-template-columns: 1fr;
   }
-  
-  @media (max-width: 768px) {
-    .mainContent {
-      flex-direction: column;
-    }
-  
-    .centerPanel {
-      grid-template-columns: 1fr;
-      padding: 0;
-    }
+}
+
+/* Media query para telas pequenas até 480px (celulares pequenos) */
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
   }
 
+  .buttonGroup {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
 
-  /* Comentário exibido */
+/* Comentário exibido */
 .commentText {
   background-color: #f5f5f5;
   padding: 0.75rem;
   border-radius: 8px;
   font-size: 1rem;
   color: #333;
+  margin-top: 0.5rem;
 }
 
 /* Calendário estilizado */
@@ -138,13 +164,12 @@
   margin: 2px auto 0;
 }
 
-/* Título abaixo do dia (opcional para versão mais completa) */
+/* Título abaixo do dia */
 .markedDayTitle {
   font-size: 0.6rem;
   text-align: center;
   color: #555;
 }
-
 
 .calendarHeader {
   display: flex;
@@ -171,14 +196,6 @@
   max-height: 20rem;
   overflow-y: auto;
   padding-right: 0.5rem;
-}
-
-.commentText {
-  margin-top: 0.5rem;
-  background: #f4f4f4;
-  padding: 0.5rem;
-  border-radius: 8px;
-  font-style: italic;
 }
 
 .commentsSection {

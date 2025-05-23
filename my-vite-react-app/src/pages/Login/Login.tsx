@@ -66,6 +66,7 @@ export const Login: React.FC = () => {
       // Decodificar token e navegar conforme role
       try {
         const decoded = JSON.parse(atob(token.split(".")[1]));
+        localStorage.setItem("userRole", decoded.role); // <-- salva o role aqui
         if (decoded.role === "farmer") {
           navigate("/dashboard");
         } else if (decoded.role === "veterinarian") {
@@ -77,8 +78,6 @@ export const Login: React.FC = () => {
         console.error("Erro ao decodificar token:", err);
         alert("Erro ao processar login.");
       }
-    } catch (err) {
-      console.error("Erro na requisição de login:", err);
       alert("Erro na comunicação com o servidor. Verifique se o backend está rodando.");
     } finally {
       setLoading(false);

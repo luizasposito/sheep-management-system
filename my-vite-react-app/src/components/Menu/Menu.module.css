@@ -1,4 +1,12 @@
+/* Evita scroll horizontal */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+}
 
+/* Navbar principal */
 .navbar {
   background-color: transparent;
   border: none;
@@ -7,26 +15,23 @@
   padding: 0.5rem 1rem;
   margin: 1rem 0;
   z-index: 1000;
-}
-
-.menu {
-  list-style: none;
-  display: flex;
-  padding: 0;
-  margin: 0;
-  gap: 0.75rem;
-}
-
-.menuItem {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  overflow: visible;
   position: relative;
 }
 
-/* menuLink não é mais usado para estilizar botão */
-.menuLink {
-  text-decoration: none;
+
+.menuLink:hover,
+.menuLink:focus {
+  background-color: #d2e5be;
+  outline: none;
 }
 
-/* Submenu continua igual */
+/* Submenu dropdown */
 .submenu {
   position: absolute;
   top: 120%;
@@ -43,6 +48,33 @@
   box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
 }
 
+.menuItem:hover > .submenu,
+.menuItem:focus-within > .submenu {
+  display: block;
+}
+
+.menuLink {
+  text-decoration: none;
+  color: #2e4c2f;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  transition: background-color 0.3s;
+  border-radius: 8px;
+  text-align: center;
+  /* Evita mudança de tamanho */
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.menuLink:hover,
+.menuLink:focus,
+.menuLink:active {
+  background-color: #d2e5be;
+  outline: none;
+}
+
+
 .submenu li {
   padding: 0.75rem 1rem;
   text-align: center;
@@ -55,6 +87,7 @@
   font-size: 0.95rem;
   font-weight: 500;
   display: block;
+  font-size: 0.95rem;
 }
 
 .submenu li:hover {
@@ -62,7 +95,7 @@
   border-radius: 8px;
 }
 
-
+/* Logout */
 .logoutWrapper {
   position: relative;
   display: inline-block;
@@ -77,7 +110,6 @@
   z-index: 100;
 }
 
-
 .hidden {
   display: none;
 }
@@ -87,4 +119,109 @@
   display: flex;
   justify-content: center;
   gap: 1rem;
+}
+
+/* Menu horizontal padrão */
+.menu {
+  list-style: none;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+  overflow: visible;
+  justify-content: center; /* centraliza horizontalmente no desktop */
+}
+
+/* Itens do menu */
+.menuItem {
+  position: relative;
+  white-space: nowrap; /* evita quebrar texto */
+}
+
+/* Força menu vertical apenas quando o dispositivo está em pé */
+@media (orientation: portrait) and (max-width: 768px) {
+  .menu {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+    overflow-x: visible;
+  }
+
+  .menuItem {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .menuLink {
+    display: block;
+    padding: 0.75rem 1rem;
+    text-align: center;
+  }
+
+  .submenu {
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: none;
+    min-width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+
+  .menuItem.open > .submenu {
+    display: block;
+  }
+}
+
+/* Em orientação paisagem (deitado), usa menu horizontal mesmo no mobile */
+@media (orientation: landscape) and (max-width: 768px) {
+  .menu {
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+  }
+
+  .menuItem {
+    white-space: nowrap;
+  }
+
+  .menuLink {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .submenu {
+    position: absolute;
+    top: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    min-width: 200px;
+    padding: 0.75rem 0;
+  }
+
+  .submenuLink {
+    font-size: 1rem; /* força tamanho maior no landscape mobile */
+  }
+
+  .submenu li {
+    padding: 1rem;
+  }
+}
+
+
+
+/* Estilos menores só no modo retrato */
+@media (orientation: portrait) and (max-width: 480px) {
+  .menuLink {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .submenuLink {
+    font-size: 0.85rem;
+  }
 }

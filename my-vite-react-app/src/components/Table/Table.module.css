@@ -1,26 +1,71 @@
+/* Evita scroll horizontal */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+}
 
-
+/* Container da tabela com altura fixa e scroll vertical */
 .tableWrapper {
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid #4b7046;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #4b7046;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 0.25rem;
+}
+
+/* Tabela ocupa 100% do container */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* evita que colunas estiquem demais */
+  word-wrap: break-word; /* quebra texto longo */
+}
+
+/* Cabeçalho e células */
+th, td {
+  padding: 0.75rem;
+  border: 1px solid #4b7046;
+  text-align: left;
+  white-space: normal; /* permite quebra de linha */
+  overflow-wrap: break-word;
+}
+
+/* Estilo do cabeçalho */
+thead {
+  background-color: #b0d297;
+}
+
+/* Linhas pares */
+.evenRow {
+  background-color: #d2e5be;
+}
+
+/* === MEDIA QUERIES === */
+@media (max-width: 768px) {
+  .tableWrapper {
+    max-height: 250px;
+    padding: 0.2rem;
+    margin: 0 1rem;
   }
-  
-  .table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
+
   th, td {
-    padding: 0.75rem;
-    border: 1px solid #4b7046;
-    text-align: left;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
   }
-  
-  thead {
-    background-color: #b0d297;
+}
+
+@media (max-width: 480px) {
+  .tableWrapper {
+    max-height: 200px;
+    margin: 0 0.5rem;
   }
-  
-  .evenRow {
-    background-color: #d2e5be;
+
+  th, td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.85rem;
   }
+}

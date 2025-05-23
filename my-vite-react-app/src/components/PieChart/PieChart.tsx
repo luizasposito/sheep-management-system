@@ -47,7 +47,7 @@ export default function PieChartGraph({
             fill="#8884d8"
             label
           >
-            {data.map((entry, index) => (
+            {data.map((_, index) => (
               <Cell key={`cell-${index}`} fill={dynamicColors[index % dynamicColors.length]} />
             ))}
           </Pie>

@@ -293,6 +293,7 @@ export const Animals: React.FC = () => {
     );
   };
 
+
   const applyFilters = (animal: Animal) => {
     const matchesSearch =
       animal.id.includes(searchTerm);

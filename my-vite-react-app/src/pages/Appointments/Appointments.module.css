@@ -1,110 +1,137 @@
+/* Evita rolagem horizontal */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+  box-sizing: border-box;
+}
 
-
-
+/* Título */
 .title {
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    color: #3e6440;
-    margin-bottom: 1rem;
-  }
-  
-  .buttonGroup {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  
-  .searchBar {
-    margin: 12px 0;
-  }
-  
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #3e6440;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+/* Grupo de botões */
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+/* Barra de busca */
+.searchBar {
+  margin: 12px 0;
+  padding: 0 1rem;
+}
+
+/* Layout principal */
+.content {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding: 0 1rem;
+}
+
+/* Filtros */
+.filters {
+  min-width: 240px;
+  width: 100%;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+/* Grupos de filtros */
+.filterGroup {
+  margin-bottom: 12px;
+}
+
+.filterGroup label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.filterGroup label span {
+  display: inline-block;
+}
+
+/* Cartões */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.cardContent {
+  text-align: left;
+  font-size: 1.2rem;
+}
+
+.clickableCard {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickableCard:hover {
+  background-color: #3e6440;
+  color: white;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
   .content {
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-  
-  .filters {
-    min-width: 240px;
-    max-width: 100%;
-    flex-shrink: 0;
-  }
-  
-  
-  .filterGroup {
-    margin-bottom: 12px;
-  }
-  
-  .filterGroup label {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-    font-size: 1rem;
-    line-height: 1.5;
-  }
-  
-  .filterGroup label span {
-    display: inline-block;
-  }  
-  
-  .cards {
-    display: flex;
     flex-direction: column;
-    gap: 12px;
-    flex-grow: 1;
-  }
-  
-  .cardContent {
-    text-align: left;
-    font-size: 1.2rem;
+    gap: 1rem;
+    padding: 0 1rem;
   }
 
-  .clickableCard {
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .clickableCard:hover {
-    background-color: #3e6440; /* Verde escuro da paleta */
-    color: white;
-  }
-  
-  @media (max-width: 768px) {
-    .mainContent {
-      flex-direction: column;
-    }
-  
-    .centerPanel {
-      grid-template-columns: 1fr;
-      padding: 0;
-    }
+  .filters {
+    width: 100%;
   }
 
+  .buttonGroup {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
 
-  /* Estilos para a área de visualização do calendário */
+/* Área do calendário */
 .calendar {
   background-color: #f4f4f4;
   padding: 16px;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 0 1rem;
 }
 
 .calendarHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .calendarGrid {
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .dayDetails {
@@ -114,7 +141,7 @@
 .dot {
   width: 10px;
   height: 10px;
-  background-color: #3e6440; /* Cor de destaque */
+  background-color: #3e6440;
   border-radius: 50%;
 }
 
