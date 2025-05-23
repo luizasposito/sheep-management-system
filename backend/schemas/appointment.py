@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
@@ -17,8 +17,7 @@ class MedicationResponse(BaseModel):
     dosage: Optional[str]
     indication: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AppointmentCreate(AppointmentBase):
     motivo: Optional[str] = None
@@ -37,8 +36,7 @@ class AppointmentResponse(BaseModel):
     comentarios: Optional[str] = None
     medications: Optional[List[MedicationResponse]] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AppointmentUpdate(BaseModel):
     motivo: Optional[str] = None

@@ -13,6 +13,5 @@ class Appointment(Base):
     motivo = Column(Text, nullable=True)
     comentarios = Column(Text, nullable=True)
 
-    # Novo relacionamento N:N
     sheeps = relationship("Sheep", secondary=appointment_sheep, back_populates="appointments")
     medications = relationship("Medication", backref="appointment", cascade="all, delete-orphan")

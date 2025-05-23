@@ -32,6 +32,7 @@ export const Inventory: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [editedQuantity, setEditedQuantity] = useState("");
   const [isDirty, setIsDirty] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const headers = [
     "Categoria",
@@ -86,17 +87,29 @@ export const Inventory: React.FC = () => {
       if (adjustMode) {
         return [
           ...row,
-          <Button
-            variant="dark"
-            key={`adjust-${index}`}
-            onClick={() => {
-              setSelectedItem(index);
-              setEditedQuantity(row[3]);
-              setIsDirty(false);
-            }}
-          >
-            Ajustar
-          </Button>,
+          <>
+            <Button
+              variant="dark"
+              key={`edit-${index}`}
+              onClick={() => {
+                setSelectedItem(index);
+                setEditedQuantity(row[3]);
+                setIsDirty(false);
+              }}
+            >
+              Editar
+            </Button>
+            <Button
+              variant="light"
+              key={`delete-${index}`}
+              onClick={() => {
+                setSelectedItem(index);
+                setShowDeleteModal(true);
+              }}
+            >
+              Apagar
+            </Button>
+          </>,
         ];
       }
       return row;
@@ -146,6 +159,35 @@ export const Inventory: React.FC = () => {
   const handleCancel = () => {
     setSelectedItem(null);
     setIsDirty(false);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (selectedItem === null) return;
+    const itemToDelete = inventoryData[selectedItem];
+
+    try {
+      const response = await fetch(`http://localhost:8000/inventory/${itemToDelete.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Erro ao apagar item");
+
+      // Atualiza lista local removendo o item
+      setInventoryData((prev) => prev.filter((_, i) => i !== selectedItem));
+      setShowDeleteModal(false);
+      setSelectedItem(null);
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao apagar o item.");
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setSelectedItem(null);
   };
 
   return (
@@ -200,7 +242,7 @@ export const Inventory: React.FC = () => {
             <Table headers={headers} data={filteredData} />
           )}
 
-          {adjustMode && selectedItem !== null && (
+          {adjustMode && selectedItem !== null && !showDeleteModal && (
             <Card className={styles.detailCard}>
               <h2>{inventoryData[selectedItem].item_name}</h2>
               <p><strong>Categoria:</strong> {inventoryData[selectedItem].category}</p>
@@ -227,6 +269,25 @@ export const Inventory: React.FC = () => {
                 </Button>
               </div>
             </Card>
+          )}
+
+          {/* Modal de confirmação de delete */}
+          {showDeleteModal && selectedItem !== null && (
+            <div className={styles.modalOverlay}>
+              <Card className={styles.modalCard}>
+                <h2>Tem certeza que deseja apagar o item <em>{inventoryData[selectedItem].item_name}</em>?</h2>
+                <p><strong>Quantidade em estoque:</strong> {inventoryData[selectedItem].quantity} {inventoryData[selectedItem].unit}</p>
+                <p><strong>Data da última compra:</strong> {new Date(inventoryData[selectedItem].last_updated).toLocaleDateString("pt-PT")}</p>
+                <div className={styles.buttonRow}>
+                  <Button variant="light" onClick={handleDeleteCancel}>
+                    Cancelar
+                  </Button>
+                  <Button variant="dark" onClick={handleDeleteConfirm}>
+                    Confirmar
+                  </Button>
+                </div>
+              </Card>
+            </div>
           )}
         </main>
       </div>

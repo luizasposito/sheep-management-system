@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import date
 
 class MilkProductionCreate(BaseModel):
@@ -7,8 +7,7 @@ class MilkProductionCreate(BaseModel):
     date: date  # Data da produção de leite
     volume: float  # Volume de leite produzido
 
-    class Config:
-        from_attributes = True  # Permite que o Pydantic converta os modelos SQLAlchemy para Pydantic
+    model_config = ConfigDict(from_attributes=True)  # Permite que o Pydantic converta os modelos SQLAlchemy para Pydantic
 
 
 class MilkProductionResponse(BaseModel):
@@ -17,13 +16,11 @@ class MilkProductionResponse(BaseModel):
     date: date  # Data da produção de leite
     volume: float  # Volume de leite produzido
 
-    class Config:
-       from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MilkProductionUpdate(BaseModel):
     date: date  # Data da produção de leite
     volume: float  # Volume de leite produzido
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

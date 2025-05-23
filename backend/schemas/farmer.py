@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 class FarmerCreate(BaseModel):
     name: str
@@ -9,5 +9,4 @@ class FarmerCreate(BaseModel):
 class FarmerResponse(FarmerCreate):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

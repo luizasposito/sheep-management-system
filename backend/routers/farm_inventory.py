@@ -91,8 +91,13 @@ def update_inventory_item(
     if not existing_item:
         raise HTTPException(status_code=404, detail="Inventory item not found")
     
-    for key, value in item.model_dump().items():
+    # Atualizar apenas os campos relevantes, mantendo o farm_id
+    update_data = item.model_dump()
+    for key, value in update_data.items():
         setattr(existing_item, key, value)
+
+    # Garantir que farm_id permanece o mesmo
+    setattr(existing_item, "farm_id", existing_item.farm_id)
 
     db.commit()
     db.refresh(existing_item)

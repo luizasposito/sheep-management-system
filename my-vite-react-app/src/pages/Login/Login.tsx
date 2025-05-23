@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { useUser } from "../../UserContext";
@@ -10,6 +10,9 @@ import hidePassIcon from "../../icons/hide-pass.png";
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,6 +45,8 @@ export const Login: React.FC = () => {
       const data = await res.json();
       const token = data.access_token;
       localStorage.setItem("token", token);
+
+      navigate(from, { replace: true });
 
       // Testar se o token funciona para acessar endpoint protegido
       const meRes = await fetch("http://localhost:8000/auth/me", {
