@@ -133,11 +133,11 @@ export const InventoryCreate: React.FC = () => {
         </Card>
 
         <div className={styles.buttonGroup}>
-          <Button variant="dark" type="submit" disabled={loading}>
-            {loading ? "Salvando..." : "Salvar"}
-          </Button>
           <Button variant="light" type="button" onClick={() => navigate("/inventory")} disabled={loading}>
             Cancelar
+          </Button>
+          <Button variant="dark" type="submit" disabled={loading}>
+            {loading ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </form>

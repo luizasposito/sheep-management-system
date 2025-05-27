@@ -154,111 +154,164 @@ export const AnimalEdit: React.FC = () => {
 
   return (
     <PageLayout>
-      <h1 className={styles.title}>Editar Animal {id}</h1>
+      <h1 className={styles.title}>
+        Editar Animal {id}
+      </h1>
       {error && <p className={styles.error}>{error}</p>}
 
       {animal ? (
-        <Card className={styles.formCard}>
-          <div className={styles.grid}>
-            <div className={styles.leftColumn}>
-              <div className={styles.formGroup}>
-                <label>Data de nascimento:</label>
-                <input
-                  type="date"
-                  name="birth_date"
-                  value={form.birth_date}
-                  onChange={handleChange}
-                  max={new Date().toISOString().split("T")[0]}
-                />
-              </div>
+        <form className={styles.form}>
+          <Card>
+            <div className={styles.grid}>
+              <div className={styles.leftColumn}>
+                <div className={styles.formGroup}>
+                  <label>
+                    Data de nascimento:
+                  </label>
+                  <input
+                    type="date"
+                    name="birth_date"
+                    value={form.birth_date}
+                    onChange={handleChange}
+                    max={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
 
-              <div className={styles.formGroup}>
-                <label>Sexo:</label>
-                <select name="gender" value={form.gender.toLowerCase()} onChange={handleChange}>
-                  <option value="macho">Macho</option>
-                  <option value="fêmea">Fêmea</option>
-                </select>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>ID do pai:</label>
-                <select name="father_id" value={form.father_id?.toString() || ""} onChange={handleChange}>
-                  <option value="">Nenhum</option>
-                  {farmAnimals
-                    .filter((a) => (a.gender || "").toLowerCase() === "macho")
-                    .map((a) => (
-                      <option key={a.id} value={a.id.toString()}>
-                        {a.id} - {a.gender}
-                      </option>
-                    ))}
-                </select>
-
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>ID da mãe:</label>
-                <select name="mother_id" value={form.mother_id?.toString() || ""} onChange={handleChange}>
-                  <option value="">Nenhum</option>
-                  {farmAnimals
-                    .filter((a) => a.gender.toLowerCase() === "fêmea")
-                    .map((a) => (
-                      <option key={a.id} value={a.id.toString()}>
-                        {a.id} - {a.gender}
-                      </option>
-                    ))}
-                </select>
-
-              </div>
-
-            </div>
-
-            <div className={styles.rightColumn}>
-              <div className={styles.formGroup}>
-                <label>Fardo para ingestão diária (kg):</label>
-                <input
-                  type="number"
-                  name="feeding_hay"
-                  value={form.feeding_hay}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Ração para ingestão diária (kg):</label>
-                <input
-                  type="number"
-                  name="feeding_feed"
-                  value={form.feeding_feed}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Grupo:</label>
-                <select name="group_id" value={form.group_id || ""} onChange={handleChange}>
-                  <option value="">Nenhum</option>
-                  {groups.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.id} - {group.name}
+                <div className={styles.formGroup}>
+                  <label>
+                    Sexo:
+                  </label>
+                  <select name="gender" value={form.gender} onChange={handleChange}>
+                    <option value="Macho">
+                      Macho
                     </option>
-                  ))}
-                </select>
+                    <option value="Fêmea">
+                      Fêmea
+                    </option>
+                  </select>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>
+                    ID do pai:
+                  </label>
+                  <select
+                    name="father_id"
+                    value={form.father_id?.toString() || ""}
+                    onChange={handleChange}
+                  >
+                    <option value="">
+                      Nenhum
+                    </option>
+                    {farmAnimals
+                      .filter((a) => (a.gender || "").toLowerCase() === "macho")
+                      .map((a) => (
+                        <option key={a.id} value={a.id.toString()}>
+                          {a.id} - {a.gender}
+                        </option>
+                      ))}
+                  </select>
+
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>
+                    ID da mãe:
+                  </label>
+                  <select
+                    name="mother_id"
+                    value={form.mother_id?.toString() || ""}
+                    onChange={handleChange}
+                  >
+                    <option value="">
+                      Nenhum
+                    </option>
+                    {farmAnimals
+                      .filter((a) => a.gender.toLowerCase() === "fêmea")
+                      .map((a) => (
+                        <option
+                          key={a.id}
+                          value={a.id.toString()}
+                        >
+                          {a.id} - {a.gender}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className={styles.rightColumn}>
+                <div className={styles.formGroup}>
+                  <label>
+                    Fardo para ingestão diária (kg):
+                  </label>
+                  <input
+                    type="number"
+                    name="feeding_hay"
+                    value={form.feeding_hay}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>
+                    Ração para ingestão diária (kg):
+                  </label>
+                  <input
+                    type="number"
+                    name="feeding_feed"
+                    value={form.feeding_feed}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>
+                    Grupo:
+                  </label>
+                  <select
+                    name="group_id"
+                    value={form.group_id || ""}
+                    onChange={handleChange}
+                  >
+                    <option value="">
+                      Nenhum
+                    </option>
+                    {groups.map((group) => (
+                      <option
+                        key={group.id}
+                        value={group.id}
+                      >
+                        {group.id} - {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
+          </Card>
 
           <div className={styles.buttonGroup}>
-            <Button variant="dark" onClick={handleSubmit} disabled={!isChanged}>
-              Salvar
-            </Button>
-            <Button variant="dark" onClick={() => navigate(-1)}>
+            <Button
+              variant="light"
+              onClick={() => navigate(-1)}
+            >
               Cancelar
             </Button>
+            <Button
+              variant="dark"
+              onClick={handleSubmit}
+              disabled={!isChanged}
+            >
+              Salvar
+            </Button>
           </div>
-        </Card>
+      </form>
 
       ) : (
-        <p>Carregando dados...</p>
+        <p>
+          Carregando dados...
+        </p>
       )}
     </PageLayout>
   );

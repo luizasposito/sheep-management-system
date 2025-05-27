@@ -38,16 +38,17 @@ body {
   flex-direction: row;
   gap: 16px;
   align-items: flex-start;
-  flex-wrap: wrap;
   padding: 0 1rem;
+  flex-wrap: nowrap;
 }
 
-/* Filtros */
-.filters {
-  min-width: 240px;
-  width: 100%;
-  max-width: 100%;
-  flex-shrink: 0;
+/* Cartões */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+  width: auto;
 }
 
 /* Grupos de filtros */
@@ -57,32 +58,38 @@ body {
 
 .filterGroup label {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 8px;
   margin-top: 8px;
   font-size: 1rem;
   line-height: 1.5;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+
+.filterGroup input[type="checkbox"] {
+  margin: 0;
+  align-self: flex-start;
 }
 
 .filterGroup label span {
   display: inline-block;
 }
 
-/* Cartões */
-.cards {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex-grow: 1;
-  width: 100%;
+.filterGroup p {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
 }
 
+/* Conteúdo dos cartões */
 .cardContent {
   text-align: left;
   font-size: 1.2rem;
 }
 
+/* Cartão clicável */
 .clickableCard {
   cursor: pointer;
   transition: background-color 0.2s ease;

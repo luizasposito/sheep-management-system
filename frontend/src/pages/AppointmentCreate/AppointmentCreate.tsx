@@ -171,11 +171,11 @@ export const AppointmentCreate: React.FC = () => {
         </Card>
 
         <div className={styles.buttonGroup}>
-          <Button variant="dark" type="submit">
-            Salvar
-          </Button>
           <Button variant="light" type="button" onClick={() => navigate("/appointment")}>
             Cancelar
+          </Button>
+          <Button variant="dark" type="submit">
+            Salvar
           </Button>
         </div>
       </form>

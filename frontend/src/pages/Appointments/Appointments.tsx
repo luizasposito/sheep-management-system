@@ -278,8 +278,10 @@ export const Appointments: React.FC = () => {
                   checked={filterSexo.includes(sexo)}
                   onChange={() => toggleFilter(sexo, filterSexo, setFilterSexo)}
                 />
+
                 <span>{sexo}</span>
               </label>
+
             ))}
           </div>
 
@@ -295,6 +297,7 @@ export const Appointments: React.FC = () => {
                   />
                   <span>{groupName}</span>
                 </label>
+
               ))}
             </div>
           )}

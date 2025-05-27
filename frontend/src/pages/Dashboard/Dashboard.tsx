@@ -7,7 +7,6 @@ import { Button } from "../../components/Button/Button";
 import LineGraph from "../../components/LineGraph/LineGraph";
 import PieChartGraph from "../../components/PieChart/PieChart";
 import styles from "./Dashboard.module.css";
-import axios from "axios";
 
 interface ProductionData {
   label: string;
@@ -75,44 +74,42 @@ export const Dashboard: React.FC = () => {
     fetchSensors();
   }, []);
 
-  const processGroupGraphData = (rawData: any[]): LineGraphData[] => {
-    const today = new Date();
-    const dates = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      return d.toISOString().split("T")[0];
-    }).reverse();
+  const processGroupGraphData = (apiData: any[]): LineGraphData[] => {
+    const groupedData: { [date: string]: LineGraphData } = {};
+    const groupNames = new Set<string>();
 
-    const groups = Array.from(new Set(rawData.map((item) => item.group_name)));
-    const groupedData: Record<string, Record<string, number>> = {};
+    // Primeiro passo: organizar por data e coletar todos os grupos
+    for (const entry of apiData) {
+      const { date, group_name, total_volume } = entry;
+      groupNames.add(group_name);
+      if (!groupedData[date]) {
+        groupedData[date] = { date };
+      }
+      groupedData[date][group_name] = total_volume || 0;
+    }
 
-    groups.forEach((group) => {
-      groupedData[group] = {};
-      dates.forEach((date) => {
-        groupedData[group][date] = 0;
-      });
-    });
-
-    rawData.forEach((item) => {
-      groupedData[item.group_name][item.date] = item.total_volume;
-    });
-
-    return dates.map((date) => {
-      const entry: LineGraphData = { date };
-      groups.forEach((group) => {
-        entry[group] = groupedData[group][date];
-      });
+    // Segundo passo: garantir que todas as datas tenham todos os grupos
+    const completeData: LineGraphData[] = Object.values(groupedData).map((entry) => {
+      for (const group of groupNames) {
+        if (!(group in entry)) {
+          entry[group] = 0;
+        }
+      }
       return entry;
     });
+
+    return completeData.sort((a, b) => a.date.localeCompare(b.date));
   };
+
 
   const fetchSensors = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:8000/sensor/", {
+      const response = await fetch("http://localhost:8000/sensor/", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setSensors(response.data);
+      const data = await response.json();
+      setSensors(data);
     } catch (error) {
       console.error("Erro ao buscar sensores:", error);
     }
@@ -121,8 +118,47 @@ export const Dashboard: React.FC = () => {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
 
+      const requests = [
+        fetch("http://localhost:8000/milk-production/total-today", {
+          method: "GET",
+          headers,
+        }),
+        fetch("http://localhost:8000/milk-production/sum-last-7-days", {
+          method: "GET",
+          headers,
+        }),
+        fetch("http://localhost:8000/milk-production/total-today-by-group", {
+          method: "GET",
+          headers,
+        }),
+        fetch("http://localhost:8000/milk-production/daily-total-last-7-days", {
+          method: "GET",
+          headers,
+        }),
+        fetch("http://localhost:8000/milk-production/daily-by-group-last-7-days", {
+          method: "GET",
+          headers,
+        }),
+        fetch("http://localhost:8000/milk-production/sum-2-weeks-ago", {
+          method: "GET",
+          headers,
+        }),
+        fetch("http://localhost:8000/sheep-group/sheep-count-by-group", {
+          method: "GET",
+          headers,
+        }),
+        fetch("http://localhost:8000/appointment/", {
+          method: "GET",
+          headers,
+        }),
+      ];
+
+      const responses = await Promise.all(requests);
       const [
         totalTodayRes,
         totalLast7DaysRes,
@@ -132,20 +168,11 @@ export const Dashboard: React.FC = () => {
         sum2WeeksAgoRes,
         sheepCountByGroupRes,
         appointmentsRes,
-      ] = await Promise.all([
-        axios.get("http://localhost:8000/milk-production/total-today", { headers }),
-        axios.get("http://localhost:8000/milk-production/sum-last-7-days", { headers }),
-        axios.get("http://localhost:8000/milk-production/total-today-by-group", { headers }),
-        axios.get("http://localhost:8000/milk-production/daily-total-last-7-days"),
-        axios.get("http://localhost:8000/milk-production/daily-by-group-last-7-days"),
-        axios.get("http://localhost:8000/milk-production/sum-2-weeks-ago", { headers }),
-        axios.get("http://localhost:8000/sheep-group/sheep-count-by-group", { headers }),
-        axios.get("http://localhost:8000/appointment/", { headers }),
-      ]);
+      ] = await Promise.all(responses.map((res) => res.json()));
 
-      const totalToday = totalTodayRes.data.total_volume || 0;
-      const totalLast7Days = totalLast7DaysRes.data.total_volume || 0;
-      const total2WeeksAgo = sum2WeeksAgoRes.data.total_volume || 0;
+      const totalToday = totalTodayRes.total_volume || 0;
+      const totalLast7Days = totalLast7DaysRes.total_volume || 0;
+      const total2WeeksAgo = sum2WeeksAgoRes.total_volume || 0;
 
       const calcVariation = (current: number, previous: number): string => {
         if (previous === 0) return "+100%";
@@ -167,24 +194,31 @@ export const Dashboard: React.FC = () => {
         },
       ]);
 
-      setLineGraphGeneralData(dailyTotalLast7DaysRes.data.map((item: any) => ({
-        date: item.date,
-        total_volume: item.total_volume || 0,
-      })));
-      setLineGraphGroupData(processGroupGraphData(dailyByGroupLast7DaysRes.data));
+      setLineGraphGeneralData(
+        dailyTotalLast7DaysRes.map((item: any) => ({
+          date: item.date,
+          total_volume: item.total_volume || 0,
+        }))
+      );
 
-      setPieChartData(totalTodayByGroupRes.data.map((group: any) => ({
-        name: group.group_name,
-        value: group.total_volume,
-      })));
+      setLineGraphGroupData(processGroupGraphData(dailyByGroupLast7DaysRes));
 
-      setSheepCountByGroup(sheepCountByGroupRes.data.map((group: any) => ({
-        name: group.group_name,
-        value: group.count,
-      })));
+      setPieChartData(
+        totalTodayByGroupRes.map((group: any) => ({
+          name: group.group_name,
+          value: group.total_volume,
+        }))
+      );
+
+      setSheepCountByGroup(
+        sheepCountByGroupRes.map((group: any) => ({
+          name: group.group_name,
+          value: group.count,
+        }))
+      );
 
       const todayISO = new Date().toISOString();
-      const upcomingAppointments = appointmentsRes.data
+      const upcomingAppointments = appointmentsRes
         .filter((appt: any) => appt.date >= todayISO)
         .sort((a: any, b: any) => a.date.localeCompare(b.date))
         .map((appt: any) => ({
@@ -193,11 +227,13 @@ export const Dashboard: React.FC = () => {
           motivo: appt.motivo || "Sem motivo informado",
           sheep_ids: appt.sheep_ids || [],
         }));
+
       setAppointments(upcomingAppointments);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
     }
   };
+
 
   const handleSensorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -236,22 +272,23 @@ export const Dashboard: React.FC = () => {
       min_value: parseFloat(sensorForm.min_value),
       max_value: parseFloat(sensorForm.max_value),
       current_value: parseFloat(sensorForm.current_value),
-      farm_id: user.farmId,  // <-- adiciona farm_id aqui
+      farm_id: user.farmId,
     };
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios({
-        url,
+      const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        data: payload,
+        body: JSON.stringify(payload),
       });
 
-      const updatedSensor = response.data;
+      if (!response.ok) throw new Error("Erro ao salvar sensor");
+      const updatedSensor = await response.json();
+
       setSensors((prev) =>
         method === "POST"
           ? [...prev, updatedSensor]
@@ -269,9 +306,13 @@ export const Dashboard: React.FC = () => {
     if (deleteSensorId === null) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:8000/sensor/${deleteSensorId}`, {
+      const response = await fetch(`http://localhost:8000/sensor/${deleteSensorId}`, {
+        method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (!response.ok) throw new Error("Erro ao deletar sensor");
+
       setSensors((prev) => prev.filter((s) => s.id !== deleteSensorId));
       setDeleteSensorId(null);
     } catch (error) {

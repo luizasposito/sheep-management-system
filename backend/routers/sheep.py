@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Body, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from models.sheep import Sheep
@@ -10,12 +10,13 @@ from models.milk_production import MilkProduction
 from models.sheep_parentage import SheepParentage
 from schemas.sheep import SheepCreate, SheepResponse, SheepUpdate
 from schemas.milk_production import MilkProductionCreate, MilkProductionResponse, MilkProductionUpdate
-from typing import List
+from typing import List, Optional
 from routers.auth import get_current_user
 from schemas.auth import TokenUser
 from pydantic import BaseModel
 from database import SessionLocal
 from datetime import date
+from datetime import date as Date
 
 
 router = APIRouter()
@@ -67,7 +68,10 @@ def get_all_sheep(
     db: Session = Depends(get_db),
     current_user: TokenUser = Depends(get_current_user)
 ):
-    sheep_list = db.query(Sheep).all()
+    if current_user.role not in ["farmer", "veterinarian"]:
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
+    sheep_list = db.query(Sheep).filter(Sheep.farm_id == current_user.farm_id).all()
     enriched_list = []
 
     for sheep in sheep_list:
@@ -84,21 +88,25 @@ def get_all_sheep(
     return enriched_list
 
 
-
-# GET /sheep/id - return specific sheep
+# GET /sheep/{id} - return specific sheep
 @router.get("/{sheep_id}", response_model=SheepResponse)
 def get_sheep_by_id(
     sheep_id: int,
     db: Session = Depends(get_db),
     current_user: TokenUser = Depends(get_current_user)
 ):
-    # Busca o animal
-    sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+    if current_user.role not in ["farmer", "veterinarian"]:
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
+    sheep = (
+        db.query(Sheep)
+        .filter(Sheep.id == sheep_id, Sheep.farm_id == current_user.farm_id)
+        .first()
+    )
 
     if sheep is None:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
-    # Busca a produção de leite do dia atual
     today = date.today()
     milk_today = (
         db.query(MilkProduction)
@@ -106,7 +114,6 @@ def get_sheep_by_id(
         .first()
     )
 
-    # Extrai pai e mãe (se existirem)
     father_id = None
     mother_id = None
     for rel in sheep.parents:
@@ -118,7 +125,6 @@ def get_sheep_by_id(
             elif gender == "fêmea":
                 mother_id = parent.id
 
-    # Constrói a resposta
     sheep_data = {
         **sheep.__dict__,
         "father_id": father_id,
@@ -130,7 +136,6 @@ def get_sheep_by_id(
 
 
 
-
 # PUT /sheep/{id} - update existing sheep
 @router.put("/{sheep_id}", response_model=SheepResponse)
 def update_sheep(
@@ -139,7 +144,7 @@ def update_sheep(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id, Sheep.farm_id == current_user.farm_id).first()
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
@@ -172,7 +177,7 @@ def delete_sheep(
     db: Session = Depends(get_db),
     current_user: TokenUser = Depends(get_current_user)
 ):
-    sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id, Sheep.farm_id == current_user.farm_id).first()
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
@@ -195,6 +200,9 @@ async def update_milk_yield(
     current_user: TokenUser = Depends(get_current_user)
 ):
     sheep = db.query(Sheep).filter(Sheep.id == sheep_id).first()
+    if sheep.farm_id != current_user.farm_id:
+        raise HTTPException(status_code=403, detail="Access forbidden: sheep does not belong to your farm")
+
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
@@ -262,3 +270,33 @@ def get_children_of_sheep(
     child_sheep = [relation.offspring for relation in child_relations]
 
     return child_sheep
+
+
+
+@router.get("/{sheep_id}/milk-yield", response_model=List[MilkProductionResponse])
+async def get_sheep_milk_production(
+    sheep_id: int,
+    date: Optional[Date] = Query(None, description="Data da produção no formato YYYY-MM-DD"),
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user),
+):
+    # Busca o fazendeiro autenticado
+    farmer = db.query(Farmer).filter(Farmer.email == current_user.email).first()
+    if not farmer:
+        raise HTTPException(status_code=404, detail="Farmer not found")
+
+    # Verifica se a ovelha existe e pertence à fazenda do fazendeiro
+    sheep = db.query(Sheep).filter(Sheep.id == sheep_id, Sheep.farm_id == farmer.farm_id).first()
+    if not sheep:
+        raise HTTPException(status_code=404, detail="Sheep not found or not authorized")
+
+    # Monta a query base
+    query = db.query(MilkProduction).filter(MilkProduction.sheep_id == sheep_id)
+
+    # Se a data foi informada, filtra por ela
+    if date:
+        query = query.filter(MilkProduction.date == date)
+
+    productions = query.order_by(MilkProduction.date.desc()).all()
+
+    return productions

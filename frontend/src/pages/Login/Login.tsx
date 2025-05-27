@@ -4,8 +4,8 @@ import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { useUser } from "../../UserContext";
 import styles from "./Login.module.css";
-import showPassIcon from "../../icons/show-pass.png";
-import hidePassIcon from "../../icons/hide-pass.png";
+import showPassIcon from "../../icons/show-pass-2.png";
+import hidePassIcon from "../../icons/hide-pass-2.png";
 
 
 export const Login: React.FC = () => {
@@ -38,7 +38,6 @@ export const Login: React.FC = () => {
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         alert(errorData.detail || "Login inválido");
-        setLoading(false);
         return;
       }
 
@@ -46,43 +45,38 @@ export const Login: React.FC = () => {
       const token = data.access_token;
       localStorage.setItem("token", token);
 
-      navigate(from, { replace: true });
-
-      // Testar se o token funciona para acessar endpoint protegido
+      // Testar token
       const meRes = await fetch("http://localhost:8000/auth/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!meRes.ok) {
         alert("Token inválido para acessar dados do usuário");
-        setLoading(false);
         return;
       }
 
       const userData = await meRes.json();
       setUser(userData);
-      console.log("Usuário autenticado:", userData);
 
-      // Decodificar token e navegar conforme role
-      try {
-        const decoded = JSON.parse(atob(token.split(".")[1]));
-        localStorage.setItem("userRole", decoded.role); // <-- salva o role aqui
-        if (decoded.role === "farmer") {
-          navigate("/dashboard");
-        } else if (decoded.role === "veterinarian") {
-          navigate("/appointment");
-        } else {
-          alert("Tipo de usuário desconhecido");
-        }
-      } catch (err) {
-        console.error("Erro ao decodificar token:", err);
-        alert("Erro ao processar login.");
+      // Decodificar token e redirecionar
+      const decoded = JSON.parse(atob(token.split(".")[1]));
+      localStorage.setItem("userRole", decoded.role);
+      if (decoded.role === "farmer") {
+        navigate("/dashboard");
+      } else if (decoded.role === "veterinarian") {
+        navigate("/appointment");
+      } else {
+        alert("Tipo de usuário desconhecido");
       }
+
+    } catch (error) {
+      console.error("Erro na comunicação com o backend:", error);
       alert("Erro na comunicação com o servidor. Verifique se o backend está rodando.");
     } finally {
       setLoading(false);
     }
   };
+
 
 
   return (
