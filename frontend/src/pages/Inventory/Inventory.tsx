@@ -219,7 +219,7 @@ export const Inventory: React.FC = () => {
           />
 
           <div className={styles.filterGroup}>
-            <p>Filtrar por</p>
+            <h3>Filtrar por</h3>
             <strong>Categoria</strong>
             {categories.map((cat) => (
               <label key={cat}>
@@ -261,11 +261,11 @@ export const Inventory: React.FC = () => {
               <p><strong>Unidade:</strong> {inventoryData[selectedItem].unit}</p>
               <p><strong>Próxima compra:</strong> -</p>
               <div className={styles.buttonRow}>
-                <Button variant="dark" onClick={handleSave} disabled={!isDirty}>
-                  Salvar
-                </Button>
                 <Button variant="light" onClick={handleCancel}>
                   Cancelar
+                </Button>
+                <Button variant="dark" onClick={handleSave} disabled={!isDirty}>
+                  Salvar
                 </Button>
               </div>
             </Card>

@@ -22,6 +22,11 @@ type Group = {
   animalIds: string[];
 };
 
+type MilkProductionResponse = {
+  date: string;
+  volume: number;
+};
+
 export const Animals: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -60,32 +65,32 @@ export const Animals: React.FC = () => {
     return Array.from(gendersSet);
   }, [animalData]);
 
-  const fetchTodayMilkProduction = async (sheepId: string) => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const formattedDate = `${year}-${month}-${day}`;
-
+  
+  const fetchTodayMilkProduction = async (sheepId: string): Promise<number | null> => {
     try {
-      const res = await fetch(`http://localhost:8000/milk-production/by-sheep-date?sheep_id=${sheepId}&date=${formattedDate}`, {
+      const todayStr = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD'
+
+      const res = await fetch(`http://localhost:8000/sheep/${sheepId}/milk-yield?date=${todayStr}`, {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "application/json"
         }
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        return data.volume;
-      } else {
-        return null;
-      }
+      if (!res.ok) return null;
+
+      const data: MilkProductionResponse[] = await res.json();
+
+      // Agora o backend já filtra por data, data[0] é a produção do dia
+      return data.length > 0 ? data[0].volume : null;
+
     } catch (err) {
-      console.error("Erro ao buscar produção de hoje:", err);
+      console.error("Erro ao buscar produção de leite:", err);
       return null;
     }
   };
+
+
 
   const submitMilkProduction = async (sheepId: string, volume: number) => {
     setLoading(true);
@@ -188,7 +193,7 @@ export const Animals: React.FC = () => {
 
       setAnimalData(formattedData);
 
-      // Buscar produção de hoje para cada ovelha
+      // Buscar produção de leite de hoje para cada ovelha
       const productions = await Promise.all(
         formattedData.map(animal => fetchTodayMilkProduction(animal.id))
       );
@@ -205,6 +210,7 @@ export const Animals: React.FC = () => {
       setLoading(false);
     }
   };
+
 
   const fetchGroups = async () => {
     try {
@@ -445,10 +451,14 @@ export const Animals: React.FC = () => {
   return (
     <PageLayout>
       <h1 className={styles.title}>Animais</h1>
-
       <div className={styles.buttonGroup}>
         <RoleOnly role="farmer">
-          <Button variant="light" onClick={() => navigate("/animal/add")}>Adicionar animal</Button>
+          <Button
+            variant="light"
+            onClick={() => navigate("/animal/add")}
+          >
+            Adicionar animal
+          </Button>
         </RoleOnly>
       </div>
 
@@ -462,7 +472,9 @@ export const Animals: React.FC = () => {
 
       <div className={styles.content}>
         <aside className={styles.filters}>
-          <h3>Filtrar por</h3>
+          <h3>
+            Filtrar por
+          </h3>
 
           <div className={styles.filterGroup}>
             <strong>Sexo</strong>
@@ -495,104 +507,127 @@ export const Animals: React.FC = () => {
             </div>
           </RoleOnly>
         </aside>
-
-        <section className={styles.cards}>
-          {(loading || loadingGroups) ? (
-            <p>Carregando animais e grupos...</p>
-          ) : (
-            filteredAnimals.map(animal => (
-              <div key={animal.id} className={styles.animalCardWrapper}>
-                <Card
-                  key={`${animal.id}-${animal.producaoLeiteira}`} // chave muda se a produção mudar
-                  className={styles.clickableCard}
-                  onClick={() => navigate(`/animal/${animal.id}`)}
+        
+        <div className={styles.animalCardsWrapper}>
+          <section className={styles.cards}>
+            {(loading || loadingGroups) ? (
+              <p>
+                Carregando animais e grupos...
+              </p>
+            ) : (
+              filteredAnimals.map(animal => (
+                <div
+                  key={animal.id}
+                  className={styles.animalCardWrapper}
                 >
+                  <Card
+                    key={`${animal.id}-${animal.producaoLeiteira}`}
+                    className={styles.clickableCard}
+                    onClick={() => navigate(`/animal/${animal.id}`)}
+                  >
+                    <div className={styles.cardContent}>
+                      <p>
+                        <strong>ID:</strong> {animal.id}
+                      </p>
 
-                  <div className={styles.cardContent}>
-                    <p><strong>ID:</strong> {animal.id}</p>
+                      {animal.gender !== "Macho" && (
+                        <p>
+                          <strong>produção leiteira:</strong> {animal.producaoLeiteira} L
+                        </p>
+                      )}
 
-                    {animal.gender !== "Macho" && (
-                      <p><strong>produção leiteira:</strong> {animal.producaoLeiteira} L</p> // garante que use animalData atualizado
-                    )}
-
-                    <p><strong>sexo:</strong> {animal.gender}</p>
-                    <p><strong>grupo:</strong> {animal.group_id && groupIdToName[animal.group_id] ? groupIdToName[animal.group_id] : "Sem grupo"}</p>
-                  </div>
-                </Card>
-
-                {animal.gender !== "Macho" && (
-                  activeFormId === animal.id ? (
-                    <div className={styles.buttonContainer}>
-                      <input
-                        type="number"
-                        value={formVolume}
-                        onChange={(e) => setFormVolume(e.target.value)}
-                        placeholder="Volume (L)"
-                      />
-                      <div className={styles.buttonRow}>
-                        <Button variant="light" onClick={resetFormStates}>Cancelar</Button>
-                        <Button
-                          onClick={() => submitMilkProduction(animal.id, parseFloat(formVolume))}
-                          disabled={
-                            formMode === "update"
-                              ? formVolume.trim() === ""
-                              : formVolume.trim() === existingVolume?.toString()
-                          }
-                        >
-                          Salvar
-                        </Button>
-                      </div>
+                      <p>
+                        <strong>sexo:</strong> {animal.gender}
+                      </p>
+                      <p>
+                        <strong>grupo:</strong> {animal.group_id && groupIdToName[animal.group_id] ? groupIdToName[animal.group_id] : "Sem grupo"}
+                      </p>
                     </div>
-                  ) : (
-                    <div className={styles.buttonContainer}>
-                      <RoleOnly role="farmer">
-                        <Button
-                          onClick={() => {
-                            setActiveFormId(animal.id);
-                            setFormVolume("");
-                            setExistingVolume(null);
-                            setFormMode("update");
-                          }}
-                          disabled={todayMilkProductionMap[animal.id] !== null}
-                        >
-                          Adicionar produção de hoje
-                        </Button>
-                      </RoleOnly>
+                  </Card>
 
-                      <RoleOnly role="farmer">
-                        <Button
-                          onClick={async () => {
-                            const vol = await fetchTodayMilkProduction(animal.id);
-                            if (vol !== null) {
-                              setActiveFormId(animal.id);
-                              setFormVolume(vol.toString());
-                              setExistingVolume(vol);
-                              setFormMode("edit");
-                            } else {
-                              alert("Nenhum registro encontrado para hoje.");
+                  {animal.gender !== "Macho" && (
+                    activeFormId === animal.id ? (
+                      <div className={styles.buttonContainer}>
+                        <input
+                          type="number"
+                          value={formVolume}
+                          onChange={(e) => setFormVolume(e.target.value)}
+                          placeholder="Volume (L)"
+                        />
+                        <div className={styles.buttonRow}>
+                          <Button
+                            variant="light"
+                            onClick={resetFormStates}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            onClick={() => submitMilkProduction(animal.id, parseFloat(formVolume))}
+                            disabled={
+                              formMode === "update"
+                                ? formVolume.trim() === ""
+                                : formVolume.trim() === existingVolume?.toString()
                             }
-                          }}
-                        >
-                          Editar produção de hoje
-                        </Button>
-                      </RoleOnly>
-                    </div>
-                  )
-                )}
-              </div>
-            ))
+                          >
+                            Salvar
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={styles.buttonContainer}>
+                        <RoleOnly role="farmer">
+                          <Button
+                            onClick={() => {
+                              setActiveFormId(animal.id);
+                              setFormVolume("");
+                              setExistingVolume(null);
+                              setFormMode("update");
+                            }}
+                            disabled={todayMilkProductionMap[animal.id] != null}
+                          >
+                            Adicionar produção de hoje
+                          </Button>
+                        </RoleOnly>
 
-          )}
-        </section>
+                        <RoleOnly role="farmer">
+                          <Button
+                            onClick={async () => {
+                              const vol = await fetchTodayMilkProduction(animal.id);
+                              if (vol !== null) {
+                                setActiveFormId(animal.id);
+                                setFormVolume(vol.toString());
+                                setExistingVolume(vol);
+                                setFormMode("edit");
+                              } else {
+                                alert("Nenhum registro encontrado para hoje.");
+                              }
+                            }}
+                            disabled={todayMilkProductionMap[animal.id] == null}
+                          >
+                            Editar produção de hoje
+                          </Button>
+                        </RoleOnly>
+                      </div>
+                    )
+                  )}
+                </div>
+              ))
+            )}
+          </section>
+        </div>
 
         <RoleOnly role="farmer">
           <Card className={styles.groupCard}>
-            <h2>Lista de grupos</h2>
+            <h2>
+              Lista de grupos
+            </h2>
 
             {mode === "normal" && (
               <>
                 {groups.length === 0 ? (
-                  <p>Nenhum grupo cadastrado.</p>
+                  <p>
+                    Nenhum grupo cadastrado.
+                  </p>
                 ) : (
                   groups.map((group) => (
                     <p key={group.id}>
@@ -602,12 +637,22 @@ export const Animals: React.FC = () => {
                 )}
 
                 <div className={styles.buttonRow}>
-                  <Button onClick={() => setMode("creating")}>Criar</Button>
-                  <Button onClick={() => setMode("selecting-edit")}>
+                  <Button
+                    onClick={() => setMode("creating")}
+                  >
+                    Criar
+                  </Button>
+                  <Button
+                    onClick={() => setMode("selecting-edit")}
+                  >
                     Editar
                   </Button>
                   {mode === "normal" && (
-                    <Button onClick={() => setMode("selecting-del")}>Apagar</Button>
+                    <Button
+                      onClick={() => setMode("selecting-del")}
+                    >
+                      Apagar
+                    </Button>
                   )}
                 </div>
               </>
@@ -616,7 +661,9 @@ export const Animals: React.FC = () => {
             {(mode === "creating" || mode === "editing") && (
               <div className={styles.formGroup}>
                 <div className={styles.formField}>
-                  <label htmlFor="group-name">Nome do grupo</label>
+                  <label htmlFor="group-name">
+                    Nome do grupo
+                  </label>
                   <input
                     id="group-name"
                     type="text"
@@ -626,7 +673,9 @@ export const Animals: React.FC = () => {
                 </div>
 
                 <div className={styles.formField}>
-                  <label>Selecionar animais</label>
+                  <label>
+                    Selecionar animais
+                  </label>
                   <Select
                     options={animalOptions}
                     isMulti
@@ -639,6 +688,12 @@ export const Animals: React.FC = () => {
 
                 <div className={styles.buttonRow}>
                   <Button
+                    variant="light"
+                    onClick={resetForm}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
                     onClick={handleSave}
                     disabled={
                       mode === "editing" &&
@@ -648,9 +703,6 @@ export const Animals: React.FC = () => {
                     }
                   >
                     Salvar
-                  </Button>
-                  <Button variant="light" onClick={resetForm}>
-                    Cancelar
                   </Button>
                 </div>
               </div>
@@ -673,10 +725,16 @@ export const Animals: React.FC = () => {
                 </div>
 
                 <div className={styles.buttonRow}>
-                  <Button variant="light" onClick={resetForm}>
+                  <Button
+                    variant="light"
+                    onClick={resetForm}
+                  >
                     Cancelar
                   </Button>
-                  <Button onClick={handleEditSelect} disabled={!selectedGroupId}>
+                  <Button
+                    onClick={handleEditSelect}
+                    disabled={!selectedGroupId}
+                  >
                     Editar
                   </Button>
                 </div>
@@ -686,7 +744,10 @@ export const Animals: React.FC = () => {
               <>
                 <div>
                   {groups.map(group => (
-                    <label key={group.id} className={styles.groupSelectLabel}>
+                    <label
+                      key={group.id}
+                      className={styles.groupSelectLabel}
+                    >
                       <input
                         type="radio"
                         name="groupSelect"
@@ -702,16 +763,19 @@ export const Animals: React.FC = () => {
                 <div className={styles.groupDeleteButtons}>
                   <Button
                     variant="light"
+                    onClick={() => {
+                      setSelectedGroupId(null);
+                      setMode("normal");
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="light"
                     disabled={!selectedGroupId}
                     onClick={() => setDeleteConfirmVisible(true)}
                   >
                     Apagar
-                  </Button>
-                  <Button variant="light" onClick={() => {
-                    setSelectedGroupId(null);
-                    setMode("normal");
-                  }}>
-                    Cancelar
                   </Button>
                 </div>
               </>
@@ -726,18 +790,24 @@ export const Animals: React.FC = () => {
                     animais?
                   </p>
                   <div>
-                    <Button variant="light" onClick={() => setDeleteConfirmVisible(false)}>Cancelar</Button>
-                    <Button variant="dark" onClick={handleConfirmDelete}>Confirmar</Button>
+                    <Button
+                      variant="light"
+                      onClick={() => setDeleteConfirmVisible(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      variant="dark"
+                      onClick={handleConfirmDelete}
+                    >
+                      Confirmar
+                    </Button>
                   </div>
                 </div>
               </div>
             )}
-
-
-
           </Card>
         </RoleOnly>
-        
       </div>
     </PageLayout>
   );

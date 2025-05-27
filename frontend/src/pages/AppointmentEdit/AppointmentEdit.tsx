@@ -183,24 +183,19 @@ export const AppointmentEdit: React.FC = () => {
                     placeholder="Nome"
                     value={med.name}
                     onChange={(e) =>
-                      handleMedicationChange(index, "name", e.target.value)
-                    }
+                      handleMedicationChange(index, "name", e.target.value)}
                   />
                   <input
                     type="text"
                     placeholder="Dosagem"
                     value={med.dosage}
-                    onChange={(e) =>
-                      handleMedicationChange(index, "dosage", e.target.value)
-                    }
+                    onChange={(e) => handleMedicationChange(index, "dosage", e.target.value)}
                   />
                   <input
                     type="text"
                     placeholder="Indicações"
                     value={med.indication}
-                    onChange={(e) =>
-                      handleMedicationChange(index, "indication", e.target.value)
-                    }
+                    onChange={(e) => handleMedicationChange(index, "indication", e.target.value)}
                   />
                   <Button
                     variant="dark"
@@ -211,7 +206,11 @@ export const AppointmentEdit: React.FC = () => {
                   </Button>
                 </div>
               ))}
-              <Button variant="dark" type="button" onClick={addMedication}>
+              <Button
+                variant="dark"
+                type="button"
+                onClick={addMedication}
+              >
                 Adicionar medicamento
               </Button>
             </div>
@@ -219,15 +218,19 @@ export const AppointmentEdit: React.FC = () => {
         </Card>
 
         <div className={styles.buttonGroup}>
-          <Button variant="dark" type="submit" disabled={!hasChanges()}>
-            Salvar
-          </Button>
           <Button
             variant="light"
             type="button"
             onClick={() => navigate(`/appointment/${id}`)}
           >
             Cancelar
+          </Button>
+          <Button
+            variant="dark"
+            type="submit"
+            disabled={!hasChanges()}
+          >
+            Salvar
           </Button>
         </div>
       </form>

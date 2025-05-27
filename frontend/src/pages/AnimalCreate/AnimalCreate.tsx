@@ -107,15 +107,22 @@ export const AnimalCreate: React.FC = () => {
 
   return (
     <PageLayout>
-      <h1 className={styles.title}>Adicionar Animal</h1>
+      <h1 className={styles.title}>
+        Adicionar Animal
+      </h1>
       {error && <p className={styles.error}>{error}</p>}
 
-      <Card className={styles.formCard}>
-        <form onSubmit={handleSubmit} className={styles.form}>
+      <form
+        onSubmit={handleSubmit}
+        className={styles.form}
+      >
+        <Card className={styles.formCard}>
           <div className={styles.grid}>
             <div className={styles.leftColumn}>
               <div className={styles.formGroup}>
-                <label>Data de nascimento:</label>
+                <label>
+                  Data de nascimento:
+                </label>
                 <input
                   type="date"
                   value={nascimento}
@@ -126,9 +133,16 @@ export const AnimalCreate: React.FC = () => {
               </div>
 
               <div className={styles.formGroup}>
-                <label>ID do pai:</label>
-                <select value={fatherId} onChange={(e) => setFatherId(e.target.value)}>
-                  <option value="">Nenhum</option>
+                <label>
+                  ID do pai:
+                </label>
+                <select
+                  value={fatherId}
+                  onChange={(e) => setFatherId(e.target.value)}
+                >
+                  <option value="">
+                    Nenhum
+                  </option>
                   {farmAnimals
                     .filter((a) => (a.gender || "").toLowerCase() === "macho")
                     .map((a) => (
@@ -140,9 +154,16 @@ export const AnimalCreate: React.FC = () => {
               </div>
 
               <div className={styles.formGroup}>
-                <label>ID da mãe:</label>
-                <select value={motherId} onChange={(e) => setMotherId(e.target.value)}>
-                  <option value="">Nenhum</option>
+                <label>
+                  ID da mãe:
+                </label>
+                <select
+                  value={motherId}
+                  onChange={(e) => setMotherId(e.target.value)}
+                >
+                  <option value="">
+                    Nenhum
+                  </option>
                   {farmAnimals
                     .filter((a) => (a.gender || "").toLowerCase() === "fêmea")
                     .map((a) => (
@@ -156,16 +177,29 @@ export const AnimalCreate: React.FC = () => {
 
             <div className={styles.rightColumn}>
               <div className={styles.formGroup}>
-                <label>Sexo:</label>
-                <select value={sexo} onChange={(e) => setSexo(e.target.value)} required>
-                  <option value="">Selecione</option>
-                  <option value="Macho">Macho</option>
-                  <option value="Fêmea">Fêmea</option>
+                <label>
+                  Sexo:
+                </label>
+                <select
+                  value={sexo}
+                  onChange={(e) => setSexo(e.target.value)} required
+                >
+                  <option value="">
+                    Selecione
+                  </option>
+                  <option value="Macho">
+                    Macho
+                  </option>
+                  <option value="Fêmea">
+                    Fêmea
+                  </option>
                 </select>
               </div>
 
               <div className={styles.formGroup}>
-                <label>Feno (kg):</label>
+                <label>
+                  Feno (kg):
+                </label>
                 <input
                   type="number"
                   value={feedingHay}
@@ -177,7 +211,9 @@ export const AnimalCreate: React.FC = () => {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Ração (kg):</label>
+                <label>
+                  Ração (kg):
+                </label>
                 <input
                   type="number"
                   value={feedingFeed}
@@ -189,18 +225,24 @@ export const AnimalCreate: React.FC = () => {
               </div>
             </div>
           </div>
+        </Card>
 
-          <div className={styles.buttonGroup}>
-            <Button variant="dark" type="submit" disabled={loading}>
-              {loading ? "Salvando..." : "Salvar"}
-            </Button>
-            <Button variant="dark" type="button" onClick={() => navigate(-1)}>
-              Cancelar
-            </Button>
-          </div>
-        </form>
-      </Card>
-
+        <div className={styles.buttonGroup}>
+          <Button
+            variant="light"
+            type="button" onClick={() => navigate(-1)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="dark"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
+      </form>
     </PageLayout>
   );
 };

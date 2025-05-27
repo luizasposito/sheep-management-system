@@ -35,50 +35,53 @@ body {
   flex-shrink: 0;
 }
 
-/* Grupos de filtros */
+.filters {
+  min-width: 240px;
+  max-width: 300px;
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinha à esquerda */
+  text-align: left; /* Garante alinhamento de texto */
+}
+
+/* Grupos de filtro */
 .filterGroup {
   margin-bottom: 12px;
+  width: 100%;
+  text-align: left; /* alinhamento do texto */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* garante alinhamento à esquerda */
 }
+
+.filterGroup strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1rem;
+  text-align: left;
+}
+
 
 .filterGroup label {
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  align-items: center; /* Alinha verticalmente */
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: 1rem;
-  line-height: 1.5;
-}
-
-.filterGroup label span {
-  display: inline-block;
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+  justify-content: flex-start;
+  width: 100%;
+  text-align: left;
 }
 
 .filterGroup p {
   font-weight: bold;
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
-}
-
-.medicamento {
-  color: #3e6440;
-  background-color: #c5d8af;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.alimentacao {
-  color: #3e6440;
-  background-color: #b8d9a6;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.limpeza {
-  color: #3e6440;
-  background-color: #d7e6c4;
-  padding: 2px 6px;
-  border-radius: 4px;
 }
 
 /* Botões */

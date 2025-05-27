@@ -129,24 +129,39 @@ export const AnimalDetails: React.FC = () => {
 
   return (
     <PageLayout>
-      <h1 className={styles.title}>Animal {id}</h1>
+      <h1 className={styles.title}>
+        Animal {id}
+      </h1>
 
       <div className={styles.buttonGroup}>
-        <Button variant="light" onClick={() => navigate(`/animal`)}>Lista de animais</Button>
+        <Button
+          variant="light"
+          onClick={() => navigate(`/animal`)}
+        >
+          Lista de animais
+        </Button>
         <RoleOnly role="farmer">
-          <Button variant="light" onClick={() => navigate(`/animal/${id}/edit`)}>Editar</Button>
+          <Button
+            variant="light"
+            onClick={() => navigate(`/animal/${id}/edit`)}
+          >
+            Editar
+          </Button>
         </RoleOnly>
       </div>
 
       {error && <p className={styles.error}>{error}</p>}
 
       <div className={styles.grid}>
-        {/* Dados principais */}
         <Card className={styles.mainInfo}>
           <div className={styles.columns}>
             <div>
-              <p><strong>ID:</strong> {id}</p>
-              <p><strong>Sexo:</strong> {animal?.gender || "Carregando..."}</p>
+              <p>
+                <strong> ID: </strong> {id}
+              </p>
+              <p>
+                <strong>Sexo:</strong> {animal?.gender || "Carregando..."}
+              </p>
               <strong>Pai e Mãe</strong>
               <div className={styles.chipList}>
                 {parents.length === 0 ? (
@@ -165,23 +180,33 @@ export const AnimalDetails: React.FC = () => {
               </div>
             </div>
             <div>
-              <p><strong>Grupo:</strong> {group?.name || "Sem grupo"}</p>
-              {/* Exibir produção leiteira só se for fêmea */}
+              <p>
+                <strong>Grupo:</strong> {group?.name || "Sem grupo"}
+              </p>
               {animal?.gender === "Fêmea" && (
-                <p><strong>Produção leiteira (em litros):</strong> {animal.milk_production ?? "N/D"} L</p>
+                <p>
+                  <strong>Produção leiteira (em litros):</strong> {animal.milk_production ?? "N/D"} L
+                </p>
               )}
-              <p><strong>Fardo para ingestão diária:</strong> {animal?.feeding_hay ?? "N/D"} kg</p>
-              <p><strong>Ração para ingestão diária:</strong> {animal?.feeding_feed ?? "N/D"} kg</p>
+              <p>
+                <strong>Fardo para ingestão diária:</strong> {animal?.feeding_hay ?? "N/D"} kg
+              </p>
+              <p>
+                <strong>Ração para ingestão diária:</strong> {animal?.feeding_feed ?? "N/D"} kg
+              </p>
             </div>
           </div>
         </Card>
 
-        {/* Crias */}
         <Card className={styles.crias}>
-          <h3>Crias</h3>
+          <h3>
+            Crias
+          </h3>
           <div className={styles.chipGrid}>
             {children.length === 0 ? (
-              <p>Nenhuma cria registrada.</p>
+              <p>
+                Nenhuma cria registrada.
+              </p>
             ) : (
               children.map((child) => (
                 <Button
@@ -189,18 +214,22 @@ export const AnimalDetails: React.FC = () => {
                   variant="dark"
                   onClick={() => navigate(`/animal/${child.id}`)}
                 >
-                  C{child.id}
+                  {child.id}
                 </Button>
               ))
             )}
           </div>
         </Card>
 
-        {/* Visualização de marcações */}
         <Card className={styles.calendar}>
           <div className={styles.calendarHeader}>
-            <h3>Consultas</h3>
-            <Button variant="dark" onClick={toggleView}>
+            <h3>
+              Consultas
+            </h3>
+            <Button
+              variant="dark"
+              onClick={toggleView}
+            >
               Alternar para {viewMode === "calendario" ? "lista" : "calendário"}
             </Button>
           </div>
@@ -214,8 +243,12 @@ export const AnimalDetails: React.FC = () => {
                   onClick={() => navigate(`/appointment/${c.id}`)}
                   style={{ cursor: "pointer" }}
                 >
-                  <p><strong>Data:</strong> {c.data}</p>
-                  <p><strong>Motivo:</strong> {c.motivo}</p>
+                  <p>
+                    <strong>Data:</strong> {c.data}
+                  </p>
+                  <p>
+                    <strong>Motivo:</strong> {c.motivo}
+                  </p>
                 </Card>
               ))}
 
@@ -231,9 +264,13 @@ export const AnimalDetails: React.FC = () => {
               />
               {selectedDate && (
                 <div className={styles.dayDetails}>
-                  <h4>Consultas em {selectedDate.toLocaleDateString()}</h4>
+                  <h4>
+                    Consultas em {selectedDate.toLocaleDateString()}
+                  </h4>
                   {consultasDoDia.length === 0 ? (
-                    <p>Nenhuma consulta neste dia.</p>
+                    <p>
+                      Nenhuma consulta neste dia.
+                    </p>
                   ) : (
                     consultasDoDia.map((c) => (
                       <Card
@@ -242,7 +279,9 @@ export const AnimalDetails: React.FC = () => {
                         onClick={() => navigate(`/appointment/${c.id}`)}
                         style={{ cursor: "pointer" }}
                       >
-                        <p><strong>Motivo:</strong> {c.motivo}</p>
+                        <p>
+                          <strong>Motivo:</strong> {c.motivo}
+                        </p>
                       </Card>
                     ))
 

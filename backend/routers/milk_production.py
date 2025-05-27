@@ -13,7 +13,8 @@ from datetime import date
 from routers.auth import get_current_user, get_db
 from schemas.milk_production import MilkProductionCreate, MilkProductionResponse, MilkProductionUpdate
 from schemas.auth import TokenUser
-from datetime import timedelta
+from datetime import timedelta, date
+from collections import defaultdict
 
 router = APIRouter()
 
@@ -156,46 +157,71 @@ async def sum_2_weeks_ago(
 
 
 @router.get("/daily-total-last-7-days")
-async def daily_total_last_7_days(db: Session = Depends(get_db)):
+async def daily_total_last_7_days(
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
     today = date.today()
     days = [today - timedelta(days=i) for i in range(7)]
 
-    # Soma do volume de leite para cada dia
     result = db.query(
         MilkProduction.date,
         func.sum(MilkProduction.volume).label('total_volume')
-    ).filter(MilkProduction.date.in_(days)) \
+    ).join(Sheep, Sheep.id == MilkProduction.sheep_id) \
+     .filter(
+         MilkProduction.date.in_(days),
+         Sheep.farm_id == current_user.farm_id
+     ) \
      .group_by(MilkProduction.date) \
      .order_by(MilkProduction.date) \
      .all()
 
-    # Retornando os resultados
     return [
-        {"date": str(r[0]), "total_volume": r[1] if r[1] is not None else 0}
+        {"date": str(r[0]), "total_volume": round(r[1], 2) if r[1] is not None else 0}
         for r in result
     ]
 
 
 
 @router.get("/daily-by-group-last-7-days")
-async def daily_by_group_last_7_days(db: Session = Depends(get_db)):
+async def daily_by_group_last_7_days(
+    db: Session = Depends(get_db),
+    current_user: TokenUser = Depends(get_current_user)
+):
     today = date.today()
-    days = [today - timedelta(days=i) for i in range(7)]
+    days = [today - timedelta(days=i) for i in range(6, -1, -1)]  # ordem cronológica (6 dias atrás até hoje)
 
-    # Soma do volume de leite para cada grupo de ovelhas
+    # Buscar todos os grupos da fazenda
+    groups = db.query(SheepGroup.name).join(Sheep).filter(Sheep.farm_id == current_user.farm_id).distinct().all()
+    group_names = [g.name for g in groups]
+
+    # Obter os dados reais de produção
     result = db.query(
         MilkProduction.date,
         SheepGroup.name.label('group_name'),
         func.sum(MilkProduction.volume).label('total_volume')
     ).join(Sheep, Sheep.id == MilkProduction.sheep_id) \
      .join(SheepGroup, Sheep.group_id == SheepGroup.id) \
-     .filter(MilkProduction.date.in_(days)) \
+     .filter(
+         MilkProduction.date.in_(days),
+         Sheep.farm_id == current_user.farm_id
+     ) \
      .group_by(MilkProduction.date, SheepGroup.name) \
-     .order_by(MilkProduction.date, SheepGroup.name) \
      .all()
 
-    # Retornando os resultados
-    return [
-        {"date": str(r[0]), "group_name": r[1], "total_volume": r[2] if r[2] is not None else 0}
-        for r in result
-    ]
+    # Organizar dados por data e grupo
+    data_dict = defaultdict(lambda: defaultdict(float))
+    for row in result:
+        data_dict[row.date][row.group_name] = float(row.total_volume or 0)
+
+    # Montar lista final preenchida com zeros onde necessário
+    final_result = []
+    for d in days:
+        for group in group_names:
+            final_result.append({
+                "date": str(d),
+                "group_name": group,
+                "total_volume": round(data_dict[d][group], 2)
+            })
+
+    return final_result

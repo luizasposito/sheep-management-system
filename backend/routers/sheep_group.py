@@ -4,17 +4,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from database import get_db
 from models.sheep import Sheep
-from models.farm import Farm
-from models.farm_inventory import FarmInventory
 from models.farmer import Farmer
+from models.sheep_group import SheepGroup
 from schemas.sheep import SheepCreate, SheepResponse
+from schemas.sheep import SheepResponse
+from schemas.sheep_group import SheepGroupCreate, SheepGroupResponse
 from typing import List
 from routers.auth import get_current_user
-from schemas.auth import TokenUser
-from schemas.sheep import SheepResponse
 from pydantic import BaseModel
-from models.sheep_group import SheepGroup
-from schemas.sheep_group import SheepGroupCreate, SheepGroupResponse
 from typing import Optional
 
 router = APIRouter()
@@ -95,19 +92,22 @@ def delete_sheep_group(
     db: Session = Depends(get_db),
     current_farmer = Depends(get_current_user)
 ):
-    farmer = db.query(Farmer).filter(Farmer.email == current_farmer.email).first()
-
-    group = db.query(SheepGroup).filter(
-        SheepGroup.id == group_id,
-        SheepGroup.farm_id == farmer.farm_id
-    ).first()
-
+    # Verifica se o grupo existe e pertence ao fazendeiro atual
+    group = db.query(SheepGroup).filter_by(id=group_id, farm_id=current_farmer.farm_id).first()
     if not group:
-        raise HTTPException(status_code=404, detail="Sheep group not found")
+        raise HTTPException(status_code=404, detail="Grupo não encontrado")
 
+    # Desassocia as ovelhas do grupo (seta o group_id como None)
+    sheep_in_group = db.query(Sheep).filter_by(group_id=group_id).all()
+    for sheep in sheep_in_group:
+        sheep.group_id = None
+
+    # Deleta o grupo
     db.delete(group)
     db.commit()
-    return {"message": "Sheep group deleted successfully"}
+
+    return {"message": "Grupo excluído com sucesso"}
+
 
 
 
