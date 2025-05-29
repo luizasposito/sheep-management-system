@@ -4,7 +4,6 @@ from datetime import datetime
 
 class AppointmentBase(BaseModel):
     sheep_ids: List[int]
-    vet_id: int
 
 class MedicationInput(BaseModel):
     name: str

@@ -5,6 +5,7 @@
     "lib": ["ES2023"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -19,7 +20,17 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "src",
+    "tests",
+    "vitest.setup.ts",
+    "vite.config.ts",
+    "vitest.d.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.test.ts"
+  ]
+
 }

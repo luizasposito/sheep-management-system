@@ -4,7 +4,11 @@ from database import get_db
 from models.appointment import Appointment
 from models.sheep import Sheep
 from models.medication import Medication
+from models.farmer import Farmer
+from models.veterinarian import Veterinarian
 from schemas.appointment import AppointmentCreate, AppointmentResponse, AppointmentUpdate
+from schemas.farmer import FarmerCreate, FarmerResponse
+from schemas. veterinarian import VeterinarianCreate, VeterinarianResponse
 from typing import List
 from routers.auth import get_current_user
 from schemas.auth import TokenUser
@@ -52,8 +56,17 @@ def get_appointment_by_id(
 def create_appointment(
     data: AppointmentCreate,
     db: Session = Depends(get_db),
-    current_user: TokenUser = Depends(get_current_user)
+    current_user: TokenUser = Depends(get_current_user)  # assume que ele retorna um fazendeiro autenticado
 ):
+    # Verificar se current_user é realmente um fazendeiro
+    farmer = db.query(Farmer).filter(Farmer.id == current_user.id).first()
+    if not farmer:
+        raise HTTPException(status_code=403, detail="Only farmers can create appointments.")
+
+    # Buscar o veterinário da fazenda
+    vet = db.query(Veterinarian).filter(Veterinarian.farm_id == farmer.farm_id).first()
+    if not vet:
+        raise HTTPException(status_code=404, detail="No veterinarian associated with the farm.")
 
     # Buscar todas as ovelhas (e validar existência)
     sheeps = db.query(Sheep).filter(Sheep.id.in_(data.sheep_ids)).all()
@@ -62,7 +75,7 @@ def create_appointment(
 
     # Criar a consulta
     appointment = Appointment(
-        vet_id=data.vet_id,
+        vet_id=vet.id,
         motivo=data.motivo,
         comentarios=data.comentarios,
         sheeps=sheeps,
@@ -73,6 +86,7 @@ def create_appointment(
     db.commit()
     db.refresh(appointment)
     return serialize_appointment(appointment)
+
 
 
 # 4) PATCH /appointment/{id} - Editar dados de uma consulta
