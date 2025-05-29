@@ -150,7 +150,7 @@ export const AppointmentEdit: React.FC = () => {
       <h1 className={styles.title}>Editar Consulta {id}</h1>
 
       <form className={styles.form} onSubmit={handleSubmit}>
-        <Card className={styles.card}>
+        <Card>
           <div className={styles.grid}>
             <div className={styles.leftColumn}>
               <label>

@@ -95,9 +95,8 @@ export const AppointmentCreate: React.FC = () => {
     if (formAnimals.length === 0 || !user) return;
 
     const payload = {
-      vet_id: 1,
       sheep_ids: formAnimals,
-      motivo,
+      motivo: motivo,
       date: data ? data + "T00:00:00" : undefined,
     };
 
@@ -112,7 +111,8 @@ export const AppointmentCreate: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao criar consulta");
+        const errText = await response.text();
+        throw new Error(`Erro ao criar consulta: ${errText}`);
       }
 
       const result = await response.json();
@@ -122,6 +122,7 @@ export const AppointmentCreate: React.FC = () => {
       console.error("Erro ao salvar consulta:", error);
     }
   };
+
 
   return (
     <PageLayout>

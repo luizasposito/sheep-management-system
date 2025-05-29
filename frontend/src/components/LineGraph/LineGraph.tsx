@@ -25,14 +25,15 @@ function generateColors(count: number): string[] {
   return colors;
 }
 
-function formatDateToDDMM(dateString: string) {
-  // Assume que a data está no formato 'yyyy-mm-dd' ou 'yyyy-mm-ddThh:mm:ssZ'
+// Adicione export na função para testes
+export function formatDateToDDMM(dateString: string) {
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString; // fallback se não for data válida
+  if (isNaN(date.getTime())) return dateString;
   const day = date.getDate().toString().padStart(2, "0");
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   return `${day}-${month}`;
 }
+
 
 
 export default function LineGraph({
@@ -62,9 +63,16 @@ export default function LineGraph({
   return (
     <div className={styles["line-graph-container"]}>
       {title && <h3 className={styles["line-graph-title"]}>{title}</h3>}
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
+      <ResponsiveContainer
+        width="100%"
+        height={300}
+      >
+        <LineChart
+          data={data}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+          />
           <XAxis 
             dataKey={xKey} 
             padding={{ left: 20, right: 20 }} 
@@ -74,7 +82,14 @@ export default function LineGraph({
           <Tooltip labelFormatter={formatDateToDDMM} />
           <Legend />
           {dynamicDataKeys.map(({ key, color, label }) => (
-            <Line key={key} type="monotone" dataKey={key} stroke={color} name={label || key} />
+            <Line
+              key={key}
+              type="monotone"
+              dataKey={key}
+              stroke={color}
+              name={label || key}
+              isAnimationActive={false} // para evitar possíveis delays no desenho
+            />
           ))}
         </LineChart>
       </ResponsiveContainer>
