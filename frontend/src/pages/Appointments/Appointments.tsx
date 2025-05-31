@@ -7,7 +7,7 @@ import { Card } from "../../components/Card/Card";
 import { SearchInput } from "../../components/SearchInput/SearchInput";
 import { useLocation } from "react-router-dom";
 import Calendar from "react-calendar";
-import { RoleOnly } from "../../components/RoleOnly";
+import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
 import styles from "./Appointments.module.css";
 import "react-calendar/dist/Calendar.css";
 
@@ -71,7 +71,6 @@ export const Appointments: React.FC = () => {
     }
   }, [location.search]);
 
-
   useEffect(() => {
     if (!user || !user.role) return;
     if (!(user.role === "farmer" || user.role === "veterinarian")) {
@@ -101,18 +100,18 @@ export const Appointments: React.FC = () => {
           const animais = item.sheep_ids.map((id: number) => id.toString());
           const primeiroSheep = sheepMap[item.sheep_ids[0]];
 
-            return {
-              id: item.id.toString(),
-              data: item.date.split("T")[0],
-              ovelhaId: primeiroSheep?.id.toString() || "-",
-              sexo: primeiroSheep?.gender === "Macho" ? "Macho" : "Fêmea",
-              grupo: primeiroSheep?.group_id
-                ? groupMap[primeiroSheep.group_id] || "Sem grupo"
-                : "Sem grupo",
-              animais,
-              motivo: item.motivo || "Sem motivo especificado",
-            };
-          });
+          return {
+            id: item.id.toString(),
+            data: item.date.split("T")[0],
+            ovelhaId: primeiroSheep?.id.toString() || "-",
+            sexo: primeiroSheep?.gender === "Macho" ? "Macho" : "Fêmea",
+            grupo: primeiroSheep?.group_id
+              ? groupMap[primeiroSheep.group_id] || "Sem grupo"
+              : "Sem grupo",
+            animais,
+            motivo: item.motivo || "Sem motivo especificado",
+          };
+        });
 
         setAppointmentData(formatted);
       } catch (error) {
@@ -130,14 +129,19 @@ export const Appointments: React.FC = () => {
       try {
         const [sheepRes, groupRes] = await Promise.all([
           fetch("http://localhost:8000/sheep", {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }),
           fetch("http://localhost:8000/sheep-group", {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }),
         ]);
 
-        if (!sheepRes.ok || !groupRes.ok) throw new Error("Erro ao buscar dados");
+        if (!sheepRes.ok || !groupRes.ok)
+          throw new Error("Erro ao buscar dados");
 
         const sheepData: Sheep[] = await sheepRes.json();
         const groupData: SheepGroup[] = await groupRes.json();
@@ -181,30 +185,32 @@ export const Appointments: React.FC = () => {
       filterSexo.length === 0 || filterSexo.includes(appointment.sexo);
 
     const matchesGroup =
-      filterGroups.length === 0 || filterGroups.includes(appointment.grupo || "");
+      filterGroups.length === 0 ||
+      filterGroups.includes(appointment.grupo || "");
 
     return matchesSearch && matchesSexo && matchesGroup;
   };
 
-  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const appointmentsByTab = viewMode === "calendario"
-    ? appointmentData
-    : appointmentData.filter((item) => {
-        const itemDate = new Date(item.data);
-        itemDate.setHours(0, 0, 0, 0);
-        return tab === "futuras" ? itemDate >= today : itemDate < today;
-      });
-
+  const appointmentsByTab =
+    viewMode === "calendario"
+      ? appointmentData
+      : appointmentData.filter((item) => {
+          const itemDate = new Date(item.data);
+          itemDate.setHours(0, 0, 0, 0);
+          return tab === "futuras" ? itemDate >= today : itemDate < today;
+        });
 
   // Aplicar filtros para lista e calendário
   const filteredAppointments = appointmentsByTab.filter(applyFilters);
 
   // Datas marcadas baseadas em filteredAppointments
   const datasMarcadas = new Set(
-    filteredAppointments.map((appointment) => new Date(appointment.data).toDateString())
+    filteredAppointments.map((appointment) =>
+      new Date(appointment.data).toDateString()
+    )
   );
 
   // Consultas do dia aplicando filtro também
@@ -248,14 +254,11 @@ export const Appointments: React.FC = () => {
           </>
         )}
 
-        <Button
-          variant="light"
-          onClick={toggleView}
-        >
-          {viewMode === "calendario" ? "Calendário" : "Lista"} - Alternar para {viewMode === "calendario" ? "lista" : "calendário"}
+        <Button variant="light" onClick={toggleView}>
+          {viewMode === "calendario" ? "Calendário" : "Lista"} - Alternar para{" "}
+          {viewMode === "calendario" ? "lista" : "calendário"}
         </Button>
       </div>
-
 
       <div className={styles.searchBar}>
         <SearchInput
@@ -281,7 +284,6 @@ export const Appointments: React.FC = () => {
 
                 <span>{sexo}</span>
               </label>
-
             ))}
           </div>
 
@@ -293,16 +295,16 @@ export const Appointments: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={filterGroups.includes(groupName)}
-                    onChange={() => toggleFilter(groupName, filterGroups, setFilterGroups)}
+                    onChange={() =>
+                      toggleFilter(groupName, filterGroups, setFilterGroups)
+                    }
                   />
                   <span>{groupName}</span>
                 </label>
-
               ))}
             </div>
           )}
         </aside>
-
 
         <section className={styles.cards}>
           {loading ? (
@@ -322,7 +324,8 @@ export const Appointments: React.FC = () => {
                       <strong>Data:</strong> {appointment.data}
                     </p>
                     <p>
-                      <strong>Animais associados:</strong> {appointment.animais.join(", ")}
+                      <strong>Animais associados:</strong>{" "}
+                      {appointment.animais.join(", ")}
                     </p>
                     <p>
                       <strong>Motivo:</strong> {appointment.motivo}
@@ -352,10 +355,13 @@ export const Appointments: React.FC = () => {
                       <Card
                         key={appointment.id}
                         className={styles.historyItem}
-                        onClick={() => navigate(`/appointment/${appointment.id}`)}
+                        onClick={() =>
+                          navigate(`/appointment/${appointment.id}`)
+                        }
                       >
                         <p>
-                          <strong>Animais associados:</strong> {appointment.animais.join(", ")}
+                          <strong>Animais associados:</strong>{" "}
+                          {appointment.animais.join(", ")}
                         </p>
                         <p>
                           <strong>Motivo:</strong> {appointment.motivo}

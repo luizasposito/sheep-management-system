@@ -1,6 +1,5 @@
-
 import type { ReactNode } from "react";
-import { useUser } from "../UserContext"; // ajuste o caminho se necessário
+import { useUser } from "../../UserContext"; // ajuste o caminho se necessário
 
 type RoleOnlyProps = {
   role: "farmer" | "veterinarian";

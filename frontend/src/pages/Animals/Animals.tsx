@@ -5,7 +5,7 @@ import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Button } from "../../components/Button/Button";
 import { Card } from "../../components/Card/Card";
 import { SearchInput } from "../../components/SearchInput/SearchInput";
-import { RoleOnly } from "../../components/RoleOnly";
+import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
 import Select from "react-select";
 import styles from "./Animals.module.css";
 
@@ -41,7 +41,14 @@ export const Animals: React.FC = () => {
   const [filterSexo, setFilterSexo] = useState<string[]>([]);
   const [filterGroups, setFilterGroups] = useState<string[]>([]);
 
-  const [mode, setMode] = useState<"normal" | "creating" | "editing" | "selecting-del" | "selecting-edit" | "deletingConfirm">("normal");
+  const [mode, setMode] = useState<
+    | "normal"
+    | "creating"
+    | "editing"
+    | "selecting-del"
+    | "selecting-edit"
+    | "deletingConfirm"
+  >("normal");
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [formName, setFormName] = useState("");
   const [formAnimals, setFormAnimals] = useState<string[]>([]);
@@ -53,11 +60,13 @@ export const Animals: React.FC = () => {
   const [formVolume, setFormVolume] = useState<string>("");
   const [existingVolume, setExistingVolume] = useState<number | null>(null);
   const [formMode, setFormMode] = useState<"update" | "edit" | null>(null);
-  const [todayMilkProductionMap, setTodayMilkProductionMap] = useState<Record<string, number | null>>({});
+  const [todayMilkProductionMap, setTodayMilkProductionMap] = useState<
+    Record<string, number | null>
+  >({});
 
   const uniqueGenders = useMemo(() => {
     const gendersSet = new Set<string>();
-    animalData.forEach(animal => {
+    animalData.forEach((animal) => {
       if (animal.gender) {
         gendersSet.add(animal.gender);
       }
@@ -65,17 +74,21 @@ export const Animals: React.FC = () => {
     return Array.from(gendersSet);
   }, [animalData]);
 
-  
-  const fetchTodayMilkProduction = async (sheepId: string): Promise<number | null> => {
+  const fetchTodayMilkProduction = async (
+    sheepId: string
+  ): Promise<number | null> => {
     try {
       const todayStr = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD'
 
-      const res = await fetch(`http://localhost:8000/sheep/${sheepId}/milk-yield?date=${todayStr}`, {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json"
+      const res = await fetch(
+        `http://localhost:8000/sheep/${sheepId}/milk-yield?date=${todayStr}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (!res.ok) return null;
 
@@ -83,14 +96,11 @@ export const Animals: React.FC = () => {
 
       // Agora o backend já filtra por data, data[0] é a produção do dia
       return data.length > 0 ? data[0].volume : null;
-
     } catch (err) {
       console.error("Erro ao buscar produção de leite:", err);
       return null;
     }
   };
-
-
 
   const submitMilkProduction = async (sheepId: string, volume: number) => {
     setLoading(true);
@@ -98,20 +108,25 @@ export const Animals: React.FC = () => {
     const payload = { date: today, volume };
 
     try {
-      const res = await fetch(`http://localhost:8000/sheep/${sheepId}/milk-yield`, {
-        method: "PATCH",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `http://localhost:8000/sheep/${sheepId}/milk-yield`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (res.ok) {
         // Atualiza localmente o estado animalData para refletir a nova produção sem precisar esperar o fetchAnimals
-        setAnimalData(prevAnimals =>
-          prevAnimals.map(animal =>
-            animal.id === sheepId ? { ...animal, producaoLeiteira: volume.toString() } : animal
+        setAnimalData((prevAnimals) =>
+          prevAnimals.map((animal) =>
+            animal.id === sheepId
+              ? { ...animal, producaoLeiteira: volume.toString() }
+              : animal
           )
         );
 
@@ -130,12 +145,15 @@ export const Animals: React.FC = () => {
     if (!selectedGroupId) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/sheep-group/${selectedGroupId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const res = await fetch(
+        `http://localhost:8000/sheep-group/${selectedGroupId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
       if (!res.ok) {
         throw new Error("Erro ao apagar grupo.");
@@ -148,12 +166,14 @@ export const Animals: React.FC = () => {
       setSelectedGroupId(null);
       setDeleteConfirmVisible(false);
       setMode("normal");
-
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Erro inesperado ao apagar grupo.");
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Erro inesperado ao apagar grupo."
+      );
     }
   };
-
 
   const resetFormStates = () => {
     setActiveFormId(null);
@@ -168,34 +188,40 @@ export const Animals: React.FC = () => {
 
   useEffect(() => {
     if (!user || !user.role) return;
-    if (!(user.role === "farmer" || user.role === "veterinarian")) navigate("/unauthorized");
+    if (!(user.role === "farmer" || user.role === "veterinarian"))
+      navigate("/unauthorized");
   }, [user]);
 
   const fetchAnimals = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/sheep/?_=${Date.now()}`, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:8000/sheep/?_=${Date.now()}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
       if (!response.ok) throw new Error("Erro ao buscar animais");
 
       const data = await response.json();
 
-      const formattedData: Animal[] = data.map((item: any): Animal => ({
-        id: item.id.toString(),
-        producaoLeiteira: item.milk_production?.toString() || "-",
-        gender: item.gender,
-        group_id: item.group_id?.toString() || undefined,
-      }));
+      const formattedData: Animal[] = data.map(
+        (item: any): Animal => ({
+          id: item.id.toString(),
+          producaoLeiteira: item.milk_production?.toString() || "-",
+          gender: item.gender,
+          group_id: item.group_id?.toString() || undefined,
+        })
+      );
 
       setAnimalData(formattedData);
 
       // Buscar produção de leite de hoje para cada ovelha
       const productions = await Promise.all(
-        formattedData.map(animal => fetchTodayMilkProduction(animal.id))
+        formattedData.map((animal) => fetchTodayMilkProduction(animal.id))
       );
 
       const map: Record<string, number | null> = {};
@@ -203,7 +229,6 @@ export const Animals: React.FC = () => {
         map[animal.id] = productions[idx];
       });
       setTodayMilkProductionMap(map);
-
     } catch (error) {
       console.error("Erro ao buscar animais:", error);
     } finally {
@@ -211,20 +236,19 @@ export const Animals: React.FC = () => {
     }
   };
 
-
   const fetchGroups = async () => {
     try {
       const [groupsRes, animalsRes] = await Promise.all([
         fetch("http://localhost:8000/sheep-group", {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }),
         fetch("http://localhost:8000/sheep/", {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }),
       ]);
@@ -239,7 +263,6 @@ export const Animals: React.FC = () => {
       animalsData.forEach((animal: any) => {
         console.log(`Animal ID: ${animal.id}, Group ID: ${animal.group_id}`);
       });
-
 
       console.log("Grupos recebidos:", groupsData);
       console.log("Animais recebidos:", animalsData);
@@ -273,18 +296,16 @@ export const Animals: React.FC = () => {
     fetchGroups();
   }, []);
 
-
   // Criar um mapa de group_id -> nome do grupo
   const groupIdToName = useMemo(() => {
     const map: Record<string, string> = {};
-    groups.forEach(group => {
+    groups.forEach((group) => {
       map[group.id] = group.name;
     });
     return map;
   }, [groups]);
 
-
-  const animalOptions = animalData.map(animal => ({
+  const animalOptions = animalData.map((animal) => ({
     value: animal.id,
     label: `${animal.id} - ${animal.gender}`,
   }));
@@ -294,22 +315,22 @@ export const Animals: React.FC = () => {
     current: string[],
     setFilter: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
-    setFilter(prev =>
-      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+    setFilter((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
     );
   };
 
-
   const applyFilters = (animal: Animal) => {
-    const matchesSearch =
-      animal.id.includes(searchTerm);
-      
-    const matchesSexo = filterSexo.length === 0 || filterSexo.includes(animal.gender);
-    const matchesGroup = filterGroups.length === 0 || (animal.group_id && filterGroups.includes(animal.group_id));
+    const matchesSearch = animal.id.includes(searchTerm);
+
+    const matchesSexo =
+      filterSexo.length === 0 || filterSexo.includes(animal.gender);
+    const matchesGroup =
+      filterGroups.length === 0 ||
+      (animal.group_id && filterGroups.includes(animal.group_id));
 
     return matchesSearch && matchesSexo && matchesGroup;
   };
-
 
   const filteredAnimals = animalData.filter(applyFilters);
 
@@ -330,17 +351,20 @@ export const Animals: React.FC = () => {
       }
 
       if (mode === "editing" && selectedGroupId) {
-        const updateGroupResponse = await fetch(`http://localhost:8000/sheep-group/${selectedGroupId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            name: formName,
-            animal_ids: formAnimals,
-          }),
-        });
+        const updateGroupResponse = await fetch(
+          `http://localhost:8000/sheep-group/${selectedGroupId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+              name: formName,
+              animal_ids: formAnimals,
+            }),
+          }
+        );
 
         if (!updateGroupResponse.ok) {
           throw new Error("Erro ao editar o grupo.");
@@ -349,52 +373,67 @@ export const Animals: React.FC = () => {
         const originalGroup = groups.find((g) => g.id === selectedGroupId);
         const originalAnimalIds = originalGroup?.animalIds || [];
 
-        const removedAnimals = originalAnimalIds.filter(id => !formAnimals.includes(id));
-        const addedAnimals = formAnimals.filter(id => !originalAnimalIds.includes(id));
+        const removedAnimals = originalAnimalIds.filter(
+          (id) => !formAnimals.includes(id)
+        );
+        const addedAnimals = formAnimals.filter(
+          (id) => !originalAnimalIds.includes(id)
+        );
 
         if (removedAnimals.length > 0 || addedAnimals.length > 0) {
           const patchResults = await Promise.all([
-            ...removedAnimals.map(animalId =>
-              fetch(`http://localhost:8000/sheep-group/${animalId}/change-group`, {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: JSON.stringify({ new_group_id: null }),
-              })
+            ...removedAnimals.map((animalId) =>
+              fetch(
+                `http://localhost:8000/sheep-group/${animalId}/change-group`,
+                {
+                  method: "PATCH",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  },
+                  body: JSON.stringify({ new_group_id: null }),
+                }
+              )
             ),
-            ...addedAnimals.map(animalId =>
-              fetch(`http://localhost:8000/sheep-group/${animalId}/change-group`, {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: JSON.stringify({ new_group_id: Number(selectedGroupId) }),
-              })
-            )
+            ...addedAnimals.map((animalId) =>
+              fetch(
+                `http://localhost:8000/sheep-group/${animalId}/change-group`,
+                {
+                  method: "PATCH",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  },
+                  body: JSON.stringify({
+                    new_group_id: Number(selectedGroupId),
+                  }),
+                }
+              )
+            ),
           ]);
 
-          const allSuccess = patchResults.every(res => res.ok);
+          const allSuccess = patchResults.every((res) => res.ok);
           if (!allSuccess) {
             throw new Error("Falha ao mover alguns animais.");
           }
         }
       } else {
         // Cria o grupo e pega o id do grupo criado
-        const newGroupResponse = await fetch("http://localhost:8000/sheep-group", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            name: formName,
-            // Pode enviar animal_ids, mas o backend provavelmente não associa direto
-            // animal_ids: formAnimals,
-          }),
-        });
+        const newGroupResponse = await fetch(
+          "http://localhost:8000/sheep-group",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+              name: formName,
+              // Pode enviar animal_ids, mas o backend provavelmente não associa direto
+              // animal_ids: formAnimals,
+            }),
+          }
+        );
 
         if (!newGroupResponse.ok) {
           throw new Error("Erro ao criar novo grupo.");
@@ -405,40 +444,40 @@ export const Animals: React.FC = () => {
 
         // Associa os animais ao grupo criado
         const patchResults = await Promise.all(
-          formAnimals.map(animalId =>
-            fetch(`http://localhost:8000/sheep-group/${animalId}/change-group`, {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("token")}`,
-              },
-              body: JSON.stringify({ new_group_id: Number(newGroupId) }),
-            })
+          formAnimals.map((animalId) =>
+            fetch(
+              `http://localhost:8000/sheep-group/${animalId}/change-group`,
+              {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ new_group_id: Number(newGroupId) }),
+              }
+            )
           )
         );
 
-        const allSuccess = patchResults.every(res => res.ok);
+        const allSuccess = patchResults.every((res) => res.ok);
         if (!allSuccess) {
           throw new Error("Falha ao associar alguns animais ao novo grupo.");
         }
       }
-
 
       // Após salvar, refazer o fetch dos grupos e animais para sincronizar os dados
       await fetchAnimals();
       await fetchGroups();
 
       resetForm();
-
     } catch (error: any) {
       console.error(error);
       alert(error.message || "Erro inesperado.");
     }
   };
 
-
   const handleEditSelect = () => {
-    const group = groups.find(g => g.id === selectedGroupId);
+    const group = groups.find((g) => g.id === selectedGroupId);
     if (group) {
       setFormName(group.name);
       setFormAnimals(group.animalIds);
@@ -453,10 +492,7 @@ export const Animals: React.FC = () => {
       <h1 className={styles.title}>Animais</h1>
       <div className={styles.buttonGroup}>
         <RoleOnly role="farmer">
-          <Button
-            variant="light"
-            onClick={() => navigate("/animal/add")}
-          >
+          <Button variant="light" onClick={() => navigate("/animal/add")}>
             Adicionar animal
           </Button>
         </RoleOnly>
@@ -472,34 +508,35 @@ export const Animals: React.FC = () => {
 
       <div className={styles.content}>
         <aside className={styles.filters}>
-          <h3>
-            Filtrar por
-          </h3>
+          <h3>Filtrar por</h3>
 
           <div className={styles.filterGroup}>
             <strong>Sexo</strong>
-            {uniqueGenders.map(gender => (
+            {uniqueGenders.map((gender) => (
               <label key={gender}>
                 <input
                   type="checkbox"
                   checked={filterSexo.includes(gender)}
-                  onChange={() => toggleFilter(gender, filterSexo, setFilterSexo)}
+                  onChange={() =>
+                    toggleFilter(gender, filterSexo, setFilterSexo)
+                  }
                 />
                 <span>{gender}</span>
               </label>
             ))}
-
           </div>
-          
+
           <RoleOnly role="farmer">
             <div className={styles.filterGroup}>
               <strong>Grupos</strong>
-              {groups.map(group => (
+              {groups.map((group) => (
                 <label key={group.id}>
                   <input
                     type="checkbox"
                     checked={filterGroups.includes(group.id)}
-                    onChange={() => toggleFilter(group.id, filterGroups, setFilterGroups)}
+                    onChange={() =>
+                      toggleFilter(group.id, filterGroups, setFilterGroups)
+                    }
                   />
                   <span>{group.name}</span>
                 </label>
@@ -507,19 +544,14 @@ export const Animals: React.FC = () => {
             </div>
           </RoleOnly>
         </aside>
-        
+
         <div className={styles.animalCardsWrapper}>
           <section className={styles.cards}>
-            {(loading || loadingGroups) ? (
-              <p>
-                Carregando animais e grupos...
-              </p>
+            {loading || loadingGroups ? (
+              <p>Carregando animais e grupos...</p>
             ) : (
-              filteredAnimals.map(animal => (
-                <div
-                  key={animal.id}
-                  className={styles.animalCardWrapper}
-                >
+              filteredAnimals.map((animal) => (
+                <div key={animal.id} className={styles.animalCardWrapper}>
                   <Card
                     key={`${animal.id}-${animal.producaoLeiteira}`}
                     className={styles.clickableCard}
@@ -532,7 +564,8 @@ export const Animals: React.FC = () => {
 
                       {animal.gender !== "Macho" && (
                         <p>
-                          <strong>produção leiteira:</strong> {animal.producaoLeiteira} L
+                          <strong>produção leiteira:</strong>{" "}
+                          {animal.producaoLeiteira} L
                         </p>
                       )}
 
@@ -540,13 +573,16 @@ export const Animals: React.FC = () => {
                         <strong>sexo:</strong> {animal.gender}
                       </p>
                       <p>
-                        <strong>grupo:</strong> {animal.group_id && groupIdToName[animal.group_id] ? groupIdToName[animal.group_id] : "Sem grupo"}
+                        <strong>grupo:</strong>{" "}
+                        {animal.group_id && groupIdToName[animal.group_id]
+                          ? groupIdToName[animal.group_id]
+                          : "Sem grupo"}
                       </p>
                     </div>
                   </Card>
 
-                  {animal.gender !== "Macho" && (
-                    activeFormId === animal.id ? (
+                  {animal.gender !== "Macho" &&
+                    (activeFormId === animal.id ? (
                       <div className={styles.buttonContainer}>
                         <input
                           type="number"
@@ -555,18 +591,21 @@ export const Animals: React.FC = () => {
                           placeholder="Volume (L)"
                         />
                         <div className={styles.buttonRow}>
-                          <Button
-                            variant="light"
-                            onClick={resetFormStates}
-                          >
+                          <Button variant="light" onClick={resetFormStates}>
                             Cancelar
                           </Button>
                           <Button
-                            onClick={() => submitMilkProduction(animal.id, parseFloat(formVolume))}
+                            onClick={() =>
+                              submitMilkProduction(
+                                animal.id,
+                                parseFloat(formVolume)
+                              )
+                            }
                             disabled={
                               formMode === "update"
                                 ? formVolume.trim() === ""
-                                : formVolume.trim() === existingVolume?.toString()
+                                : formVolume.trim() ===
+                                  existingVolume?.toString()
                             }
                           >
                             Salvar
@@ -592,7 +631,9 @@ export const Animals: React.FC = () => {
                         <RoleOnly role="farmer">
                           <Button
                             onClick={async () => {
-                              const vol = await fetchTodayMilkProduction(animal.id);
+                              const vol = await fetchTodayMilkProduction(
+                                animal.id
+                              );
                               if (vol !== null) {
                                 setActiveFormId(animal.id);
                                 setFormVolume(vol.toString());
@@ -608,8 +649,7 @@ export const Animals: React.FC = () => {
                           </Button>
                         </RoleOnly>
                       </div>
-                    )
-                  )}
+                    ))}
                 </div>
               ))
             )}
@@ -618,39 +658,28 @@ export const Animals: React.FC = () => {
 
         <RoleOnly role="farmer">
           <Card className={styles.groupCard}>
-            <h2>
-              Lista de grupos
-            </h2>
+            <h2>Lista de grupos</h2>
 
             {mode === "normal" && (
               <>
                 {groups.length === 0 ? (
-                  <p>
-                    Nenhum grupo cadastrado.
-                  </p>
+                  <p>Nenhum grupo cadastrado.</p>
                 ) : (
                   groups.map((group) => (
                     <p key={group.id}>
-                      <strong>{group.name}</strong> ({group.animalIds.length} animais)
+                      <strong>{group.name}</strong> ({group.animalIds.length}{" "}
+                      animais)
                     </p>
                   ))
                 )}
 
                 <div className={styles.buttonRow}>
-                  <Button
-                    onClick={() => setMode("creating")}
-                  >
-                    Criar
-                  </Button>
-                  <Button
-                    onClick={() => setMode("selecting-edit")}
-                  >
+                  <Button onClick={() => setMode("creating")}>Criar</Button>
+                  <Button onClick={() => setMode("selecting-edit")}>
                     Editar
                   </Button>
                   {mode === "normal" && (
-                    <Button
-                      onClick={() => setMode("selecting-del")}
-                    >
+                    <Button onClick={() => setMode("selecting-del")}>
                       Apagar
                     </Button>
                   )}
@@ -661,9 +690,7 @@ export const Animals: React.FC = () => {
             {(mode === "creating" || mode === "editing") && (
               <div className={styles.formGroup}>
                 <div className={styles.formField}>
-                  <label htmlFor="group-name">
-                    Nome do grupo
-                  </label>
+                  <label htmlFor="group-name">Nome do grupo</label>
                   <input
                     id="group-name"
                     type="text"
@@ -673,13 +700,13 @@ export const Animals: React.FC = () => {
                 </div>
 
                 <div className={styles.formField}>
-                  <label>
-                    Selecionar animais
-                  </label>
+                  <label>Selecionar animais</label>
                   <Select
                     options={animalOptions}
                     isMulti
-                    value={animalOptions.filter((opt) => formAnimals.includes(opt.value))}
+                    value={animalOptions.filter((opt) =>
+                      formAnimals.includes(opt.value)
+                    )}
                     onChange={(selectedOptions) =>
                       setFormAnimals(selectedOptions.map((opt) => opt.value))
                     }
@@ -687,10 +714,7 @@ export const Animals: React.FC = () => {
                 </div>
 
                 <div className={styles.buttonRow}>
-                  <Button
-                    variant="light"
-                    onClick={resetForm}
-                  >
+                  <Button variant="light" onClick={resetForm}>
                     Cancelar
                   </Button>
                   <Button
@@ -719,16 +743,15 @@ export const Animals: React.FC = () => {
                         value={group.id}
                         onChange={() => setSelectedGroupId(group.id)}
                       />
-                      <span>{group.name} ({group.animalIds.length} animais)</span>
+                      <span>
+                        {group.name} ({group.animalIds.length} animais)
+                      </span>
                     </label>
                   ))}
                 </div>
 
                 <div className={styles.buttonRow}>
-                  <Button
-                    variant="light"
-                    onClick={resetForm}
-                  >
+                  <Button variant="light" onClick={resetForm}>
                     Cancelar
                   </Button>
                   <Button
@@ -743,11 +766,8 @@ export const Animals: React.FC = () => {
             {mode === "selecting-del" && (
               <>
                 <div>
-                  {groups.map(group => (
-                    <label
-                      key={group.id}
-                      className={styles.groupSelectLabel}
-                    >
+                  {groups.map((group) => (
+                    <label key={group.id} className={styles.groupSelectLabel}>
                       <input
                         type="radio"
                         name="groupSelect"
@@ -785,8 +805,16 @@ export const Animals: React.FC = () => {
                 <div className={styles.modalCard}>
                   <p>
                     Tem certeza que deseja apagar o grupo{" "}
-                    <strong>{groups.find(g => g.id === selectedGroupId)?.name}</strong> -{" "}
-                    <strong>{groups.find(g => g.id === selectedGroupId)?.animalIds.length}</strong>{" "}
+                    <strong>
+                      {groups.find((g) => g.id === selectedGroupId)?.name}
+                    </strong>{" "}
+                    -{" "}
+                    <strong>
+                      {
+                        groups.find((g) => g.id === selectedGroupId)?.animalIds
+                          .length
+                      }
+                    </strong>{" "}
                     animais?
                   </p>
                   <div>
@@ -796,10 +824,7 @@ export const Animals: React.FC = () => {
                     >
                       Cancelar
                     </Button>
-                    <Button
-                      variant="dark"
-                      onClick={handleConfirmDelete}
-                    >
+                    <Button variant="dark" onClick={handleConfirmDelete}>
                       Confirmar
                     </Button>
                   </div>

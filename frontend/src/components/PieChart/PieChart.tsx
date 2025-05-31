@@ -48,7 +48,11 @@ export default function PieChartGraph({
             label
           >
             {data.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={dynamicColors[index % dynamicColors.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={dynamicColors[index % dynamicColors.length]}
+                data-testid="pie-cell"
+              />
             ))}
           </Pie>
           <Tooltip />
