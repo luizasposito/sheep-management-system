@@ -5,7 +5,7 @@ import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Table } from "../../components/Table/Table";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
-import { RoleOnly } from "../../components/RoleOnly";
+import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
 import styles from "./AppointmentDetail.module.css";
 
 type Sheep = {
@@ -29,7 +29,6 @@ type AppointmentDetailData = {
   comentarios?: string;
   medications?: Medication[];
 };
-
 
 export const AppointmentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -173,8 +172,6 @@ export const AppointmentDetail: React.FC = () => {
             <p>Nenhum medicamento prescrito.</p>
           )}
         </Card>
-
-
       </div>
     </PageLayout>
   );

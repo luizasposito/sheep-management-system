@@ -4,7 +4,7 @@ import Calendar from "react-calendar";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
-import { RoleOnly } from "../../components/RoleOnly";
+import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
 import styles from "./AnimalDetail.module.css";
 import "react-calendar/dist/Calendar.css";
 
@@ -62,9 +62,12 @@ export const AnimalDetails: React.FC = () => {
         setAnimal(data);
 
         if (data.group_id) {
-          const groupRes = await fetch(`http://localhost:8000/sheep-group/${data.group_id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const groupRes = await fetch(
+            `http://localhost:8000/sheep-group/${data.group_id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           if (groupRes.ok) {
             const groupData = await groupRes.json();
             setGroup(groupData);
@@ -72,18 +75,24 @@ export const AnimalDetails: React.FC = () => {
         }
 
         // Fetch parents
-        const parentsRes = await fetch(`http://localhost:8000/sheep/${id}/parents`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const parentsRes = await fetch(
+          `http://localhost:8000/sheep/${id}/parents`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         if (parentsRes.ok) {
           const parentData = await parentsRes.json();
           setParents(parentData);
         }
 
         // Fetch children
-        const childrenRes = await fetch(`http://localhost:8000/sheep/${id}/children`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const childrenRes = await fetch(
+          `http://localhost:8000/sheep/${id}/children`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         if (childrenRes.ok) {
           const childrenData = await childrenRes.json();
           setChildren(childrenData);
@@ -95,9 +104,12 @@ export const AnimalDetails: React.FC = () => {
 
     const fetchConsultas = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/appointment?sheep_id=${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `http://localhost:8000/appointment?sheep_id=${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         if (!res.ok) throw new Error("Erro ao buscar consultas");
         const data = await res.json();
         setConsultas(
@@ -117,10 +129,12 @@ export const AnimalDetails: React.FC = () => {
   }, [id, token]);
 
   const consultasDoDia = selectedDate
-    ? consultas.filter(c => c.data === selectedDate.toISOString().split("T")[0])
+    ? consultas.filter(
+        (c) => c.data === selectedDate.toISOString().split("T")[0]
+      )
     : [];
 
-  const datasMarcadas = new Set(consultas.map(c => c.data));
+  const datasMarcadas = new Set(consultas.map((c) => c.data));
 
   const toggleView = () => {
     setViewMode(viewMode === "lista" ? "calendario" : "lista");
@@ -129,15 +143,10 @@ export const AnimalDetails: React.FC = () => {
 
   return (
     <PageLayout>
-      <h1 className={styles.title}>
-        Animal {id}
-      </h1>
+      <h1 className={styles.title}>Animal {id}</h1>
 
       <div className={styles.buttonGroup}>
-        <Button
-          variant="light"
-          onClick={() => navigate(`/animal`)}
-        >
+        <Button variant="light" onClick={() => navigate(`/animal`)}>
           Lista de animais
         </Button>
         <RoleOnly role="farmer">
@@ -173,7 +182,9 @@ export const AnimalDetails: React.FC = () => {
                       variant="dark"
                       onClick={() => navigate(`/animal/${parent.id}`)}
                     >
-                      {parent.gender.toLowerCase() === "macho" ? `Pai - ${parent.id}` : `Mãe - ${parent.id}`}
+                      {parent.gender.toLowerCase() === "macho"
+                        ? `Pai - ${parent.id}`
+                        : `Mãe - ${parent.id}`}
                     </Button>
                   ))
                 )}
@@ -185,28 +196,27 @@ export const AnimalDetails: React.FC = () => {
               </p>
               {animal?.gender === "Fêmea" && (
                 <p>
-                  <strong>Produção leiteira (em litros):</strong> {animal.milk_production ?? "N/D"} L
+                  <strong>Produção leiteira (em litros):</strong>{" "}
+                  {animal.milk_production ?? "N/D"} L
                 </p>
               )}
               <p>
-                <strong>Fardo para ingestão diária:</strong> {animal?.feeding_hay ?? "N/D"} kg
+                <strong>Fardo para ingestão diária:</strong>{" "}
+                {animal?.feeding_hay ?? "N/D"} kg
               </p>
               <p>
-                <strong>Ração para ingestão diária:</strong> {animal?.feeding_feed ?? "N/D"} kg
+                <strong>Ração para ingestão diária:</strong>{" "}
+                {animal?.feeding_feed ?? "N/D"} kg
               </p>
             </div>
           </div>
         </Card>
 
         <Card className={styles.crias}>
-          <h3>
-            Crias
-          </h3>
+          <h3>Crias</h3>
           <div className={styles.chipGrid}>
             {children.length === 0 ? (
-              <p>
-                Nenhuma cria registrada.
-              </p>
+              <p>Nenhuma cria registrada.</p>
             ) : (
               children.map((child) => (
                 <Button
@@ -223,13 +233,8 @@ export const AnimalDetails: React.FC = () => {
 
         <Card className={styles.calendar}>
           <div className={styles.calendarHeader}>
-            <h3>
-              Consultas
-            </h3>
-            <Button
-              variant="dark"
-              onClick={toggleView}
-            >
+            <h3>Consultas</h3>
+            <Button variant="dark" onClick={toggleView}>
               Alternar para {viewMode === "calendario" ? "lista" : "calendário"}
             </Button>
           </div>
@@ -251,7 +256,6 @@ export const AnimalDetails: React.FC = () => {
                   </p>
                 </Card>
               ))}
-
             </div>
           ) : (
             <div className={styles.calendarGrid}>
@@ -259,18 +263,16 @@ export const AnimalDetails: React.FC = () => {
                 onClickDay={setSelectedDate}
                 tileContent={({ date }) => {
                   const dateStr = date.toISOString().split("T")[0];
-                  return datasMarcadas.has(dateStr) ? <div className={styles.dot}></div> : null;
+                  return datasMarcadas.has(dateStr) ? (
+                    <div className={styles.dot}></div>
+                  ) : null;
                 }}
               />
               {selectedDate && (
                 <div className={styles.dayDetails}>
-                  <h4>
-                    Consultas em {selectedDate.toLocaleDateString()}
-                  </h4>
+                  <h4>Consultas em {selectedDate.toLocaleDateString()}</h4>
                   {consultasDoDia.length === 0 ? (
-                    <p>
-                      Nenhuma consulta neste dia.
-                    </p>
+                    <p>Nenhuma consulta neste dia.</p>
                   ) : (
                     consultasDoDia.map((c) => (
                       <Card
@@ -284,7 +286,6 @@ export const AnimalDetails: React.FC = () => {
                         </p>
                       </Card>
                     ))
-
                   )}
                 </div>
               )}
