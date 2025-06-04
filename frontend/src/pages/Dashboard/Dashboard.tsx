@@ -452,35 +452,6 @@ export const Dashboard: React.FC = () => {
             </Card>
           ))}
 
-          <Card>
-            <h3>Consultas</h3>
-            <ul className={styles.appointmentList}>
-              {appointment.map(({ id, date, motivo, sheep_ids }, index) => (
-                <details key={index} className={styles.appointmentItem}>
-                  <summary>{date}</summary>
-                  <p><strong>Motivo:</strong> {motivo}</p>
-                  <p>
-                    <strong>Animais associados:</strong>{" "}
-                    {sheep_ids && sheep_ids.length > 0 ? (
-                      sheep_ids.map((sheepId) => (
-                        <Button key={sheepId} variant="light" onClick={() => navigate(`/animal/${sheepId}`)}>
-                          {sheepId}
-                        </Button>
-                      ))
-                    ) : (
-                      "Nenhum"
-                    )}
-                  </p>
-                  <p>
-                    <Button variant="light" onClick={() => navigate(`/appointment/${id}`)}>
-                      Ver detalhes da consulta
-                    </Button>
-                  </p>
-                </details>
-              ))}
-            </ul>
-          </Card>
-
           {/* Modal de confirmação de exclusão */}
           {deleteSensorId !== null && (
             <div className={styles.modalOverlay}>
@@ -541,6 +512,35 @@ export const Dashboard: React.FC = () => {
               </div>
             </Card>
           ))}
+
+          <Card>
+            <h3>Consultas</h3>
+            <ul className={styles.appointmentList}>
+              {appointment.map(({ id, date, motivo, sheep_ids }, index) => (
+                <details key={index} className={styles.appointmentItem}>
+                  <summary>{date}</summary>
+                  <p><strong>Motivo:</strong> {motivo}</p>
+                  <p>
+                    <strong>Animais associados:</strong>{" "}
+                    {sheep_ids && sheep_ids.length > 0 ? (
+                      sheep_ids.map((sheepId) => (
+                        <Button key={sheepId} variant="light" onClick={() => navigate(`/animal/${sheepId}`)}>
+                          {sheepId}
+                        </Button>
+                      ))
+                    ) : (
+                      "Nenhum"
+                    )}
+                  </p>
+                  <p>
+                    <Button variant="light" onClick={() => navigate(`/appointment/${id}`)}>
+                      Ver detalhes da consulta
+                    </Button>
+                  </p>
+                </details>
+              ))}
+            </ul>
+          </Card>
         </section>
       </main>
     </PageLayout>
