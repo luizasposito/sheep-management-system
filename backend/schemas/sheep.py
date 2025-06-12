@@ -3,9 +3,8 @@ from pydantic import BaseModel, ConfigDict
 from datetime import date
 from typing import Optional, Literal
 
-# POST request
+
 class SheepCreate(BaseModel):
-    # id isnt sent to the db
     birth_date: date
     farm_id: int
     feeding_hay: float
@@ -15,9 +14,7 @@ class SheepCreate(BaseModel):
     father_id: Optional[int] = None
     mother_id: Optional[int] = None
 
-# GET/POST responses
 class SheepResponse(SheepCreate):
-    # id is returned by the db
     id: int
     milk_production: Optional[float] = None
     
