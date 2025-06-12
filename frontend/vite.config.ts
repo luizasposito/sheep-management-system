@@ -1,20 +1,19 @@
+// vite.config.ts
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  plugins: [
-    react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'icons/*.png'],
-      srcDir: 'public',
-      filename: 'manifest.json'
-    })
-  ],
+  plugins: [react()],
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: './vitest.setup.ts',
-  },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['**/*.test.{ts,tsx}', 'src/main.tsx']
+    }
+  }
 });

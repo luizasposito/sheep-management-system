@@ -120,9 +120,7 @@ export const AnimalCreate: React.FC = () => {
           <div className={styles.grid}>
             <div className={styles.leftColumn}>
               <div className={styles.formGroup}>
-                <label>
-                  Data de nascimento:
-                </label>
+                <label htmlFor="nascimento">Data de nascimento:</label>
                 <input
                   type="date"
                   value={nascimento}
@@ -133,9 +131,7 @@ export const AnimalCreate: React.FC = () => {
               </div>
 
               <div className={styles.formGroup}>
-                <label>
-                  ID do pai:
-                </label>
+                <label htmlFor="fatherId">ID do pai:</label>
                 <select
                   value={fatherId}
                   onChange={(e) => setFatherId(e.target.value)}
@@ -154,9 +150,7 @@ export const AnimalCreate: React.FC = () => {
               </div>
 
               <div className={styles.formGroup}>
-                <label>
-                  ID da mãe:
-                </label>
+                <label htmlFor="motherId">ID da mãe:</label>
                 <select
                   value={motherId}
                   onChange={(e) => setMotherId(e.target.value)}
@@ -177,29 +171,22 @@ export const AnimalCreate: React.FC = () => {
 
             <div className={styles.rightColumn}>
               <div className={styles.formGroup}>
-                <label>
-                  Sexo:
-                </label>
+                <label htmlFor="sexo">Sexo:</label>
                 <select
+                  id="sexo"
                   value={sexo}
-                  onChange={(e) => setSexo(e.target.value)} required
+                  onChange={(e) => setSexo(e.target.value)}
+                  required
                 >
-                  <option value="">
-                    Selecione
-                  </option>
-                  <option value="Macho">
-                    Macho
-                  </option>
-                  <option value="Fêmea">
-                    Fêmea
-                  </option>
+                  <option value="">Selecione</option>
+                  <option value="Macho">Macho</option>
+                  <option value="Fêmea">Fêmea</option>
                 </select>
               </div>
 
+
               <div className={styles.formGroup}>
-                <label>
-                  Feno (kg):
-                </label>
+                <label htmlFor="feedingHay">Feno (kg):</label>
                 <input
                   type="number"
                   value={feedingHay}
@@ -211,9 +198,7 @@ export const AnimalCreate: React.FC = () => {
               </div>
 
               <div className={styles.formGroup}>
-                <label>
-                  Ração (kg):
-                </label>
+                <label htmlFor="feedingFeed">Ração (kg):</label>
                 <input
                   type="number"
                   value={feedingFeed}

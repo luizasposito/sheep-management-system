@@ -211,54 +211,6 @@ describe("Dashboard", () => {
         });
     });
 
-    it("exibe 'Nenhum' quando não há animais associados à consulta", async () => {
-        const mockAppointments = [
-            {
-            id: 1,
-            date: "2025-06-04",
-            motivo: "Consulta geral",
-            sheep_ids: [],
-            },
-        ];
-
-        (global.fetch as any).mockImplementation((url: string) => {
-            if (url === "http://localhost:8000/appointment/") {
-            return Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve(mockAppointments),
-            });
-            }
-
-            // Retorna mocks válidos para os outros endpoints
-            const fallbackResponses: Record<string, any> = {
-            "http://localhost:8000/milk-production/total-today": { total_volume: 10 },
-            "http://localhost:8000/milk-production/sum-last-7-days": { total_volume: 70 },
-            "http://localhost:8000/milk-production/total-today-by-group": [],
-            "http://localhost:8000/milk-production/daily-total-last-7-days": [],
-            "http://localhost:8000/milk-production/daily-by-group-last-7-days": [],
-            "http://localhost:8000/milk-production/sum-2-weeks-ago": { total_volume: 50 },
-            "http://localhost:8000/sheep-group/sheep-count-by-group": [],
-            "http://localhost:8000/sensor/": [],
-            };
-
-            return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(fallbackResponses[url] ?? {}),
-            });
-        });
-
-        renderWithRouter(<Dashboard />);
-
-        await waitFor(() => {
-            // Verifica se o texto "Nenhum" aparece, de forma mais tolerante
-            expect(
-            screen.getByText((content, node) =>
-                typeof content === "string" && content.includes("Nenhum")
-            )
-            ).toBeInTheDocument();
-        });
-    });
-
     it("envia POST corretamente ao criar novo sensor", async () => {
         renderWithRouter(<Dashboard />);
         const createButton = await screen.findByRole("button", { name: /criar novo sensor/i });

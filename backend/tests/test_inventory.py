@@ -108,18 +108,18 @@ async def test_get_inventory_item_by_id():
     ac, headers = await get_authenticated_client(farmer.email, password)
 
     post = await ac.post("/inventory/", json={
-        "item_name": "Sal Mineral",
+        "item_name": "Ração",
         "quantity": 5,
         "unit": "sacos",
         "consumption_rate": 0.8,
-        "category": "Suplemento"
+        "category": "Alimentação"
     }, headers=headers)
 
     item_id = post.json()["id"]
 
     get_resp = await ac.get(f"/inventory/{item_id}", headers=headers)
     assert get_resp.status_code == 200
-    assert get_resp.json()["item_name"] == "Sal Mineral"
+    assert get_resp.json()["item_name"] == "Ração"
 
     await ac.aclose()
 
@@ -131,27 +131,27 @@ async def test_update_inventory_item():
     ac, headers = await get_authenticated_client(farmer.email, password)
 
     post = await ac.post("/inventory/", json={
-        "item_name": "Vacina A",
+        "item_name": "Detergente",
         "quantity": 10,
-        "unit": "doses",
+        "unit": "L",
         "consumption_rate": 1.0,
-        "category": "Medicamento"
+        "category": "Limpeza"
     }, headers=headers)
 
     item_id = post.json()["id"]
 
     updated_data = {
-        "item_name": "Vacina A",
+        "item_name": "Detergente",
         "quantity": 15,
-        "unit": "ml",
+        "unit": "unidade",
         "consumption_rate": 1.2,
-        "category": "Medicamento"
+        "category": "Limpeza"
     }
 
     put_resp = await ac.put(f"/inventory/{item_id}", json=updated_data, headers=headers)
     assert put_resp.status_code == 200
     assert put_resp.json()["quantity"] == 15
-    assert put_resp.json()["unit"] == "ml"
+    assert put_resp.json()["unit"] == "unidade"
 
     await ac.aclose()
 
@@ -163,11 +163,11 @@ async def test_delete_inventory_item():
     ac, headers = await get_authenticated_client(farmer.email, password)
 
     post = await ac.post("/inventory/", json={
-        "item_name": "Vacina B",
+        "item_name": "Sabão",
         "quantity": 3,
-        "unit": "ampolas",
+        "unit": "L",
         "consumption_rate": 0.5,
-        "category": "Medicamento"
+        "category": "Limpeza"
     }, headers=headers)
 
     item_id = post.json()["id"]
