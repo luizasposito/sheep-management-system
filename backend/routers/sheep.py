@@ -29,7 +29,6 @@ def get_db():
         db.close()
 
 
-# POST /sheep/ - create a new sheep record
 @router.post("/", response_model=SheepResponse)
 def create_sheep(
     sheep: SheepCreate,
@@ -62,7 +61,6 @@ def create_sheep(
     return new_sheep
 
 
-# GET /sheep/ - return a list of all sheep
 @router.get("/", response_model=List[SheepResponse])
 def get_all_sheep(
     db: Session = Depends(get_db),
@@ -88,7 +86,6 @@ def get_all_sheep(
     return enriched_list
 
 
-# GET /sheep/{id} - return specific sheep
 @router.get("/{sheep_id}", response_model=SheepResponse)
 def get_sheep_by_id(
     sheep_id: int,
@@ -135,8 +132,6 @@ def get_sheep_by_id(
     return sheep_data
 
 
-
-# PUT /sheep/{id} - update existing sheep
 @router.put("/{sheep_id}", response_model=SheepResponse)
 def update_sheep(
     sheep_id: int,
@@ -148,13 +143,10 @@ def update_sheep(
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
-    # Atualiza campos simples
     for field, value in data.dict(exclude_unset=True).items():
         if field not in ["father_id", "mother_id"]:
             setattr(sheep, field, value)
 
-    # Atualiza pai/mãe via relacionamento
-    # Remover ligações antigas
     db.query(SheepParentage).filter(SheepParentage.offspring_id == sheep_id).delete()
 
     if data.father_id:
@@ -169,8 +161,6 @@ def update_sheep(
     return sheep
 
 
-
-# DELETE /sheep/{id} - remove a sheep from the database
 @router.delete("/{sheep_id}", status_code=204)
 def delete_sheep(
     sheep_id: int,
@@ -181,7 +171,6 @@ def delete_sheep(
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
-    # Remover a produção de leite associada
     milk_productions = db.query(MilkProduction).filter(MilkProduction.sheep_id == sheep_id).all()
     for milk_production in milk_productions:
         db.delete(milk_production)
@@ -191,7 +180,6 @@ def delete_sheep(
     return
 
 
-# PATCH /sheep/{id} - update existing sheep's milk yield
 @router.patch("/{sheep_id}/milk-yield")
 async def update_milk_yield(
     sheep_id: int,
@@ -206,7 +194,6 @@ async def update_milk_yield(
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found")
 
-    # Verifica se já existe uma produção de leite para a ovelha no mesmo dia
     existing_milk_production = db.query(MilkProduction).filter(
         MilkProduction.sheep_id == sheep_id,
         MilkProduction.date == milk_yield.date
@@ -238,7 +225,6 @@ async def update_milk_yield(
     }
 
 
-# GET /sheep/{id}/parents
 @router.get("/{sheep_id}/parents", response_model=List[SheepResponse])
 def get_parents_of_sheep(
     sheep_id: int,
@@ -255,7 +241,6 @@ def get_parents_of_sheep(
     return parent_sheep
 
 
-# GET /sheep/{id}/children
 @router.get("/{sheep_id}/children", response_model=List[SheepResponse])
 def get_children_of_sheep(
     sheep_id: int,
@@ -272,7 +257,6 @@ def get_children_of_sheep(
     return child_sheep
 
 
-
 @router.get("/{sheep_id}/milk-yield", response_model=List[MilkProductionResponse])
 async def get_sheep_milk_production(
     sheep_id: int,
@@ -280,20 +264,17 @@ async def get_sheep_milk_production(
     db: Session = Depends(get_db),
     current_user: TokenUser = Depends(get_current_user),
 ):
-    # Busca o fazendeiro autenticado
+
     farmer = db.query(Farmer).filter(Farmer.email == current_user.email).first()
     if not farmer:
         raise HTTPException(status_code=404, detail="Farmer not found")
 
-    # Verifica se a ovelha existe e pertence à fazenda do fazendeiro
     sheep = db.query(Sheep).filter(Sheep.id == sheep_id, Sheep.farm_id == farmer.farm_id).first()
     if not sheep:
         raise HTTPException(status_code=404, detail="Sheep not found or not authorized")
 
-    # Monta a query base
     query = db.query(MilkProduction).filter(MilkProduction.sheep_id == sheep_id)
 
-    # Se a data foi informada, filtra por ela
     if date:
         query = query.filter(MilkProduction.date == date)
 
