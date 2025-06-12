@@ -158,7 +158,7 @@ async def test_delete_sensor():
 
     with SessionLocal() as db:
         sensor = Sensor(
-            name="Light",
+            name="Ammonia",
             min_value=100.0,
             max_value=1000.0,
             current_value=500.0,

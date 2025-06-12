@@ -120,9 +120,6 @@ export const AnimalEdit: React.FC = () => {
           mother_id: animal.mother_id?.toString() ?? "",
         })
       );
-
-
-
       return updated;
     });
   };
@@ -165,7 +162,7 @@ export const AnimalEdit: React.FC = () => {
             <div className={styles.grid}>
               <div className={styles.leftColumn}>
                 <div className={styles.formGroup}>
-                  <label>
+                  <label htmlFor="date">
                     Data de nascimento:
                   </label>
                   <input
@@ -178,7 +175,7 @@ export const AnimalEdit: React.FC = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>
+                  <label htmlFor="gender">
                     Sexo:
                   </label>
                   <select name="gender" value={form.gender} onChange={handleChange}>
@@ -192,7 +189,7 @@ export const AnimalEdit: React.FC = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>
+                  <label htmlFor="father_id">
                     ID do pai:
                   </label>
                   <select
@@ -215,7 +212,7 @@ export const AnimalEdit: React.FC = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>
+                  <label htmlFor="mother_id">
                     ID da mãe:
                   </label>
                   <select
@@ -242,7 +239,7 @@ export const AnimalEdit: React.FC = () => {
 
               <div className={styles.rightColumn}>
                 <div className={styles.formGroup}>
-                  <label>
+                  <label htmlFor="feeding_hay">
                     Fardo para ingestão diária (kg):
                   </label>
                   <input
@@ -254,7 +251,7 @@ export const AnimalEdit: React.FC = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>
+                  <label htmlFor="feeding_feed">
                     Ração para ingestão diária (kg):
                   </label>
                   <input
@@ -266,10 +263,11 @@ export const AnimalEdit: React.FC = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>
+                  <label htmlFor="group_id">
                     Grupo:
                   </label>
                   <select
+                    id="group_id" /* talvez esteja errado */
                     name="group_id"
                     value={form.group_id || ""}
                     onChange={handleChange}
