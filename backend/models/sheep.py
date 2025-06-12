@@ -9,23 +9,21 @@ class Sheep(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     birth_date = Column(Date)
-    farm_id = Column(Integer, ForeignKey("farm.id"), nullable=False)  # Relacionado com a fazenda
+    farm_id = Column(Integer, ForeignKey("farm.id"), nullable=False)
     feeding_hay = Column(Float(5, 2), nullable=False, default=0)
     feeding_feed = Column(Float(5, 2), nullable=False, default=0)
     gender = Column(String(10))
-    group_id = Column(Integer, ForeignKey("sheep_group.id"))  # Relacionado ao grupo de ovelhas
+    group_id = Column(Integer, ForeignKey("sheep_group.id"))
 
     milk_productions = relationship("MilkProduction", back_populates="sheep")
     appointments = relationship("Appointment", secondary=appointment_sheep, back_populates="sheeps")
 
-    # filhos deste animal (ou seja, este é o pai ou a mãe)
     children = relationship(
         "SheepParentage",
         foreign_keys="[SheepParentage.parent_id]",
         back_populates="parent"
     )
 
-    # pais deste animal (ou seja, este é o filho)
     parents = relationship(
         "SheepParentage",
         foreign_keys="[SheepParentage.offspring_id]",
