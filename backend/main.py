@@ -1,16 +1,16 @@
 
 from fastapi import FastAPI
 from database import Base, engine
-from routers import sheep
-from routers import farm_inventory
-from routers import farmer
-from routers import veterinarian
-from routers import auth
-from routers import appointment
-from routers import sheep_group   
-from routers import milk_production     
-from routers import sensor
-from fastapi.middleware.cors import CORSMiddleware                                                                                                                                                           
+from sheep import router_sheep
+from inventory import router_inventory
+from farmer import router_farmer
+from veterinarian import router_veterinarian
+from auth import router_auth
+from appointment import router_appointment
+from sheepgroup import router_sheepgroup   
+from milkproduction import router_milkproduction     
+from sensor import router_sensor
+from fastapi.middleware.cors import CORSMiddleware                                                                                                                                                        
 
 # Create the FastAPI app
 app = FastAPI()
@@ -27,28 +27,28 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 # register sheep routes under /sheep path
-app.include_router(sheep.router, prefix="/sheep", tags=["Sheep"])
+app.include_router(router_sheep.router, prefix="/sheep", tags=["Sheep"])
 
 # register inventory routes under /inventory path
-app.include_router(farm_inventory.router, prefix="/inventory", tags=["Inventory"])
+app.include_router(router_inventory.router, prefix="/inventory", tags=["Inventory"])
 
 # register farmer routes under /farmer path
-app.include_router(farmer.router, prefix="/farmer", tags=["Farmer"])
+app.include_router(router_farmer.router, prefix="/farmer", tags=["Farmer"])
 
 # register veterinarian routes under /veterinarian path
-app.include_router(veterinarian.router, prefix="/vet", tags=["Veterinarian"])
+app.include_router(router_veterinarian.router, prefix="/vet", tags=["Veterinarian"])
 
 # register authentication routes under /auth path
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(router_auth.router, prefix="/auth", tags=["Auth"])
 
 # register appointment routes under /appointment path
-app.include_router(appointment.router, prefix="/appointment", tags=["Appointment"])
+app.include_router(router_appointment.router, prefix="/appointment", tags=["Appointment"])
 
 # register sheep_group routes under /sheep-group path
-app.include_router(sheep_group.router, prefix="/sheep-group", tags=["Group"])
+app.include_router(router_sheepgroup.router, prefix="/sheep-group", tags=["Group"])
 
 # register milkproduction routes under /milk-production path
-app.include_router(milk_production.router, prefix="/milk-production", tags=["MilkProduction"])
+app.include_router(router_milkproduction.router, prefix="/milk-production", tags=["MilkProduction"])
 
 # register sensors routes under /sensor path
-app.include_router(sensor.router, prefix="/sensor", tags=["Sensor"])
+app.include_router(router_sensor.router, prefix="/sensor", tags=["Sensor"])

@@ -3,8 +3,8 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy import text
 from main import app
 from database import SessionLocal
-from models.farm import Farm
-from models.farmer import Farmer
+from farm.model_farm import Farm
+from farmer.model_farmer import Farmer
 from utils import hash_password
 
 def reset_database():

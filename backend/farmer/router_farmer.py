@@ -2,8 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.farmer import Farmer
-from schemas.farmer import FarmerCreate, FarmerResponse
+from farmer.model_farmer import Farmer
+from farmer.schema_farmer import FarmerCreate, FarmerResponse
 
 router = APIRouter()
 

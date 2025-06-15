@@ -1,10 +1,10 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 from database import SessionLocal
-from models.sheep import Sheep
-from models.farm import Farm
-from models.farmer import Farmer
-from models.sheep_parentage import SheepParentage
+from sheep.model_sheep import Sheep
+from farm.model_farm import Farm
+from farmer.model_farmer import Farmer
+from sheep.model_sheepparentage import SheepParentage
 from utils import hash_password
 from sqlalchemy import text
 from main import app

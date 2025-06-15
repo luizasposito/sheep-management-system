@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, Text, TIMESTAMP, ForeignKey, func
 from database import Base
 from sqlalchemy.orm import relationship
-from models.appointment_sheep import appointment_sheep
-from models.medication import Medication
+from appointment.model_appointment_sheep import appointment_sheep
+from appointment.model_medication import Medication
 
 class Appointment(Base):
     __tablename__ = "appointment"

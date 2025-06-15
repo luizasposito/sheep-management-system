@@ -3,7 +3,7 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy import text
 from database import SessionLocal
 from main import app
-from models.farm import Farm
+from farm.model_farm import Farm
 from utils import hash_password
 
 

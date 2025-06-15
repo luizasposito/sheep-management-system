@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.farm_inventory import FarmInventory
-from schemas.farm_inventory import InventoryCreate, InventoryResponse
+from inventory.model_inventory import FarmInventory
+from inventory.schema_inventory import InventoryCreate, InventoryResponse
 from typing import List
-from routers.auth import get_current_user
-from schemas.auth import TokenUser
+from auth.router_auth import get_current_user
+from auth.schema_auth import TokenUser
 from datetime import datetime
 
 

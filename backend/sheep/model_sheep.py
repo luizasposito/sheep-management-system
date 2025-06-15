@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
 from database import Base
 from sqlalchemy.orm import relationship
 from typing import Optional
-from models.appointment_sheep import appointment_sheep
+from appointment.model_appointment_sheep import appointment_sheep
 
 class Sheep(Base):
     __tablename__ = "sheep"

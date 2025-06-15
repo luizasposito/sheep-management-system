@@ -2,17 +2,17 @@
 from fastapi import APIRouter, Depends, HTTPException, Body, Query
 from sqlalchemy.orm import Session
 from database import get_db
-from models.sheep import Sheep
-from models.farm import Farm
-from models.farm_inventory import FarmInventory
-from models.farmer import Farmer
-from models.milk_production import MilkProduction
-from models.sheep_parentage import SheepParentage
-from schemas.sheep import SheepCreate, SheepResponse, SheepUpdate
-from schemas.milk_production import MilkProductionCreate, MilkProductionResponse, MilkProductionUpdate
+from sheep.model_sheep import Sheep
+from farm.model_farm import Farm
+from inventory.model_inventory import FarmInventory
+from farmer.model_farmer import Farmer
+from milkproduction.model_milkproduction import MilkProduction
+from sheep.model_sheepparentage import SheepParentage
+from sheep.schema_sheep import SheepCreate, SheepResponse, SheepUpdate
+from milkproduction.schema_milkproduction import MilkProductionCreate, MilkProductionResponse, MilkProductionUpdate
 from typing import List, Optional
-from routers.auth import get_current_user
-from schemas.auth import TokenUser
+from auth.router_auth import get_current_user
+from auth.schema_auth import TokenUser
 from pydantic import BaseModel
 from database import SessionLocal
 from datetime import date

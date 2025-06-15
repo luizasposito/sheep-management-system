@@ -1,9 +1,9 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 from database import SessionLocal
-from models.farmer import Farmer
-from models.veterinarian import Veterinarian
-from models.farm import Farm
+from farmer.model_farmer import Farmer
+from veterinarian.model_veterinarian import Veterinarian
+from farm.model_farm import Farm
 from utils import hash_password
 from main import app
 from sqlalchemy import text

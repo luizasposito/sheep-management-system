@@ -4,9 +4,9 @@ from httpx import AsyncClient
 from httpx._transports.asgi import ASGITransport
 from sqlalchemy import text
 from database import SessionLocal
-from models.farm import Farm
-from models.farmer import Farmer
-from models.sensor import Sensor
+from farm.model_farm import Farm
+from farmer.model_farmer import Farmer
+from sensor.model_sensor import Sensor
 from main import app
 from utils import hash_password
 

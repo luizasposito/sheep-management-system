@@ -2,8 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.veterinarian import Veterinarian
-from schemas.veterinarian import VeterinarianCreate, VeterinarianResponse
+from veterinarian.model_veterinarian import Veterinarian
+from veterinarian.schema_veterinarian import VeterinarianCreate, VeterinarianResponse
 
 router = APIRouter()
 

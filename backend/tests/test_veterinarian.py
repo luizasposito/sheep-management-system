@@ -12,9 +12,9 @@ async def test_create_veterinarian():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         from database import SessionLocal
-        from models.farm import Farm
-        from models.farmer import Farmer
-        from models.veterinarian import Veterinarian
+        from farm.model_farm import Farm
+        from farmer.model_farmer import Farmer
+        from veterinarian.model_veterinarian import Veterinarian
 
         # prepare db
         with SessionLocal() as db:
@@ -66,9 +66,9 @@ async def test_get_veterinarian_by_id():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         from database import SessionLocal
-        from models.farm import Farm
-        from models.farmer import Farmer
-        from models.veterinarian import Veterinarian
+        from backend.farm.model_farm import Farm
+        from backend.farmer.model_farmer import Farmer
+        from backend.farm.model_veterinarian import Veterinarian
 
         with SessionLocal() as db:
             db.query(Veterinarian).delete()
@@ -129,9 +129,9 @@ async def test_update_veterinarian():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         from database import SessionLocal
-        from models.farm import Farm
-        from models.farmer import Farmer
-        from models.veterinarian import Veterinarian
+        from backend.farm.model_farm import Farm
+        from backend.farmer.model_farmer import Farmer
+        from backend.farm.model_veterinarian import Veterinarian
 
         with SessionLocal() as db:
             db.query(Veterinarian).delete()
