@@ -3,16 +3,16 @@ from fastapi import APIRouter, Depends, HTTPException, Body, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from fastapi.security import OAuth2PasswordBearer
-from models.milk_production import MilkProduction
-from models.farmer import Farmer
-from models.sheep import Sheep
-from models.farm import Farm
-from models.sheep_group import SheepGroup
+from milkproduction.model_milkproduction import MilkProduction
+from farmer.model_farmer import Farmer
+from sheep.model_sheep import Sheep
+from farm.model_farm import Farm
+from sheepgroup.model_sheepgroup import SheepGroup
 from sqlalchemy import func, text
 from datetime import date
-from routers.auth import get_current_user, get_db
-from schemas.milk_production import MilkProductionCreate, MilkProductionResponse, MilkProductionUpdate
-from schemas.auth import TokenUser
+from auth.router_auth import get_current_user, get_db
+from milkproduction.schema_milkproduction import MilkProductionCreate, MilkProductionResponse, MilkProductionUpdate
+from auth.schema_auth import TokenUser
 from datetime import timedelta, date
 from collections import defaultdict
 
@@ -57,7 +57,7 @@ async def get_total_today_by_group(
     db: Session = Depends(get_db),
     current_user: TokenUser = Depends(get_current_user)
 ):
-    from models.sheep_group import SheepGroup  # importar aqui, pois alguns testes dão erro de importação circular
+    from sheepgroup.model_sheepgroup import SheepGroup
     today = date.today()
 
     # Obter o fazendeiro com farm_id

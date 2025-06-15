@@ -2,14 +2,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.farmer import Farmer
-from models.veterinarian import Veterinarian
-from schemas.auth import LoginRequest, TokenResponse
+from farmer.model_farmer import Farmer
+from veterinarian.model_veterinarian import Veterinarian
+from auth.schema_auth import LoginRequest, TokenResponse
 from utils import verify_password, create_access_token
 from fastapi.security import OAuth2PasswordBearer
 from utils import decode_token
 from blacklist import blacklisted_tokens, is_token_blacklisted, add_token_to_blacklist
-from schemas.auth import TokenUser
+from auth.schema_auth import TokenUser
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 router = APIRouter()

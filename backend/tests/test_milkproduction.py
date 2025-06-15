@@ -3,11 +3,11 @@ from httpx import AsyncClient, ASGITransport
 from datetime import date, timedelta
 from database import SessionLocal
 from main import app
-from models.farm import Farm
-from models.farmer import Farmer
-from models.sheep import Sheep
-from models.milk_production import MilkProduction
-from models.sheep_group import SheepGroup
+from farm.model_farm import Farm
+from farmer.model_farmer import Farmer
+from sheep.model_sheep import Sheep
+from milkproduction.model_milkproduction import MilkProduction
+from sheepgroup.model_sheepgroup import SheepGroup
 from utils import hash_password
 from sqlalchemy import text
 from fastapi.testclient import TestClient

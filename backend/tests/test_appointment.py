@@ -3,10 +3,10 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from database import SessionLocal
-from models.farm import Farm
-from models.farmer import Farmer
-from models.sheep import Sheep
-from models.veterinarian import Veterinarian
+from farm.model_farm import Farm
+from farmer.model_farmer import Farmer
+from sheep.model_sheep import Sheep
+from veterinarian.model_veterinarian import Veterinarian
 from utils import hash_password
 from sqlalchemy import text
 from main import app

@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.sensor import Sensor
+from sensor.model_sensor import Sensor
 from typing import List
-from routers.auth import get_current_user
-from schemas.auth import TokenUser
-from schemas.sensor import SensorCreate, SensorResponse, SensorUpdate
+from auth.router_auth import get_current_user
+from auth.schema_auth import TokenUser
+from sensor.schema_sensor import SensorCreate, SensorResponse, SensorUpdate
 from datetime import datetime
 
 router = APIRouter()

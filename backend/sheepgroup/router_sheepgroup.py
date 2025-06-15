@@ -3,14 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from database import get_db
-from models.sheep import Sheep
-from models.farmer import Farmer
-from models.sheep_group import SheepGroup
-from schemas.sheep import SheepCreate, SheepResponse
-from schemas.sheep import SheepResponse
-from schemas.sheep_group import SheepGroupCreate, SheepGroupResponse
+from sheep.model_sheep import Sheep
+from farmer.model_farmer import Farmer
+from sheepgroup.model_sheepgroup import SheepGroup
+from sheep.schema_sheep import SheepCreate, SheepResponse
+from sheep.schema_sheep import SheepResponse
+from sheepgroup.schema_sheepgroup import SheepGroupCreate, SheepGroupResponse
 from typing import List
-from routers.auth import get_current_user
+from auth.router_auth import get_current_user
 from pydantic import BaseModel
 from typing import Optional
 

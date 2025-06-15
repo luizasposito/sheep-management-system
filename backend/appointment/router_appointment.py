@@ -1,17 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
-from models.appointment import Appointment
-from models.sheep import Sheep
-from models.medication import Medication
-from models.farmer import Farmer
-from models.veterinarian import Veterinarian
-from schemas.appointment import AppointmentCreate, AppointmentResponse, AppointmentUpdate
-from schemas.farmer import FarmerCreate, FarmerResponse
-from schemas. veterinarian import VeterinarianCreate, VeterinarianResponse
+from appointment.model_appointment import Appointment
+from sheep.model_sheep import Sheep
+from appointment.model_medication import Medication
+from farmer.model_farmer import Farmer
+from veterinarian.model_veterinarian import Veterinarian
+from appointment.schema_appointment import AppointmentCreate, AppointmentResponse, AppointmentUpdate
+from farmer.schema_farmer import FarmerCreate, FarmerResponse
+from veterinarian.schema_veterinarian import VeterinarianCreate, VeterinarianResponse
 from typing import List
-from routers.auth import get_current_user
-from schemas.auth import TokenUser
+from auth.router_auth import get_current_user
+from auth.schema_auth import TokenUser
 
 router = APIRouter()
 
