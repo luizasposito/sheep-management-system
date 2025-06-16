@@ -64,7 +64,6 @@ async def test_create_sheep():
             "gender": "Fêmea"
         }, headers={"Authorization": f"Bearer {token}"})
 
-        #assert response.status_code != 404, "POST /sheep/ não existe"
         assert response.status_code == 200
         data = response.json()
         assert data["feeding_hay"] == 10.0
