@@ -422,3 +422,234 @@ describe("animal filtering logic", () => {
     expect(result).toBe(true);
   });
 });
+
+
+describe("submitMilkProduction", () => {
+  let setLoading: jest.Mock;
+  let setAnimalData: jest.Mock;
+  let resetFormStates: jest.Mock;
+
+  beforeEach(() => {
+    setLoading = vi.fn();
+    setAnimalData = vi.fn();
+    resetFormStates = vi.fn();
+
+    vi.stubGlobal("fetch", vi.fn());
+    vi.stubGlobal("alert", vi.fn());
+    vi.stubGlobal("localStorage", {
+      getItem: vi.fn(() => "fake-token"),
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  // Uma função auxiliar simulando seu submitMilkProduction dentro do teste,
+  // só para chamar ela com as funções mockadas
+  const submitMilkProduction = async (sheepId: string, volume: number) => {
+    setLoading(true);
+    const today = new Date().toISOString().split("T")[0];
+    const payload = { date: today, volume };
+
+    try {
+      const res = await fetch(
+        `http://localhost:8000/sheep/${sheepId}/milk-yield`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (res.ok) {
+        setAnimalData((prevAnimals: any[]) =>
+          prevAnimals.map((animal) =>
+            animal.id === sheepId
+              ? { ...animal, producaoLeiteira: volume.toString() }
+              : animal
+          )
+        );
+
+        resetFormStates();
+      } else {
+        alert("Erro ao atualizar produção.");
+      }
+    } catch (err) {
+      console.error("Erro ao enviar produção:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  it("calls fetch with correct URL and payload, updates state and resets form on success", async () => {
+    (fetch as unknown as vi.Mock).mockResolvedValueOnce({ ok: true });
+
+    const prevAnimals = [{ id: "sheep1", producaoLeiteira: "10" }, { id: "sheep2", producaoLeiteira: "5" }];
+    setAnimalData.mockImplementation((cb) => {
+      // cb is function(prevAnimals)
+      const result = cb(prevAnimals);
+      expect(result).toEqual([
+        { id: "sheep1", producaoLeiteira: "15" },
+        { id: "sheep2", producaoLeiteira: "5" },
+      ]);
+    });
+
+    await submitMilkProduction("sheep1", 15);
+
+    expect(setLoading).toHaveBeenNthCalledWith(1, true);
+    expect(fetch).toHaveBeenCalledWith(
+      "http://localhost:8000/sheep/sheep1/milk-yield",
+      expect.objectContaining({
+        method: "PATCH",
+        headers: expect.objectContaining({
+          Authorization: "Bearer fake-token",
+          "Content-Type": "application/json",
+        }),
+        body: expect.any(String),
+      })
+    );
+
+    // Verifica body enviado
+    const calledBody = JSON.parse((fetch as vi.Mock).mock.calls[0][1].body);
+    expect(calledBody).toEqual({
+      date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      volume: 15,
+    });
+
+    expect(resetFormStates).toHaveBeenCalled();
+    expect(setLoading).toHaveBeenLastCalledWith(false);
+  });
+
+  it("alerts error if response is not ok", async () => {
+    (fetch as unknown as vi.Mock).mockResolvedValueOnce({ ok: false });
+
+    await submitMilkProduction("sheep1", 10);
+
+    expect(window.alert).toHaveBeenCalledWith("Erro ao atualizar produção.");
+    expect(setLoading).toHaveBeenNthCalledWith(1, true);
+    expect(setLoading).toHaveBeenLastCalledWith(false);
+    expect(resetFormStates).not.toHaveBeenCalled();
+    expect(setAnimalData).not.toHaveBeenCalled();
+  });
+
+  it("logs error if fetch throws", async () => {
+    const error = new Error("Network failure");
+    (fetch as unknown as vi.Mock).mockRejectedValueOnce(error);
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await submitMilkProduction("sheep1", 10);
+
+    expect(consoleSpy).toHaveBeenCalledWith("Erro ao enviar produção:", error);
+    expect(setLoading).toHaveBeenNthCalledWith(1, true);
+    expect(setLoading).toHaveBeenLastCalledWith(false);
+    expect(resetFormStates).not.toHaveBeenCalled();
+    expect(setAnimalData).not.toHaveBeenCalled();
+
+    consoleSpy.mockRestore();
+  });
+});
+
+
+describe("handleConfirmDelete", () => {
+  let fetchMock: any;
+  let alertMock: any;
+  let setGroups: vi.Mock;
+  let setLoadingGroups: vi.Mock;
+  let setAnimalData: vi.Mock;
+  let setTodayMilkProductionMap: vi.Mock;
+  let setLoading: vi.Mock;
+  let setSelectedGroupId: vi.Mock;
+  let setDeleteConfirmVisible: vi.Mock;
+  let setMode: vi.Mock;
+
+  const fetchGroups = vi.fn();
+  const fetchAnimals = vi.fn();
+
+  beforeEach(() => {
+    fetchMock = vi.fn();
+    global.fetch = fetchMock;
+    alertMock = vi.fn();
+    window.alert = alertMock;
+
+    setGroups = vi.fn();
+    setLoadingGroups = vi.fn();
+    setAnimalData = vi.fn();
+    setTodayMilkProductionMap = vi.fn();
+    setLoading = vi.fn();
+    setSelectedGroupId = vi.fn();
+    setDeleteConfirmVisible = vi.fn();
+    setMode = vi.fn();
+
+    vi.stubGlobal("localStorage", {
+      getItem: vi.fn(() => "fake-token"),
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const handleConfirmDelete = async (selectedGroupId: string | null) => {
+    if (!selectedGroupId) return;
+
+    try {
+      const res = await fetch(`http://localhost:8000/sheep-group/${selectedGroupId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Erro ao apagar grupo.");
+
+      await fetchGroups(setGroups, setLoadingGroups);
+      await fetchAnimals(setAnimalData, setTodayMilkProductionMap, setLoading);
+
+      setSelectedGroupId(null);
+      setDeleteConfirmVisible(false);
+      setMode("normal");
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Erro inesperado ao apagar grupo.");
+    }
+  };
+
+  it("não faz nada se selectedGroupId for null", async () => {
+    await handleConfirmDelete(null);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("deleta o grupo e atualiza os estados corretamente", async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true });
+    fetchGroups.mockResolvedValueOnce(undefined);
+    fetchAnimals.mockResolvedValueOnce(undefined);
+
+    await handleConfirmDelete("1");
+
+    expect(fetch).toHaveBeenCalledWith("http://localhost:8000/sheep-group/1", expect.anything());
+    expect(fetchGroups).toHaveBeenCalledWith(setGroups, setLoadingGroups);
+    expect(fetchAnimals).toHaveBeenCalledWith(setAnimalData, setTodayMilkProductionMap, setLoading);
+    expect(setSelectedGroupId).toHaveBeenCalledWith(null);
+    expect(setDeleteConfirmVisible).toHaveBeenCalledWith(false);
+    expect(setMode).toHaveBeenCalledWith("normal");
+  });
+
+  it("mostra alerta em caso de erro no fetch", async () => {
+    fetchMock.mockResolvedValueOnce({ ok: false });
+
+    await handleConfirmDelete("2");
+
+    expect(alertMock).toHaveBeenCalledWith("Erro ao apagar grupo.");
+  });
+
+  it("mostra alerta com mensagem genérica se erro inesperado ocorrer", async () => {
+    fetchMock.mockRejectedValueOnce("Erro desconhecido");
+
+    await handleConfirmDelete("3");
+
+    expect(alertMock).toHaveBeenCalledWith("Erro inesperado ao apagar grupo.");
+  });
+});

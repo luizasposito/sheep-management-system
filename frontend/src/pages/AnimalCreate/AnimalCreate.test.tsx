@@ -83,4 +83,80 @@ describe("AnimalCreate page", () => {
       expect(screen.getByText("Usuário não autenticado.")).toBeInTheDocument();
     });
   });
+
+    it("shows error if farm_id is missing", async () => {
+    (useUser as unknown as vi.Mock).mockReturnValue({ user: null });
+
+    render(<AnimalCreate />, { wrapper: MemoryRouter });
+
+    await screen.findByText("Adicionar Animal");
+
+    fireEvent.change(screen.getByLabelText("Sexo:"), {
+      target: { value: "Fêmea" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("ID da fazenda não encontrado.")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("submits form and navigates on success", async () => {
+    setupSuccessMocks();
+
+    render(<AnimalCreate />, { wrapper: MemoryRouter });
+
+    await screen.findByText("Adicionar Animal");
+
+    fireEvent.change(screen.getByLabelText("Data de nascimento:"), {
+      target: { value: "2024-01-01" },
+    });
+
+    fireEvent.change(screen.getByLabelText("Sexo:"), {
+      target: { value: "Fêmea" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        "http://localhost:8000/sheep",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            Authorization: "Bearer mock-token",
+          }),
+        })
+      );
+      expect(navigateMock).toHaveBeenCalledWith("/animal");
+    });
+  });
+
+  it("shows error if fetch fails", async () => {
+    (fetch as vi.Mock)
+      .mockResolvedValueOnce({ ok: true, json: async () => mockUser }) // fetch user
+      .mockResolvedValueOnce({ ok: true, json: async () => mockAnimals }) // fetch animals
+      .mockResolvedValueOnce({ ok: false }); // fetch sheep fails
+
+    render(<AnimalCreate />, { wrapper: MemoryRouter });
+
+    await screen.findByText("Adicionar Animal");
+
+    fireEvent.change(screen.getByLabelText("Data de nascimento:"), {
+      target: { value: "2024-01-01" },
+    });
+
+    fireEvent.change(screen.getByLabelText("Sexo:"), {
+      target: { value: "Macho" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Erro ao criar animal.")).toBeInTheDocument();
+    });
+  });
 });
