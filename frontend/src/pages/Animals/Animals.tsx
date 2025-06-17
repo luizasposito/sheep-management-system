@@ -8,6 +8,13 @@ import { SearchInput } from "../../components/SearchInput/SearchInput";
 import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
 import Select from "react-select";
 import styles from "./Animals.module.css";
+import {
+  fetchTodayMilkProduction,
+  fetchAnimals,
+  fetchGroups,
+  submitMilkProduction,
+} from "./AnimalFcts";
+
 
 type Animal = {
   id: string;
@@ -74,72 +81,10 @@ export const Animals: React.FC = () => {
     return Array.from(gendersSet);
   }, [animalData]);
 
-  const fetchTodayMilkProduction = async (
-    sheepId: string
-  ): Promise<number | null> => {
-    try {
-      const todayStr = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD'
-
-      const res = await fetch(
-        `http://localhost:8000/sheep/${sheepId}/milk-yield?date=${todayStr}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!res.ok) return null;
-
-      const data: MilkProductionResponse[] = await res.json();
-
-      // Agora o backend já filtra por data, data[0] é a produção do dia
-      return data.length > 0 ? data[0].volume : null;
-    } catch (err) {
-      console.error("Erro ao buscar produção de leite:", err);
-      return null;
-    }
-  };
-
-  const submitMilkProduction = async (sheepId: string, volume: number) => {
-    setLoading(true);
-    const today = new Date().toISOString().split("T")[0];
-    const payload = { date: today, volume };
-
-    try {
-      const res = await fetch(
-        `http://localhost:8000/sheep/${sheepId}/milk-yield`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (res.ok) {
-        // Atualiza localmente o estado animalData para refletir a nova produção sem precisar esperar o fetchAnimals
-        setAnimalData((prevAnimals) =>
-          prevAnimals.map((animal) =>
-            animal.id === sheepId
-              ? { ...animal, producaoLeiteira: volume.toString() }
-              : animal
-          )
-        );
-
-        resetFormStates();
-      } else {
-        alert("Erro ao atualizar produção.");
-      }
-    } catch (err) {
-      console.error("Erro ao enviar produção:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    fetchAnimals(setAnimalData, setTodayMilkProductionMap, setLoading);
+    fetchGroups(setGroups, setLoadingGroups);
+  }, []);
 
   const handleConfirmDelete = async () => {
     if (!selectedGroupId) return;
@@ -160,8 +105,9 @@ export const Animals: React.FC = () => {
       }
 
       // Atualiza grupos e animais
-      await fetchGroups();
-      await fetchAnimals();
+      await fetchGroups(setGroups, setLoadingGroups);
+      await fetchAnimals(setAnimalData, setTodayMilkProductionMap, setLoading);
+
 
       setSelectedGroupId(null);
       setDeleteConfirmVisible(false);
@@ -191,110 +137,6 @@ export const Animals: React.FC = () => {
     if (!(user.role === "farmer" || user.role === "veterinarian"))
       navigate("/unauthorized");
   }, [user]);
-
-  const fetchAnimals = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:8000/sheep/?_=${Date.now()}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (!response.ok) throw new Error("Erro ao buscar animais");
-
-      const data = await response.json();
-
-      const formattedData: Animal[] = data.map(
-        (item: any): Animal => ({
-          id: item.id.toString(),
-          producaoLeiteira: item.milk_production?.toString() || "-",
-          gender: item.gender,
-          group_id: item.group_id?.toString() || undefined,
-        })
-      );
-
-      setAnimalData(formattedData);
-
-      // Buscar produção de leite de hoje para cada ovelha
-      const productions = await Promise.all(
-        formattedData.map((animal) => fetchTodayMilkProduction(animal.id))
-      );
-
-      const map: Record<string, number | null> = {};
-      formattedData.forEach((animal, idx) => {
-        map[animal.id] = productions[idx];
-      });
-      setTodayMilkProductionMap(map);
-    } catch (error) {
-      console.error("Erro ao buscar animais:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchGroups = async () => {
-    try {
-      const [groupsRes, animalsRes] = await Promise.all([
-        fetch("http://localhost:8000/sheep-group", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }),
-        fetch("http://localhost:8000/sheep/", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }),
-      ]);
-
-      if (!groupsRes.ok || !animalsRes.ok) {
-        throw new Error("Erro ao buscar grupos ou animais");
-      }
-
-      const groupsData = await groupsRes.json();
-      const animalsData = await animalsRes.json();
-
-      animalsData.forEach((animal: any) => {
-        console.log(`Animal ID: ${animal.id}, Group ID: ${animal.group_id}`);
-      });
-
-      console.log("Grupos recebidos:", groupsData);
-      console.log("Animais recebidos:", animalsData);
-
-      const groupToAnimalsMap: Record<string, string[]> = {};
-
-      animalsData.forEach((sheep: any) => {
-        const groupId = sheep.group_id?.toString();
-        if (groupId) {
-          if (!groupToAnimalsMap[groupId]) groupToAnimalsMap[groupId] = [];
-          groupToAnimalsMap[groupId].push(sheep.id.toString());
-        }
-      });
-
-      const formattedGroups = groupsData.map((group: any) => ({
-        id: group.id.toString(),
-        name: group.name,
-        animalIds: groupToAnimalsMap[group.id.toString()] || [],
-      }));
-
-      setGroups(formattedGroups);
-    } catch (error) {
-      console.error("Erro ao buscar grupos:", error);
-    } finally {
-      setLoadingGroups(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAnimals();
-    fetchGroups();
-  }, []);
 
   // Criar um mapa de group_id -> nome do grupo
   const groupIdToName = useMemo(() => {
@@ -466,8 +308,9 @@ export const Animals: React.FC = () => {
       }
 
       // Após salvar, refazer o fetch dos grupos e animais para sincronizar os dados
-      await fetchAnimals();
-      await fetchGroups();
+      await fetchGroups(setGroups, setLoadingGroups);
+      await fetchAnimals(setAnimalData, setTodayMilkProductionMap, setLoading);
+
 
       resetForm();
     } catch (error: any) {
@@ -598,7 +441,10 @@ export const Animals: React.FC = () => {
                             onClick={() =>
                               submitMilkProduction(
                                 animal.id,
-                                parseFloat(formVolume)
+                                Number(formVolume),
+                                setAnimalData,
+                                resetFormStates,
+                                setLoading
                               )
                             }
                             disabled={

@@ -85,7 +85,7 @@ describe("AppointmentEdit", () => {
         expect(saveButton).toBeEnabled();
 
         fireEvent.click(saveButton);
-
+    
         await waitFor(() => {
         expect(navigateMock).toHaveBeenCalledWith("/appointment/123");
         });
@@ -110,13 +110,13 @@ describe("AppointmentEdit", () => {
     it("updates medication field correctly when handleMedicationChange is called", async () => {
         render(<AppointmentEdit />, { wrapper: MemoryRouter });
 
-        // Espera o input de medicamento existir (ele vem do fetch)
-        await waitFor(() => screen.getByPlaceholderText("Nome"));
+        // Espera o input de medicamento existir e estar preenchido com 'Med1'
+        await waitFor(() => {
+            const nomeInput = screen.getByPlaceholderText("Nome") as HTMLInputElement;
+            expect(nomeInput.value).toBe("Med1");
+        });
 
         const nomeInput = screen.getByPlaceholderText("Nome") as HTMLInputElement;
-
-        // Valor inicial do medicamento vindo do mock: "Med1"
-        expect(nomeInput.value).toBe("Med1");
 
         // Simula alteração no campo nome do medicamento
         fireEvent.change(nomeInput, { target: { value: "Paracetamol" } });
@@ -124,6 +124,4 @@ describe("AppointmentEdit", () => {
         // Verifica se o valor foi atualizado no input
         expect(nomeInput.value).toBe("Paracetamol");
     });
-
-    
 });

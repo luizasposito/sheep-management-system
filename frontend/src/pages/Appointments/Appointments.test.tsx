@@ -159,3 +159,118 @@ describe("Appointments Page", () => {
     });
   });
 });
+
+
+describe("Appointments Page - toggleFilter behavior", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    (UserContext.useUser as unknown as vi.Mock).mockReturnValue({
+      user: { id: 1, role: "farmer" },
+    });
+
+    vi.stubGlobal("fetch", vi.fn().mockImplementation((url) => {
+      if (url.includes("appointment")) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve([
+              {
+                id: 1,
+                date: new Date().toISOString(),
+                sheep_ids: [101],
+                motivo: "Verificação",
+              },
+            ]),
+        });
+      }
+
+      if (url.includes("sheep-group")) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve([
+              { id: 1, name: "Grupo A" },
+              { id: 2, name: "Grupo B" },
+            ]),
+        });
+      }
+
+      if (url.includes("sheep")) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve([
+              { id: 101, gender: "Macho", group_id: 1 },
+              { id: 102, gender: "Fêmea", group_id: 2 },
+            ]),
+        });
+      }
+
+      return Promise.reject("URL desconhecida");
+    }));
+  });
+
+  it("adds and removes sexo filter when clicking on sexo checkboxes", async () => {
+    render(<Appointments />, { wrapper: MemoryRouter });
+
+    // Espera filtros sexo aparecerem (Fêmea, Macho)
+    await waitFor(() => {
+      expect(screen.getByLabelText("Fêmea")).toBeInTheDocument();
+      expect(screen.getByLabelText("Macho")).toBeInTheDocument();
+    });
+
+    const femeaCheckbox = screen.getByLabelText("Fêmea") as HTMLInputElement;
+    const machoCheckbox = screen.getByLabelText("Macho") as HTMLInputElement;
+
+    // Inicialmente desmarcados
+    expect(femeaCheckbox.checked).toBe(false);
+    expect(machoCheckbox.checked).toBe(false);
+
+    // Clicar no checkbox "Fêmea" adiciona filtro
+    fireEvent.click(femeaCheckbox);
+    expect(femeaCheckbox.checked).toBe(true);
+
+    // Clicar novamente remove filtro
+    fireEvent.click(femeaCheckbox);
+    expect(femeaCheckbox.checked).toBe(false);
+
+    // Testar o outro filtro
+    fireEvent.click(machoCheckbox);
+    expect(machoCheckbox.checked).toBe(true);
+
+    fireEvent.click(machoCheckbox);
+    expect(machoCheckbox.checked).toBe(false);
+  });
+
+  it("adds and removes group filter when clicking on group checkboxes (user farmer)", async () => {
+    render(<Appointments />, { wrapper: MemoryRouter });
+
+    // Espera grupos aparecerem
+    await waitFor(() => {
+      expect(screen.getByLabelText("Grupo A")).toBeInTheDocument();
+      expect(screen.getByLabelText("Grupo B")).toBeInTheDocument();
+    });
+
+    const grupoACheckbox = screen.getByLabelText("Grupo A") as HTMLInputElement;
+    const grupoBCheckbox = screen.getByLabelText("Grupo B") as HTMLInputElement;
+
+    expect(grupoACheckbox.checked).toBe(false);
+    expect(grupoBCheckbox.checked).toBe(false);
+
+    // Clicar para adicionar filtro
+    fireEvent.click(grupoACheckbox);
+    expect(grupoACheckbox.checked).toBe(true);
+
+    // Clicar novamente para remover filtro
+    fireEvent.click(grupoACheckbox);
+    expect(grupoACheckbox.checked).toBe(false);
+
+    // Outro grupo
+    fireEvent.click(grupoBCheckbox);
+    expect(grupoBCheckbox.checked).toBe(true);
+
+    fireEvent.click(grupoBCheckbox);
+    expect(grupoBCheckbox.checked).toBe(false);
+  });
+});

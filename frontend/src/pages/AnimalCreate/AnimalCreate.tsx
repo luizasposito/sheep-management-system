@@ -122,6 +122,7 @@ export const AnimalCreate: React.FC = () => {
               <div className={styles.formGroup}>
                 <label htmlFor="nascimento">Data de nascimento:</label>
                 <input
+                  id="nascimento"
                   type="date"
                   value={nascimento}
                   onChange={(e) => setNascimento(e.target.value)}
@@ -188,6 +189,7 @@ export const AnimalCreate: React.FC = () => {
               <div className={styles.formGroup}>
                 <label htmlFor="feedingHay">Feno (kg):</label>
                 <input
+                  id="feedingHay"
                   type="number"
                   value={feedingHay}
                   onChange={(e) => setFeedingHay(parseFloat(e.target.value))}
@@ -200,6 +202,7 @@ export const AnimalCreate: React.FC = () => {
               <div className={styles.formGroup}>
                 <label htmlFor="feedingFeed">Ração (kg):</label>
                 <input
+                  id="feedingFeed"
                   type="number"
                   value={feedingFeed}
                   onChange={(e) => setFeedingFeed(parseFloat(e.target.value))}
