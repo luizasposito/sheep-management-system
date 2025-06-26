@@ -1,22 +1,24 @@
 .title {
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    color: #3e6440;
-    margin-bottom: 1rem;
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #3e6440;
+  margin-bottom: 1rem;
 }
-  
+
 .buttonGroup {
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-bottom: 2rem;
+  padding: 0 1rem;
 }
 
 .searchBar {
   margin: 12px 0;
+  padding: 0 1rem;
 }
-  
+
 body {
   overflow-x: hidden;
   margin: 0;
@@ -26,21 +28,20 @@ body {
 .content {
   display: flex;
   align-items: flex-start;
-  gap: 6rem;
+  gap: 3rem;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
   box-sizing: border-box;
-  flex-wrap: nowrap; /* inicialmente não quebra para desktops */
+  flex-wrap: nowrap;
 }
 
-  
 .cards {
   flex: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  min-width: 0; /* Garante que flexbox funcione corretamente em alguns browsers */
+  min-width: 0;
 }
 
 .groupCard {
@@ -52,28 +53,25 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   height: fit-content;
 }
-  
-  
+
 /* Sidebar filtros */
 .filters {
-  min-width: 10rem;
-  max-width: 12rem;
-  width: 100%;
-  flex-shrink: 0;
+  width: 250px;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Alinha à esquerda */
-  text-align: left; /* Garante alinhamento de texto */
+  gap: 1rem;
 }
+
 
 /* Grupos de filtro */
 .filterGroup {
   margin-bottom: 12px;
   width: 100%;
-  text-align: left; /* alinhamento do texto */
+  text-align: left;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* garante alinhamento à esquerda */
+  align-items: flex-start;
 }
 
 .filterGroup strong {
@@ -83,10 +81,9 @@ body {
   text-align: left;
 }
 
-
 .filterGroup label {
   display: flex;
-  align-items: center; /* Alinha verticalmente */
+  align-items: center;
   gap: 8px;
   margin-top: 6px;
   font-size: 1rem;
@@ -98,8 +95,6 @@ body {
   text-align: left;
 }
 
-
-/* Checkbox */
 .filterGroup label input[type="checkbox"] {
   margin: 0;
   width: 16px;
@@ -107,17 +102,16 @@ body {
   vertical-align: middle;
 }
 
-/* Texto ao lado do checkbox */
 .filterGroup label span {
   display: inline-block;
 }
-  
 
+/* grid cards */
 .cards {
   flex-direction: column;
   gap: 12px;
   flex-grow: 1;
-  min-width: 0; /* para evitar overflow no flexbox */
+  min-width: 0;
   justify-content: center;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -126,13 +120,12 @@ body {
 
 .animalCardsWrapper {
   background-color: #fff;
-  border-radius: 12px;
-  padding: 1.5rem;
   flex: 1;
-  margin-left: 2rem;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-  
 .cardContent {
   text-align: left;
   font-size: 1.2rem;
@@ -141,26 +134,15 @@ body {
 .clickableCard {
   cursor: pointer;
   transition: background-color 0.2s ease;
-  width: 100%;         /* de 90% para 100% */
-  max-width: 900px;    /* de 700px para 900px */
-  margin: 0 auto;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-  
 .clickableCard:hover {
-  background-color: #3e6440; /* Verde escuro da paleta */
+  background-color: #3e6440;
   color: white;
-}
-
-@media (max-width: 768px) {
-  .mainContent {
-    flex-direction: column;
-  }
-
-  .centerPanel {
-    grid-template-columns: 1fr;
-    padding: 0;
-  }
 }
 
 .groupCard {
@@ -194,7 +176,6 @@ body {
   margin-right: 0.5rem;
   margin-top: 0.5rem;
 }
-
 
 .multiselect {
   width: 100%;
@@ -247,9 +228,8 @@ body {
   margin-top: 1.5rem;
 }
 
-
 .animalCardWrapper {
-  margin-bottom: 32px; /* separação entre um card e o próximo */
+  margin-bottom: 32px;
 }
 
 .buttonContainer {
@@ -280,7 +260,7 @@ body {
 .modalCard {
   max-width: 400px;
   padding: 2rem;
-  background-color: #f4f4f4; /* mantive sua cor para não perder identidade */
+  background-color: #f4f4f4;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   font-size: 1.1rem;
@@ -302,45 +282,79 @@ body {
   gap: 0.75rem;
 }
 
-
+/* RESPONSIVO */
 @media (max-width: 1024px) {
   .content {
     max-width: 100%;
     padding: 0 1rem;
+    flex-wrap: wrap;
   }
+
   .groupCard {
-    flex: 1 1 45%; /* Dois cards por linha */
+    flex: 1 1 45%;
     max-width: 45%;
-  }
-}
-
-
-@media (max-width: 768px) {
-  .content {
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 0 1rem;
+    order: 2;
   }
 
   .filters {
     width: 100%;
     max-width: 100%;
     margin-bottom: 1rem;
+    order: 1;
+  }
+
+  .animalCardsWrapper {
+    order: 3;
+  }
+}
+
+@media (max-width: 768px) {
+  .content,
+  .mainContent {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0 1rem;
+    display: flex;
+    overflow-x: hidden;
+    flex-wrap: wrap;
+  }
+
+  .filters {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    order: 1;
+  }
+
+  .animalCardsWrapper {
+    margin-left: 0;
+    padding: 1rem;
+    order: 3;
   }
 
   .cards {
-    flex-direction: row;
-    flex-wrap: wrap;
     justify-content: center;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    padding: 0 1rem;
   }
 
   .groupCard {
     flex: 1 1 100%;
     max-width: 100%;
+    order: 2;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .buttonGroup,
+  .searchBar {
+    padding: 0 1rem;
   }
 }
 
-/* Telas muito pequenas (celulares) */
 @media (max-width: 480px) {
   .title {
     font-size: 1.5rem;
@@ -350,5 +364,20 @@ body {
   .buttonGroup {
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .filters {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    order: 1;
+  }
+
+  .groupCard {
+    order: 2;
+  }
+
+  .animalCardsWrapper {
+    order: 3;
   }
 }

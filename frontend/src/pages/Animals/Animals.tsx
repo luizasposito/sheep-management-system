@@ -397,7 +397,6 @@ export const Animals: React.FC = () => {
                 <div key={animal.id} className={styles.animalCardWrapper}>
                   <Card
                     key={`${animal.id}-${animal.producaoLeiteira}`}
-                    className={styles.clickableCard}
                     onClick={() => navigate(`/animal/${animal.id}`)}
                   >
                     <div className={styles.cardContent}>

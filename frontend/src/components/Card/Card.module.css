@@ -1,8 +1,20 @@
-
-
 .card {
-    background-color: #b0d297;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+  background-color: #b0d297;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, color 0.3s;
+  cursor: default;
+}
+
+/* Estilo quando o card é clicável */
+.clickable {
+  cursor: pointer;
+}
+
+/* Estilo de hover apenas se for clicável */
+.clickable:hover {
+  background-color: #2f7030; /* verde escuro */
+  color: white;
+}
+

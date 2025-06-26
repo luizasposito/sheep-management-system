@@ -33,6 +33,7 @@ export const Inventory: React.FC = () => {
   const [editedQuantity, setEditedQuantity] = useState("");
   const [isDirty, setIsDirty] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const headers = [
     "Categoria",
@@ -95,6 +96,7 @@ export const Inventory: React.FC = () => {
                 setSelectedItem(index);
                 setEditedQuantity(row[3]);
                 setIsDirty(false);
+                setShowEditModal(true);
               }}
             >
               Editar
@@ -242,34 +244,43 @@ export const Inventory: React.FC = () => {
             <Table headers={headers} data={filteredData} />
           )}
 
-          {adjustMode && selectedItem !== null && !showDeleteModal && (
-            <Card className={styles.detailCard}>
-              <h2>{inventoryData[selectedItem].item_name}</h2>
-              <p><strong>Categoria:</strong> {inventoryData[selectedItem].category}</p>
-              <p><strong>Última compra:</strong> {new Date(inventoryData[selectedItem].last_updated).toLocaleDateString("pt-PT")}</p>
-              <label className={styles.inputGroup}>
-                <strong>Quantidade em estoque:</strong>
-                <input
-                  type="number"
-                  value={editedQuantity}
-                  onChange={(e) => {
-                    setEditedQuantity(e.target.value);
-                    setIsDirty(Number(e.target.value) !== inventoryData[selectedItem].quantity);
-                  }}
-                />
-              </label>
-              <p><strong>Unidade:</strong> {inventoryData[selectedItem].unit}</p>
-              <p><strong>Próxima compra:</strong> -</p>
-              <div className={styles.buttonRow}>
-                <Button variant="light" onClick={handleCancel}>
-                  Cancelar
-                </Button>
-                <Button variant="dark" onClick={handleSave} disabled={!isDirty}>
-                  Salvar
-                </Button>
-              </div>
-            </Card>
+          {showEditModal && selectedItem !== null && (
+            <div className={styles.modalOverlay}>
+              <Card className={styles.modalCard}>
+                <h2>{inventoryData[selectedItem].item_name}</h2>
+                <p><strong>Categoria:</strong> {inventoryData[selectedItem].category}</p>
+                <p><strong>Última compra:</strong> {new Date(inventoryData[selectedItem].last_updated).toLocaleDateString("pt-PT")}</p>
+                <label className={styles.inputGroup}>
+                  <strong>Quantidade em estoque:</strong>
+                  <input
+                    type="number"
+                    value={editedQuantity}
+                    onChange={(e) => {
+                      setEditedQuantity(e.target.value);
+                      setIsDirty(Number(e.target.value) !== inventoryData[selectedItem].quantity);
+                    }}
+                  />
+                </label>
+                <p><strong>Unidade:</strong> {inventoryData[selectedItem].unit}</p>
+                <p><strong>Próxima compra:</strong> -</p>
+                <div className={styles.buttonRow}>
+                  <Button variant="light" onClick={() => {
+                    setShowEditModal(false);
+                    handleCancel();
+                  }}>
+                    Cancelar
+                  </Button>
+                  <Button variant="dark" onClick={() => {
+                    handleSave();
+                    setShowEditModal(false);
+                  }} disabled={!isDirty}>
+                    Salvar
+                  </Button>
+                </div>
+              </Card>
+            </div>
           )}
+
 
           {/* Modal de confirmação de delete */}
           {showDeleteModal && selectedItem !== null && (
