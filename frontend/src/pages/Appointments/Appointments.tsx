@@ -213,11 +213,16 @@ export const Appointments: React.FC = () => {
     )
   );
 
-  // Consultas do dia aplicando filtro também
-  // Ordenar as consultas filtradas por data decrescente (mais recente no topo)
-const sortedAppointments = [...filteredAppointments].sort((a, b) => {
-  return new Date(b.data).getTime() - new Date(a.data).getTime();
-});
+  
+  const sortedAppointments = [...filteredAppointments].sort((a, b) => {
+    const dateA = new Date(a.data).getTime();
+    const dateB = new Date(b.data).getTime();
+
+    return tab === "historico" 
+      ? dateB - dateA // mais recente primeiro
+      : dateA - dateB; // mais próxima primeiro
+  });
+
 
 // Consultas do dia aplicando filtro também
   const consultasDoDia = selectedDate
