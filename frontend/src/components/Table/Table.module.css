@@ -34,6 +34,14 @@ th, td {
   overflow-wrap: break-word;
 }
 
+th {
+  position: sticky;
+  top: 0;
+  background-color: #b0d297;
+  z-index: 1;
+}
+
+
 /* Estilo do cabeçalho */
 thead {
   background-color: #b0d297;

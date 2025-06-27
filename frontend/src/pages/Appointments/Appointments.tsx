@@ -213,13 +213,25 @@ export const Appointments: React.FC = () => {
     )
   );
 
-  // Consultas do dia aplicando filtro também
+  
+  const sortedAppointments = [...filteredAppointments].sort((a, b) => {
+    const dateA = new Date(a.data).getTime();
+    const dateB = new Date(b.data).getTime();
+
+    return tab === "historico" 
+      ? dateB - dateA // mais recente primeiro
+      : dateA - dateB; // mais próxima primeiro
+  });
+
+
+// Consultas do dia aplicando filtro também
   const consultasDoDia = selectedDate
-    ? filteredAppointments.filter((appointment) => {
+    ? sortedAppointments.filter((appointment) => {
         const appDate = new Date(appointment.data);
         return isSameDate(appDate, selectedDate);
       })
     : [];
+
 
   const toggleView = () => {
     setViewMode(viewMode === "lista" ? "calendario" : "lista");
@@ -313,10 +325,9 @@ export const Appointments: React.FC = () => {
             filteredAppointments.length === 0 ? (
               <p>Nenhuma consulta encontrada.</p>
             ) : (
-              filteredAppointments.map((appointment) => (
+              sortedAppointments.map((appointment) => (
                 <Card
                   key={appointment.id}
-                  className={styles.clickableCard}
                   onClick={() => navigate(`/appointment/${appointment.id}`)}
                 >
                   <div className={styles.cardContent}>

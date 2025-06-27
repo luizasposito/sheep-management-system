@@ -10,9 +10,11 @@ type CardProps = {
 
 
 export const Card: React.FC<CardProps> = ({ children, className = "", onClick, style }) => {
+  const clickableClass = onClick ? styles.clickable : "";
+
   return (
     <div
-      className={`${styles.card} ${className}`}
+      className={`${styles.card} ${clickableClass} ${className}`}
       onClick={onClick}
       style={style}
     >

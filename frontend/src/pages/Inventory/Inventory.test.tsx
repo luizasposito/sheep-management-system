@@ -299,4 +299,32 @@ describe("Inventory Component", () => {
             expect(screen.queryByRole("heading", { name: /farinha/i })).not.toBeInTheDocument();
         });
     });
+
+    it("oculta botão 'Ajuste' no modo mobile e mostra botões nos cards", async () => {
+    // Mock useIsMobile para simular mobile
+    vi.mock("../../useIsMobile", () => ({
+        useIsMobile: () => true,
+    }));
+
+    renderInventory();
+
+    await waitFor(() =>
+        expect(screen.queryByText(/carregando inventário/i)).not.toBeInTheDocument()
+    );
+
+    // Verifica que botão "Ajuste" não aparece no modo mobile
+    expect(screen.queryByRole("button", { name: /ajuste/i })).not.toBeInTheDocument();
+
+    // Verifica que o título dos cards está visível
+    expect(screen.getByRole("heading", { name: /farinha/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /açúcar/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /detergente/i })).toBeInTheDocument();
+
+    // Verifica que os botões editar e apagar estão presentes sem ativar o modo ajuste
+    const editarButtons = screen.getAllByRole("button", { name: /editar/i });
+    const apagarButtons = screen.getAllByRole("button", { name: /apagar/i });
+    expect(editarButtons.length).toBe(3);
+    expect(apagarButtons.length).toBe(3);
+    });
+
 });
