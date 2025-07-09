@@ -12,9 +12,18 @@ type Medication = {
   indication: string;
 };
 
+type AppointmentData = {
+  id: number;
+  vet_id: number;
+  date: string;
+  medications?: Medication[];
+};
+
 export const AppointmentEdit: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const [date, setDate] = useState<string>("");
 
   const [comments, setComments] = useState("");
   const [motivo, setMotivo] = useState("");
@@ -63,6 +72,7 @@ export const AppointmentEdit: React.FC = () => {
         const data = await res.json();
 
         setComments(data.comentarios || "");
+        setDate(data.date || "");
         setMotivo(data.motivo || "");
         setMedications(data.medications || []);
         setInitialState({
@@ -125,6 +135,7 @@ export const AppointmentEdit: React.FC = () => {
         body: JSON.stringify({
           motivo,
           comentarios: comments,
+          date: date,
           medications: validMedications.map((med) => ({
             name: med.name,
             dosage: med.dosage,
@@ -147,7 +158,11 @@ export const AppointmentEdit: React.FC = () => {
 
   return (
     <PageLayout>
-      <h1 className={styles.title}>Editar Consulta {id}</h1>
+      <h1 className={styles.title}>
+        Editar Consulta{" "}
+        {date ? new Date(date).toLocaleDateString() : id}
+      </h1>
+
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <Card>
