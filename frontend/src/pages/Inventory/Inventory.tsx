@@ -6,13 +6,14 @@ import { Button } from "../../components/Button/Button";
 import { SearchInput } from "../../components/SearchInput/SearchInput";
 import { Card } from "../../components/Card/Card";
 import { useIsMobile } from "../../useIsMobile";
+import { useIsLandscape } from "../../useIsLandscape";
 import styles from "./Inventory.module.css";
 
 interface InventoryItem {
   id: number;
   item_name: string;
   quantity: number;
-  unit: string;
+  unit: string; 
   consumption_rate: number;
   last_updated: string;
   category: string;
@@ -36,6 +37,9 @@ export const Inventory: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const isMobile = useIsMobile();
+  const isLandscape = useIsLandscape();
+  const showCards = isMobile && !isLandscape;
+  const showTable = !showCards;
 
   const headers = [
     "Categoria",
@@ -205,7 +209,7 @@ export const Inventory: React.FC = () => {
         <Button variant="light" onClick={() => navigate("/inventory/add")}>
           Adicionar item
         </Button>
-        {!isMobile && (
+        {!showCards && (
           <Button
             variant={adjustMode ? "dark" : "light"}
             onClick={() => {
@@ -247,7 +251,7 @@ export const Inventory: React.FC = () => {
         <main className={styles.mainContent}>
           {loading ? (
             <p>Carregando inventário...</p>
-          ) : isMobile ? (
+          ) : showCards ? (
             <div className={styles.cardList}>
               {inventoryData
                 .filter((item) => {
@@ -263,7 +267,7 @@ export const Inventory: React.FC = () => {
                     <p><strong>Quantidade:</strong> {item.quantity}</p>
                     <p><strong>Unidade:</strong> {item.unit}</p>
                     <p><strong>Próxima compra:</strong> -</p>
-                    {(adjustMode || isMobile) && (
+                    {(adjustMode || showCards) && (
                       <div className={styles.cardButtonRow}>
                         <Button
                           variant="light"
