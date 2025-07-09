@@ -46,7 +46,8 @@ export const submitMilkProduction = async (
   volume: number,
   setAnimalData: React.Dispatch<React.SetStateAction<Animal[]>>,
   resetFormStates: () => void,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setTodayMilkProductionMap: React.Dispatch<React.SetStateAction<Record<string, number | null>>>
 ) => {
   setLoading(true);
   const today = new Date().toISOString().split("T")[0];
@@ -73,6 +74,12 @@ export const submitMilkProduction = async (
             : animal
         )
       );
+
+      setTodayMilkProductionMap((prevMap) => ({
+        ...prevMap,
+        [sheepId]: volume,
+      }));
+
       resetFormStates();
     } else {
       alert("Erro ao atualizar produção.");
@@ -83,6 +90,7 @@ export const submitMilkProduction = async (
     setLoading(false);
   }
 };
+
 
 export const fetchAnimals = async (
   setAnimalData: React.Dispatch<React.SetStateAction<Animal[]>>,

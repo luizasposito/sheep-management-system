@@ -5,7 +5,7 @@ import { Button } from "../Button/Button";
 import { Card } from "../Card/Card";
 import { useUser } from "../../UserContext";
 
-export const Menu: React.FC = () => {
+export const Menu: React.FC = () => { 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const menuRef = useRef<HTMLUListElement>(null);

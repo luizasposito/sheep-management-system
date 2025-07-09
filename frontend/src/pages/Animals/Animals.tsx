@@ -174,7 +174,10 @@ export const Animals: React.FC = () => {
     return matchesSearch && matchesSexo && matchesGroup;
   };
 
-  const filteredAnimals = animalData.filter(applyFilters);
+  const filteredAnimals = animalData
+    .filter(applyFilters)
+    .sort((a, b) => Number(a.id) - Number(b.id));
+
 
   const resetForm = () => {
     setFormName("");
@@ -443,7 +446,8 @@ export const Animals: React.FC = () => {
                                 Number(formVolume),
                                 setAnimalData,
                                 resetFormStates,
-                                setLoading
+                                setLoading,
+                                setTodayMilkProductionMap
                               )
                             }
                             disabled={
