@@ -1,4 +1,4 @@
-# Farm Animal Management System
+# Small Ruminant Management System
 
 ## Overview
 Web and mobile prototype of an information system focused on small ruminants
@@ -7,8 +7,7 @@ Web and mobile prototype of an information system focused on small ruminants
 - Animal management
 - Inventory management
 - Veterinary consultation tracking
-- Facilities monitoring
-- IoT integration (planned)
+- Sensor monitoring
 
 ## Setup Instructions
 ### 1. Clone the Repository
