@@ -5,6 +5,7 @@ import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
+import { useUser } from "../../UserContext";
 import styles from "./AnimalDetail.module.css";
 import "react-calendar/dist/Calendar.css";
 
@@ -32,6 +33,12 @@ type SheepGroup = {
   farm_id: number;
 };
 
+function parseDateAsLocal(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+
 export const AnimalDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -45,6 +52,8 @@ export const AnimalDetails: React.FC = () => {
 
   const [parents, setParents] = useState<Animal[]>([]);
   const [children, setChildren] = useState<Animal[]>([]);
+
+  const { user } = useUser();
 
   const token = localStorage.getItem("token");
 
@@ -61,7 +70,7 @@ export const AnimalDetails: React.FC = () => {
         const data = await res.json();
         setAnimal(data);
 
-        if (data.group_id) {
+        if (data.group_id && user?.role === "farmer") {
           const groupRes = await fetch(
             `http://localhost:8000/sheep-group/${data.group_id}`,
             {
@@ -73,6 +82,7 @@ export const AnimalDetails: React.FC = () => {
             setGroup(groupData);
           }
         }
+
 
         // Fetch parents
         const parentsRes = await fetch(
@@ -112,29 +122,40 @@ export const AnimalDetails: React.FC = () => {
         );
         if (!res.ok) throw new Error("Erro ao buscar consultas");
         const data = await res.json();
-        setConsultas(
-          data.map((c: any) => ({
+        const consultasOrdenadas = data
+          .map((c: any) => ({
             id: c.id,
             data: c.date.split("T")[0],
             motivo: c.motivo || "Sem motivo informado",
           }))
-        );
+          .sort((a: Consulta, b: Consulta) => (a.data > b.data ? 1 : -1)); // ordena crescente pela data
+
+        setConsultas(consultasOrdenadas);
       } catch (err: any) {
         setError(err.message);
       }
     };
+
 
     fetchAnimal();
     fetchConsultas();
   }, [id, token]);
 
   const consultasDoDia = selectedDate
-    ? consultas.filter(
-        (c) => c.data === selectedDate.toISOString().split("T")[0]
-      )
+    ? consultas.filter(c => {
+        const consultaDate = parseDateAsLocal(c.data);
+        return (
+          consultaDate.getFullYear() === selectedDate.getFullYear() &&
+          consultaDate.getMonth() === selectedDate.getMonth() &&
+          consultaDate.getDate() === selectedDate.getDate()
+        );
+      })
     : [];
 
-  const datasMarcadas = new Set(consultas.map((c) => c.data));
+  const datasMarcadasSet = new Set(
+    consultas.map(c => parseDateAsLocal(c.data).getTime())
+  );
+
 
   const toggleView = () => {
     setViewMode(viewMode === "lista" ? "calendario" : "lista");
@@ -191,9 +212,11 @@ export const AnimalDetails: React.FC = () => {
               </div>
             </div>
             <div>
+              <RoleOnly role="farmer">
               <p>
                 <strong>Grupo:</strong> {group?.name || "Sem grupo"}
               </p>
+              </RoleOnly>
               {animal?.gender === "Fêmea" && (
                 <p>
                   <strong>Produção leiteira (em litros):</strong>{" "}
@@ -262,10 +285,10 @@ export const AnimalDetails: React.FC = () => {
               <Calendar
                 onClickDay={setSelectedDate}
                 tileContent={({ date }) => {
-                  const dateStr = date.toISOString().split("T")[0];
-                  return datasMarcadas.has(dateStr) ? (
-                    <div className={styles.dot}></div>
-                  ) : null;
+                  if (datasMarcadasSet.has(date.getTime())) {
+                    return <div className={styles.dot}></div>;
+                  }
+                  return null;
                 }}
               />
               {selectedDate && (

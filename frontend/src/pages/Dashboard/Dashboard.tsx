@@ -335,86 +335,90 @@ export const Dashboard: React.FC = () => {
   };
 
 
+  const renderSensorForm = () => (
+    <div className={styles.formGroup}>
+      <div className={styles.formField}>
+        <label htmlFor="sensor-name">Nome do sensor</label>
+        <input
+          id="sensor-name"
+          type="text"
+          name="name"
+          value={sensorForm.name}
+          onChange={handleSensorChange}
+        />
+      </div>
+
+      <div className={styles.formField}>
+        <label htmlFor="sensor-min">Valor mínimo</label>
+        <input
+          id="sensor-min"
+          type="number"
+          name="min_value"
+          value={sensorForm.min_value}
+          onChange={handleSensorChange}
+        />
+      </div>
+
+      <div className={styles.formField}>
+        <label htmlFor="sensor-max">Valor máximo</label>
+        <input
+          id="sensor-max"
+          type="number"
+          name="max_value"
+          value={sensorForm.max_value}
+          onChange={handleSensorChange}
+        />
+      </div>
+
+      <div className={styles.formField}>
+        <label htmlFor="sensor-current">Valor atual</label>
+        <input
+          id="sensor-current"
+          type="number"
+          name="current_value"
+          value={sensorForm.current_value}
+          onChange={handleSensorChange}
+        />
+      </div>
+
+      <div className={styles.buttonRow}>
+        <Button variant="light" onClick={cancelSensorForm}>
+          Cancelar
+        </Button>
+        <Button variant="dark" disabled={!formChanged} onClick={handleSaveSensor}>
+          Salvar
+        </Button>
+      </div>
+    </div>
+  );
+
+
+
   return (
     <PageLayout>
       <main className={styles.mainContent}>
         <section className={styles.leftPanel}>
-          <Card className={styles.whiteCard}>
-            {creatingSensor || editingSensorId !== null ? (
-              <>
-                <Card className={`${styles.groupCard}`}>
-                  <h3>{creatingSensor ? "Novo Sensor" : "Editar Sensor"}</h3>
-                  <div className={styles.formGroup}>
-                    <div className={styles.formField}>
-                      <label htmlFor="sensor-name">Nome do sensor</label>
-                      <input
-                        id="sensor-name"
-                        type="text"
-                        name="name"
-                        value={sensorForm.name}
-                        onChange={handleSensorChange}
-                      />
-                    </div>
+          {/* Criação de novo sensor (inline) */}
+          {creatingSensor && (
+            <Card className={styles.whiteCard}>
+              <div className={styles.sensorHeaderWrapper}>
+                <h3>Novo Sensor</h3>
+              </div>
+              {renderSensorForm()}
+            </Card>
+          )}
 
-                    <div className={styles.formField}>
-                      <label htmlFor="sensor-min">Valor mínimo</label>
-                      <input
-                        id="sensor-min"
-                        type="number"
-                        name="min_value"
-                        value={sensorForm.min_value}
-                        onChange={handleSensorChange}
-                      />
-                    </div>
+          {/* Cabeçalho padrão com botão de criar */}
+          {!creatingSensor && (
+            <div className={styles.sensorHeaderWrapper}>
+              <h3 className={styles.sensorHeader}>Sensores</h3>
+              <Button variant="light" onClick={() => setCreatingSensor(true)}>
+                Criar novo sensor
+              </Button>
+            </div>
+          )}
 
-                    <div className={styles.formField}>
-                      <label htmlFor="sensor-max">Valor máximo</label>
-                      <input
-                        id="sensor-max"
-                        type="number"
-                        name="max_value"
-                        value={sensorForm.max_value}
-                        onChange={handleSensorChange}
-                      />
-                    </div>
-
-                    <div className={styles.formField}>
-                      <label htmlFor="sensor-current">Valor atual</label>
-                      <input
-                        id="sensor-current"
-                        type="number"
-                        name="current_value"
-                        value={sensorForm.current_value}
-                        onChange={handleSensorChange}
-                      />
-                    </div>
-
-                    <div className={styles.buttonRow}>
-                      <Button variant="light" onClick={cancelSensorForm}>
-                        Cancelar
-                      </Button>
-                      <Button variant="dark" disabled={!formChanged} onClick={handleSaveSensor}>
-                        Salvar
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-
-
-              </>
-            ) : (
-              <>
-                <div className={styles.sensorHeaderWrapper}>
-                  <h3 className={styles.sensorHeader}>Sensores</h3>
-                  <Button variant="light" onClick={() => setCreatingSensor(true)}>
-                    Criar novo sensor
-                  </Button>
-                </div>
-
-              </>
-            )}
-          </Card>
-
+          {/* Lista de sensores */}
           {sensors.map((sensor) => (
             <Card key={sensor.id}>
               <h3>{sensor.name}</h3>
@@ -428,7 +432,6 @@ export const Dashboard: React.FC = () => {
                   >
                     {sensor.current_value}
                   </div>
-
                 </div>
                 <div className={styles.valueRow}>
                   <div className={styles.valueBoxSmall}>
@@ -452,7 +455,7 @@ export const Dashboard: React.FC = () => {
             </Card>
           ))}
 
-          {/* Modal de confirmação de exclusão */}
+          {/* Modal de exclusão */}
           {deleteSensorId !== null && (
             <div className={styles.modalOverlay}>
               <Card className={styles.modalCard}>
@@ -471,6 +474,16 @@ export const Dashboard: React.FC = () => {
               </Card>
             </div>
           )}
+
+          {/* Modal de edição */}
+          {editingSensorId !== null && (
+            <div className={styles.modalOverlay}>
+              <Card className={styles.modalCard}>
+                <h2>Editar Sensor</h2>
+                {renderSensorForm()}
+              </Card>
+            </div>
+          )}
         </section>
 
         <section className={styles.centerPanel}>
@@ -482,7 +495,6 @@ export const Dashboard: React.FC = () => {
               xKey="date"
             />
           </Card>
-
           <Card className={styles.whiteCard}>
             <LineGraph
               data={lineGraphGroupData}
