@@ -32,7 +32,7 @@ type SheepGroup = {
   name: string;
 };
 
-// Função para comparar apenas ano, mês e dia ignorando horário/fuso
+
 const isSameDate = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() &&
   a.getMonth() === b.getMonth() &&

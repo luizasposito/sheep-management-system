@@ -113,12 +113,15 @@ export const fetchAnimals = async (
     if (!response.ok) throw new Error("Erro ao buscar animais");
 
     const data = await response.json();
-    const formattedData: Animal[] = data.map((item: any) => ({
-      id: item.id.toString(),
-      producaoLeiteira: item.milk_production?.toString() || "-",
-      gender: item.gender,
-      group_id: item.group_id?.toString() || undefined,
-    }));
+    const formattedData: Animal[] = data
+      .map((item: any) => ({
+        id: item.id.toString(),
+        producaoLeiteira: item.milk_production?.toString() || "-",
+        gender: item.gender,
+        group_id: item.group_id?.toString() || undefined,
+      }))
+      .sort((a, b) => Number(a.id) - Number(b.id)); // Ordena por ID numérico
+
 
     setAnimalData(formattedData);
 

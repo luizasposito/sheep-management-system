@@ -10,21 +10,28 @@ from appointment import router_appointment
 from sheepgroup import router_sheepgroup   
 from milkproduction import router_milkproduction     
 from sensor import router_sensor
-from fastapi.middleware.cors import CORSMiddleware                                                                                                                                                        
+from fastapi.middleware.cors import CORSMiddleware  
+import os                                                                                                                                                      
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # Create the FastAPI app
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # permite o frontend acessar o backend
+    allow_origins=[os.getenv("FRONTEND_URL")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Create all database tables (based on your models)
-Base.metadata.create_all(bind=engine)
+@app.on_event("startup")
+def startup():
+    Base.metadata.create_all(bind=engine)
+
 
 # register sheep routes under /sheep path
 app.include_router(router_sheep.router, prefix="/sheep", tags=["Sheep"])
