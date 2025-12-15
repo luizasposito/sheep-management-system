@@ -6,6 +6,7 @@ import { Button } from "../../components/Button/Button";
 import { Card } from "../../components/Card/Card";
 import { SearchInput } from "../../components/SearchInput/SearchInput";
 import { useLocation } from "react-router-dom";
+import { API_URL } from "../../config";
 import Calendar from "react-calendar";
 import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
 import styles from "./Appointments.module.css";
@@ -81,7 +82,7 @@ export const Appointments: React.FC = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await fetch("http://localhost:8000/appointment", {
+        const response = await fetch(`${API_URL}/appointment`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -128,12 +129,12 @@ export const Appointments: React.FC = () => {
     const fetchSheepAndGroups = async () => {
       try {
         const [sheepRes, groupRes] = await Promise.all([
-          fetch("http://localhost:8000/sheep", {
+          fetch(`${API_URL}/sheep`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }),
-          fetch("http://localhost:8000/sheep-group", {
+          fetch(`${API_URL}/sheep-group`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },

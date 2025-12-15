@@ -4,6 +4,7 @@ import { useUser } from "../../UserContext";
 import { Card } from "../../components/Card/Card";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Button } from "../../components/Button/Button";
+import { API_URL } from "../../config";
 import LineGraph from "../../components/LineGraph/LineGraph";
 import PieChartGraph from "../../components/PieChart/PieChart";
 import styles from "./Dashboard.module.css";
@@ -105,7 +106,7 @@ export const Dashboard: React.FC = () => {
   const fetchSensors = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8000/sensor/", {
+      const response = await fetch(`${API_URL}/sensor/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -124,35 +125,35 @@ export const Dashboard: React.FC = () => {
       };
 
       const requests = [
-        fetch("http://localhost:8000/milk-production/total-today", {
+        fetch(`${API_URL}/milk-production/total-today`, {
           method: "GET",
           headers,
         }),
-        fetch("http://localhost:8000/milk-production/sum-last-7-days", {
+        fetch(`${API_URL}/milk-production/sum-last-7-days`, {
           method: "GET",
           headers,
         }),
-        fetch("http://localhost:8000/milk-production/total-today-by-group", {
+        fetch(`${API_URL}/milk-production/total-today-by-group`, {
           method: "GET",
           headers,
         }),
-        fetch("http://localhost:8000/milk-production/daily-total-last-7-days", {
+        fetch(`${API_URL}/milk-production/daily-total-last-7-days`, {
           method: "GET",
           headers,
         }),
-        fetch("http://localhost:8000/milk-production/daily-by-group-last-7-days", {
+        fetch(`${API_URL}/milk-production/daily-by-group-last-7-days`, {
           method: "GET",
           headers,
         }),
-        fetch("http://localhost:8000/milk-production/sum-2-weeks-ago", {
+        fetch(`${API_URL}/milk-production/sum-2-weeks-ago`, {
           method: "GET",
           headers,
         }),
-        fetch("http://localhost:8000/sheep-group/sheep-count-by-group", {
+        fetch(`${API_URL}/sheep-group/sheep-count-by-group`, {
           method: "GET",
           headers,
         }),
-        fetch("http://localhost:8000/appointment/", {
+        fetch(`${API_URL}/appointment/`, {
           method: "GET",
           headers,
         }),
@@ -264,8 +265,8 @@ export const Dashboard: React.FC = () => {
 
     const method = editingSensorId !== null ? "PUT" : "POST";
     const url = editingSensorId !== null
-      ? `http://localhost:8000/sensor/${editingSensorId}`
-      : "http://localhost:8000/sensor/";
+      ? `${API_URL}/sensor/${editingSensorId}`
+      : `${API_URL}/sensor/`;
 
     const payload = {
       name: sensorForm.name,
@@ -306,7 +307,7 @@ export const Dashboard: React.FC = () => {
     if (deleteSensorId === null) return;
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:8000/sensor/${deleteSensorId}`, {
+      const response = await fetch(`${API_URL}/sensor/${deleteSensorId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

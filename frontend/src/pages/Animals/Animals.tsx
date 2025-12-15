@@ -6,6 +6,7 @@ import { Button } from "../../components/Button/Button";
 import { Card } from "../../components/Card/Card";
 import { SearchInput } from "../../components/SearchInput/SearchInput";
 import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
+import { API_URL } from "../../config";
 import Select from "react-select";
 import styles from "./Animals.module.css";
 import {
@@ -91,7 +92,7 @@ export const Animals: React.FC = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/sheep-group/${selectedGroupId}`,
+        `${API_URL}/sheep-group/${selectedGroupId}`,
         {
           method: "DELETE",
           headers: {
@@ -197,7 +198,7 @@ export const Animals: React.FC = () => {
 
       if (mode === "editing" && selectedGroupId) {
         const updateGroupResponse = await fetch(
-          `http://localhost:8000/sheep-group/${selectedGroupId}`,
+          `${API_URL}/sheep-group/${selectedGroupId}`,
           {
             method: "PUT",
             headers: {
@@ -229,7 +230,7 @@ export const Animals: React.FC = () => {
           const patchResults = await Promise.all([
             ...removedAnimals.map((animalId) =>
               fetch(
-                `http://localhost:8000/sheep-group/${animalId}/change-group`,
+                `${API_URL}/sheep-group/${animalId}/change-group`,
                 {
                   method: "PATCH",
                   headers: {
@@ -242,7 +243,7 @@ export const Animals: React.FC = () => {
             ),
             ...addedAnimals.map((animalId) =>
               fetch(
-                `http://localhost:8000/sheep-group/${animalId}/change-group`,
+                `${API_URL}/sheep-group/${animalId}/change-group`,
                 {
                   method: "PATCH",
                   headers: {
@@ -265,7 +266,7 @@ export const Animals: React.FC = () => {
       } else {
         // Cria o grupo e pega o id do grupo criado
         const newGroupResponse = await fetch(
-          "http://localhost:8000/sheep-group",
+          `${API_URL}/sheep-group`,
           {
             method: "POST",
             headers: {
@@ -291,7 +292,7 @@ export const Animals: React.FC = () => {
         const patchResults = await Promise.all(
           formAnimals.map((animalId) =>
             fetch(
-              `http://localhost:8000/sheep-group/${animalId}/change-group`,
+              `${API_URL}/sheep-group/${animalId}/change-group`,
               {
                 method: "PATCH",
                 headers: {

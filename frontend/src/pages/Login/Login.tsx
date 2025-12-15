@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { useUser } from "../../UserContext";
+import { API_URL } from "../../config";
 import styles from "./Login.module.css";
 import showPassIcon from "../../icons/show-pass-2.png";
 import hidePassIcon from "../../icons/hide-pass-2.png";
@@ -29,7 +30,7 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/auth/login", {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: senha }),
@@ -46,7 +47,7 @@ export const Login: React.FC = () => {
       localStorage.setItem("token", token);
 
       // Testar token
-      const meRes = await fetch("http://localhost:8000/auth/me", {
+      const meRes = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

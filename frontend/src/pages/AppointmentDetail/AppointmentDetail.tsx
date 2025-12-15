@@ -6,6 +6,7 @@ import { Table } from "../../components/Table/Table";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
+import { API_URL } from "../../config";
 import styles from "./AppointmentDetail.module.css";
 
 type Sheep = {
@@ -61,7 +62,7 @@ export const AppointmentDetail: React.FC = () => {
 
     const fetchAppointment = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/appointment/${id}`, {
+        const res = await fetch(`${API_URL}/appointment/${id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         if (!res.ok) throw new Error("Erro ao buscar consulta");
@@ -79,7 +80,7 @@ export const AppointmentDetail: React.FC = () => {
   useEffect(() => {
     const fetchSheep = async () => {
       try {
-        const sheepRes = await fetch("http://localhost:8000/sheep", {
+        const sheepRes = await fetch(`${API_URL}/sheep`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
 

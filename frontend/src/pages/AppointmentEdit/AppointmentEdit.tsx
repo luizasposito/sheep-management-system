@@ -4,6 +4,7 @@ import { useUser } from "../../UserContext";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
+import { API_URL } from "../../config";
 import styles from "./AppointmentEdit.module.css";
 
 type Medication = {
@@ -65,7 +66,7 @@ export const AppointmentEdit: React.FC = () => {
   useEffect(() => {
     const fetchAppointment = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/appointment/${id}`, {
+        const res = await fetch(`${API_URL}/appointment/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Erro ao carregar consulta");
@@ -126,7 +127,7 @@ export const AppointmentEdit: React.FC = () => {
     try {
       const validMedications = medications.filter(med => med.name.trim() !== "");
 
-      const res = await fetch(`http://localhost:8000/appointment/${id}`, {
+      const res = await fetch(`${API_URL}/appointment/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
