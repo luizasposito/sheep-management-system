@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
+import { API_URL } from "../../config";
 import styles from "./AnimalCreate.module.css";
 
 export const AnimalCreate: React.FC = () => {
@@ -33,7 +34,7 @@ export const AnimalCreate: React.FC = () => {
         if (!token) throw new Error("Usuário não autenticado.");
 
         // Buscar dados do usuário
-        const userRes = await fetch("http://localhost:8000/auth/me", {
+        const userRes = await fetch(`${API_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!userRes.ok) throw new Error("Erro ao buscar informações do usuário.");
@@ -41,7 +42,7 @@ export const AnimalCreate: React.FC = () => {
         setFarmId(userData.farm_id);
 
         // Buscar animais da fazenda
-        const animalsRes = await fetch("http://localhost:8000/sheep", {
+        const animalsRes = await fetch(`${API_URL}/sheep`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!animalsRes.ok) throw new Error("Erro ao buscar animais.");
@@ -87,7 +88,7 @@ export const AnimalCreate: React.FC = () => {
 
 
     try {
-      const res = await fetch("http://localhost:8000/sheep", {
+      const res = await fetch(`${API_URL}/sheep`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

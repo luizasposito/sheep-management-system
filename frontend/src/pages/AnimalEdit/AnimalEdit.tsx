@@ -4,6 +4,7 @@ import { useUser } from "../../UserContext";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
+import { API_URL } from "../../config";
 import styles from "./AnimalEdit.module.css";
 
 export const AnimalEdit: React.FC = () => {
@@ -38,7 +39,7 @@ export const AnimalEdit: React.FC = () => {
     const fetchData = async () => {
       try {
         // Busca animal específico
-        const animalRes = await fetch(`http://localhost:8000/sheep/${id}`, {
+        const animalRes = await fetch(`${API_URL}/sheep/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!animalRes.ok) throw new Error("Erro ao buscar dados do animal");
@@ -56,7 +57,7 @@ export const AnimalEdit: React.FC = () => {
         });
 
         // Busca todos os animais da mesma fazenda (excluindo o próprio animal)
-        const allAnimalsRes = await fetch("http://localhost:8000/sheep", {
+        const allAnimalsRes = await fetch(`${API_URL}/sheep`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!allAnimalsRes.ok) throw new Error("Erro ao buscar todos os animais");
@@ -72,7 +73,7 @@ export const AnimalEdit: React.FC = () => {
         console.log("ID da mãe:", animalData.mother_id, "Existe?", motherExists);
 
         // Busca grupos
-        const groupRes = await fetch("http://localhost:8000/sheep-group", {
+        const groupRes = await fetch(`${API_URL}/sheep-group`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!groupRes.ok) throw new Error("Erro ao buscar grupos");
@@ -127,7 +128,7 @@ export const AnimalEdit: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/sheep/${id}`, {
+      const res = await fetch(`${API_URL}/sheep/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

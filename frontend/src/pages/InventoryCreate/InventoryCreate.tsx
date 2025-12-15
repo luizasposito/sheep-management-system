@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
+import { API_URL } from "../../config";
 import styles from "./InventoryCreate.module.css";
 
 export const InventoryCreate: React.FC = () => {
@@ -41,7 +42,7 @@ export const InventoryCreate: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/inventory/", {
+      const response = await fetch(`${API_URL}/inventory/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

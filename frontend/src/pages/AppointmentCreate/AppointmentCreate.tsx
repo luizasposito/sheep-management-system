@@ -4,6 +4,7 @@ import Select from "react-select";
 import { PageLayout } from "../../components/PageLayout/PageLayout";
 import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
+import { API_URL } from "../../config";
 import styles from "./AppointmentCreate.module.css";
 import { useUser } from "../../UserContext";
 
@@ -55,10 +56,10 @@ export const AppointmentCreate: React.FC = () => {
     const fetchData = async () => {
       try {
         const [sheepRes, groupRes] = await Promise.all([
-          fetch("http://localhost:8000/sheep", {
+          fetch(`${API_URL}/sheep`, {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }),
-          fetch("http://localhost:8000/sheep-group", {
+          fetch(`${API_URL}/sheep-group`, {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }),
         ]);
@@ -101,7 +102,7 @@ export const AppointmentCreate: React.FC = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8000/appointment", {
+      const response = await fetch(`${API_URL}/appointment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

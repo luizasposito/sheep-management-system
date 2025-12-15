@@ -6,6 +6,7 @@ import { Card } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { RoleOnly } from "../../components/RoleOnly/RoleOnly";
 import { useUser } from "../../UserContext";
+import { API_URL } from "../../config";
 import styles from "./AnimalDetail.module.css";
 import "react-calendar/dist/Calendar.css";
 
@@ -63,7 +64,7 @@ export const AnimalDetails: React.FC = () => {
 
     const fetchAnimal = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/sheep/${id}`, {
+        const res = await fetch(`${API_URL}/sheep/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Erro ao buscar animal");
@@ -71,8 +72,7 @@ export const AnimalDetails: React.FC = () => {
         setAnimal(data);
 
         if (data.group_id && user?.role === "farmer") {
-          const groupRes = await fetch(
-            `http://localhost:8000/sheep-group/${data.group_id}`,
+          const groupRes = await fetch(`${API_URL}/sheep-group/${data.group_id}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -85,8 +85,7 @@ export const AnimalDetails: React.FC = () => {
 
 
         // Fetch parents
-        const parentsRes = await fetch(
-          `http://localhost:8000/sheep/${id}/parents`,
+        const parentsRes = await fetch(`${API_URL}/sheep/${id}/parents`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -97,8 +96,7 @@ export const AnimalDetails: React.FC = () => {
         }
 
         // Fetch children
-        const childrenRes = await fetch(
-          `http://localhost:8000/sheep/${id}/children`,
+        const childrenRes = await fetch(`${API_URL}/sheep/${id}/children`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -114,8 +112,7 @@ export const AnimalDetails: React.FC = () => {
 
     const fetchConsultas = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:8000/appointment?sheep_id=${id}`,
+        const res = await fetch(`${API_URL}/appointment?sheep_id=${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

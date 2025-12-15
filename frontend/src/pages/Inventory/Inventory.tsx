@@ -7,6 +7,7 @@ import { SearchInput } from "../../components/SearchInput/SearchInput";
 import { Card } from "../../components/Card/Card";
 import { useIsMobile } from "../../useIsMobile";
 import { useIsLandscape } from "../../useIsLandscape";
+import { API_URL } from "../../config";
 import styles from "./Inventory.module.css";
 
 interface InventoryItem {
@@ -54,7 +55,7 @@ export const Inventory: React.FC = () => {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const response = await fetch("http://localhost:8000/inventory", {
+        const response = await fetch(`${API_URL}/inventory`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -177,7 +178,7 @@ export const Inventory: React.FC = () => {
     const itemToDelete = inventoryData[selectedItem];
 
     try {
-      const response = await fetch(`http://localhost:8000/inventory/${itemToDelete.id}`, {
+      const response = await fetch(`${API_URL}/inventory/${itemToDelete.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
