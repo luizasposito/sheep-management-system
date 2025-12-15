@@ -120,7 +120,7 @@ export const fetchAnimals = async (
         gender: item.gender,
         group_id: item.group_id?.toString() || undefined,
       }))
-       .sort((a: Animal, b: Animal) => Number(a.id) - Number(b.id)); // Ordena por ID numérico
+       .sort((a: Animal, b: Animal) => Number(a.id) - Number(b.id));  // Ordena por ID numérico
 
 
     setAnimalData(formattedData);
