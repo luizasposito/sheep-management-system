@@ -10,7 +10,7 @@ from appointment import router_appointment
 from sheepgroup import router_sheepgroup   
 from milkproduction import router_milkproduction     
 from sensor import router_sensor
-from fastapi.middleware.cors import CORSMiddleware  
+from fastapi.middleware.cors import CORSMiddleware
 import os                                                                                                                                                      
 from dotenv import load_dotenv
 load_dotenv()
@@ -21,11 +21,12 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL")],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Create all database tables (based on your models)
 @app.on_event("startup")

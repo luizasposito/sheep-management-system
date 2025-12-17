@@ -22,7 +22,7 @@ export const fetchTodayMilkProduction = async (
   try {
     const todayStr = new Date().toISOString().split("T")[0];
     const res = await fetch(
-      `http://localhost:8000/sheep/${sheepId}/milk-yield?date=${todayStr}`,
+      `{API_URL}/sheep/${sheepId}/milk-yield?date=${todayStr}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -55,7 +55,7 @@ export const submitMilkProduction = async (
 
   try {
     const res = await fetch(
-      `http://localhost:8000/sheep/${sheepId}/milk-yield`,
+      `{API_URL}/sheep/${sheepId}/milk-yield`,
       {
         method: "PATCH",
         headers: {
@@ -101,7 +101,7 @@ export const fetchAnimals = async (
 ) => {
   try {
     const response = await fetch(
-      `http://localhost:8000/sheep/?_=${Date.now()}`,
+      `{API_URL}/sheep/?_=${Date.now()}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -148,13 +148,13 @@ export const fetchGroups = async (
 ) => {
   try {
     const [groupsRes, animalsRes] = await Promise.all([
-      fetch("http://localhost:8000/sheep-group", {
+      fetch(`{API_URL}/sheep-group`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       }),
-      fetch("http://localhost:8000/sheep/", {
+      fetch(`{API_URL}/sheep/`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
