@@ -11,7 +11,7 @@ from utils import decode_token
 from blacklist import blacklisted_tokens, is_token_blacklisted, add_token_to_blacklist
 from auth.schema_auth import TokenUser
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 router = APIRouter()
 
 # POST /login - user logs into the system
@@ -24,8 +24,15 @@ def login(user_data: LoginRequest, db: Session = Depends(get_db)):
         user = db.query(Veterinarian).filter(Veterinarian.email == user_data.email).first()
         role = "veterinarian"
 
-    if not user or not verify_password(user_data.password, user.password):
+    if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if not user.password:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if not verify_password(user_data.password, user.password):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
 
     access_token = create_access_token(data={"sub": user.email, "role": role})
     return {"access_token": access_token, "token_type": "bearer"}
@@ -34,6 +41,9 @@ def login(user_data: LoginRequest, db: Session = Depends(get_db)):
 # POST /logout - user logs out of the system
 @router.post("/logout")
 def logout(token: str = Depends(oauth2_scheme)):
+    if not token:
+        raise HTTPException(status_code=401)
+    
     add_token_to_blacklist(token)
     return {"message": "Logout realizado com sucesso"}
 
@@ -41,6 +51,9 @@ def logout(token: str = Depends(oauth2_scheme)):
 # GET /me - get user's token
 @router.get("/me", response_model=TokenUser)
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    if not token:
+        raise HTTPException(status_code=401)
+    
     payload = decode_token(token)
     email = payload.get("sub")
     role = payload.get("role")

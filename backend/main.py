@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from database import Base, engine
 from sheep import router_sheep
@@ -7,11 +6,11 @@ from farmer import router_farmer
 from veterinarian import router_veterinarian
 from auth import router_auth
 from appointment import router_appointment
-from sheepgroup import router_sheepgroup   
-from milkproduction import router_milkproduction     
+from sheepgroup import router_sheepgroup
+from milkproduction import router_milkproduction
 from sensor import router_sensor
 from fastapi.middleware.cors import CORSMiddleware
-import os                                                                                                                                                      
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
